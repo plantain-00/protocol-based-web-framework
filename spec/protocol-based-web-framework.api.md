@@ -4,10 +4,63 @@
 
 ```ts
 
+import type { Database } from 'sqlite3';
+
 // @public (undocumented)
-class ProtocolBasedWebFramework {
+export const getKeys: <T>(obj: T) => (keyof T)[];
+
+// @public (undocumented)
+export type RowFilterOptions<T> = Partial<{
+    filter: {
+        [P in keyof T]?: T[P] | readonly T[P][];
+    };
+    fuzzyFilter: {
+        [P in keyof T]?: T[P] | readonly T[P][];
+    };
+    rawFilter: {
+        sql: string;
+        value: unknown[];
+    };
+}>;
+
+// @public (undocumented)
+export type RowSelectOneOptions<T> = Partial<{
+    ignoredFields: (keyof T)[];
+    sort: {
+        field: keyof T;
+        type: 'asc' | 'desc';
+    }[];
+}> & RowFilterOptions<T>;
+
+// @public (undocumented)
+export type RowSelectOptions<T> = Partial<{
+    pagination: {
+        take: number;
+        skip: number;
+    };
+}> & RowSelectOneOptions<T>;
+
+// @public (undocumented)
+export class SqliteAccessor<TableName extends string> {
+    constructor(db: Database, tableSchemas: Record<TableName, {
+        fieldNames: string[];
+        complexFields: string[];
+    }>);
+    // (undocumented)
+    countRow<T>(tableName: TableName, options?: RowFilterOptions<T>): Promise<number>;
+    // (undocumented)
+    createTable(tableName: TableName): Promise<void>;
+    // (undocumented)
+    deleteRow<T>(tableName: TableName, options?: RowFilterOptions<T>): Promise<void>;
+    // (undocumented)
+    getRow<T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOneOptions<T>): Promise<T | undefined>;
+    // (undocumented)
+    insertRow<T extends Record<string, unknown>>(tableName: TableName, value: T): Promise<T>;
+    // (undocumented)
+    selectRow<T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOptions<T>): Promise<T[]>;
+    // (undocumented)
+    updateRow<T extends Record<string, unknown>>(tableName: TableName, value?: T, options?: RowFilterOptions<T>): Promise<void>;
 }
-export default ProtocolBasedWebFramework;
 
 // (No @packageDocumentation comment for this package)
 

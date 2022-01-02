@@ -1,5 +1,2 @@
-/**
- * @public
- */
-export default class ProtocolBasedWebFramework {
-}
+export * from './db-declaration-lib'
+export * from './db-access-sqlite'

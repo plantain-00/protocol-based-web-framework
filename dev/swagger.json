@@ -1,0 +1,335 @@
+{
+  "swagger": "2.0",
+  "paths": {
+    "/api/blogs": {
+      "get": {
+        "operationId": "getBlogs",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "default": 0
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "default": 10
+            }
+          },
+          {
+            "name": "content",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortField",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "id",
+                "content"
+              ],
+              "default": "id"
+            }
+          },
+          {
+            "name": "sortType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            }
+          },
+          {
+            "name": "ignoredFields",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BlogIgnorableField"
+              }
+            }
+          },
+          {
+            "name": "ids",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "tags": [
+          "blog"
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Blog"
+                  }
+                },
+                "count": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "result",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createBlog",
+        "parameters": [
+          {
+            "name": "content",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ignoredFields",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BlogIgnorableField"
+              }
+            }
+          }
+        ],
+        "tags": [
+          "blog"
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/Blog"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    },
+    "/api/blogs/{id}": {
+      "get": {
+        "operationId": "getBlogById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "ignoredFields",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BlogIgnorableField"
+              }
+            }
+          }
+        ],
+        "tags": [
+          "blog"
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/Blog"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "patchBlog",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "content",
+            "required": false,
+            "in": "body",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "meta",
+            "required": false,
+            "in": "body",
+            "schema": {}
+          },
+          {
+            "name": "ignoredFields",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BlogIgnorableField"
+              }
+            }
+          }
+        ],
+        "tags": [
+          "blog"
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/Blog"
+                }
+              },
+              "required": [
+                "result"
+              ],
+              "additionalProperties": false
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteBlog",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "tags": [
+          "blog"
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Blog": {
+      "type": "object",
+      "properties": {
+        "posts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PostSchema"
+          }
+        },
+        "id": {
+          "type": "number"
+        },
+        "content": {
+          "type": "string"
+        },
+        "meta": {}
+      },
+      "required": [
+        "posts",
+        "id",
+        "content",
+        "meta"
+      ],
+      "additionalProperties": false
+    },
+    "PostSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number"
+        },
+        "content": {
+          "type": "string"
+        },
+        "blogId": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "content",
+        "blogId"
+      ],
+      "additionalProperties": false
+    },
+    "BlogIgnorableField": {
+      "type": "string",
+      "enum": [
+        "posts",
+        "meta"
+      ]
+    }
+  }
+}
