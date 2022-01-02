@@ -1,0 +1,56 @@
+{
+  "name": "protocol-based-web-framework",
+  "version": "0.0.1",
+  "description": "A protocol and code generation based web framework.",
+  "main": "nodejs/index.js",
+  "scripts": {
+    "build": "clean-scripts build",
+    "lint": "clean-scripts lint",
+    "test": "clean-scripts test",
+    "release": "clean-release",
+    "fix": "clean-scripts fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plantain-00/protocol-based-web-framework.git"
+  },
+  "author": "York Yao",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/plantain-00/protocol-based-web-framework/issues"
+  },
+  "homepage": "https://github.com/plantain-00/protocol-based-web-framework#readme",
+  "devDependencies": {
+    "@microsoft/api-extractor": "7.19.3",
+    "@rollup/plugin-node-resolve": "13.1.2",
+    "@typescript-eslint/eslint-plugin": "5.8.1",
+    "@typescript-eslint/parser": "5.8.1",
+    "ava": "3.15.0",
+    "clean-release": "2.15.2",
+    "clean-scripts": "1.20.2",
+    "eslint": "8.6.0",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-plantain": "2.0.0",
+    "markdownlint-cli": "0.30.0",
+    "no-unused-export": "1.14.2",
+    "rimraf": "3.0.2",
+    "rollup": "2.62.0",
+    "rollup-plugin-uglify": "6.0.4",
+    "ts-node": "10.4.0",
+    "tsconfig-plantain": "0.0.2",
+    "type-coverage": "2.19.0",
+    "typescript": "4.5.4"
+  },
+  "dependencies": {
+    "tslib": "1 || 2"
+  },
+  "module": "browser/index.js",
+  "unpkg": "protocol-based-web-framework.min.js",
+  "jsdelivr": "protocol-based-web-framework.min.js",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "typeCoverage": {
+    "atLeast": 100
+  }
+}
