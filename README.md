@@ -24,9 +24,10 @@ A protocol and code generation based web framework.
 ### type safe ignorable field in db access
 
 ```ts
-const blog = await selectRows('blogs', {
+const blog = await selectRow('blogs', {
   ignoredFields: ['content', 'meta'],
 })
+// sql: SELECT id FROM blogs
 // blog: Omit<BlogSchema, "content" | "meta">[]
 [
   {
@@ -95,7 +96,7 @@ async function getBlogWithoutIngoredFields<T extends BlogIgnorableField = never>
   const fields: BlogIgnorableField[] | undefined = ignoredFields
   return {
     ...blog,
-    posts: fields?.includes('posts') ? undefined : await selectRows('posts', { filter: { blogId: blog.id } }), // ignored or populated
+    posts: fields?.includes('posts') ? undefined : await selectRow('posts', { filter: { blogId: blog.id } }), // ignored or populated
     meta: fields?.includes('meta') ? undefined : blog.meta,
   } as Omit<Blog, T>
 }
@@ -104,7 +105,7 @@ async function getBlogWithoutIngoredFields<T extends BlogIgnorableField = never>
 ### filters
 
 ```ts
-const blogs = await selectRows('blogs', {
+await selectRow('blogs', {
   filter: {
     id: [1, 2],
     content: 'www',
@@ -127,6 +128,14 @@ curl -v http://localhost:3000/api/blogs/abc
 
 HTTP/1.1 400 Bad Request
 {"message":"must be number"}
+```
+
+### request normalization(remove additional fields, fill default value)
+
+```txt
+curl -v http://localhost:3000/api/blogs?content=abc&foo=123
+
+{ content: 'abc', skip: 0, take: 10, sortField: 'id', sortType: 'asc' }
 ```
 
 ## usage
@@ -297,32 +306,7 @@ export interface Blog extends BlogSchema {
 // 5. generate restful api declaration
 `RESTFUL_API_SCHEMA_PATH=./restful-api-schema BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts types-as-schema ./dev/restful-api-schema.ts ./dev/db-schema.ts --swagger ./dev/swagger.json --config ./node_modules/protocol-based-web-framework/nodejs/generate-restful-api-declaration.js`
 
-// 6. implement HandleHttpRequest
-import express from 'express'
-import { HandleHttpRequest, getAndValidateRequestInput, respondHandleResult } from 'protocol-based-web-framework'
-const handleHttpRequest: HandleHttpRequest = (app, method, url, tags, validate, handler) => {
-  app[method](url, async (req: express.Request<{}, {}, {}>, res: express.Response<{}>) => {
-    try {
-      const input = getAndValidateRequestInput(req, validate)
-      if (typeof input === 'string') {
-        throw new HttpError(input, 400)
-      }
-      const result = await handler(input)
-      respondHandleResult(result, req, res)
-    } catch (error: unknown) {
-      const statusCode = error instanceof HttpError ? error.statusCode : 500
-      const message = error instanceof Error ? error.message : error
-      res.status(statusCode).json({ message }).end()
-    }
-  })
-}
-class HttpError extends Error {
-  constructor(message: string, public statusCode = 500) {
-    super(message)
-  }
-}
-
-// 7. backend implement restful api
+// 6. backend implement restful api declaration
 import { CreateBlog, DeleteBlog, GetBlogById, GetBlogs, PatchBlog } from './restful-api-backend-declaration'
 const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip, take, ignoredFields } }) => {
   const filter: RowFilterOptions<BlogSchema> = {
@@ -414,7 +398,7 @@ async function getBlogWithoutIngoredFields<T extends BlogIgnorableField = never>
   } as Omit<Blog, T>
 }
 
-// 8. access restful api in backend unit test
+// 7. access restful api in backend unit test
 const blog = await createBlog({
   body: {
     content: 'test'
@@ -422,10 +406,32 @@ const blog = await createBlog({
 })
 t.snapshot(blog)
 
-// 9. backend register restful api
+// 8. backend implement HandleHttpRequest and register restful api
+import express from 'express'
 import * as bodyParser from 'body-parser'
+import { HandleHttpRequest, getAndValidateRequestInput, respondHandleResult } from 'protocol-based-web-framework'
 import { registerCreateBlog, registerDeleteBlog, registerGetBlogById, registerGetBlogs, registerPatchBlog } from './restful-api-backend-declaration'
-
+const handleHttpRequest: HandleHttpRequest = (app, method, url, tags, validate, handler) => {
+  app[method](url, async (req: express.Request<{}, {}, {}>, res: express.Response<{}>) => {
+    try {
+      const input = getAndValidateRequestInput(req, validate)
+      if (typeof input === 'string') {
+        throw new HttpError(input, 400)
+      }
+      const result = await handler(input)
+      respondHandleResult(result, req, res)
+    } catch (error: unknown) {
+      const statusCode = error instanceof HttpError ? error.statusCode : 500
+      const message = error instanceof Error ? error.message : error
+      res.status(statusCode).json({ message }).end()
+    }
+  })
+}
+class HttpError extends Error {
+  constructor(message: string, public statusCode = 500) {
+    super(message)
+  }
+}
 const app = express()
 app.use(bodyParser.json())
 registerGetBlogs(app, handleHttpRequest, getBlogs)
@@ -435,7 +441,7 @@ registerPatchBlog(app, handleHttpRequest, patchBlog)
 registerDeleteBlog(app, handleHttpRequest, deleteBlog)
 app.listen(3000)
 
-// 10. access restful api
+// 9. access restful api
 import { ApiAccessorFetch } from 'protocol-based-web-framework'
 const apiAccessor = new ApiAccessorFetch(validations)
 const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI
