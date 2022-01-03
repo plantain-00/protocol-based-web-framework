@@ -1,4 +1,4 @@
-import { Definition, FunctionParameter, generateTypescriptOfFunctionParameter, generateTypescriptOfType, getAllDefinitions, getJsonSchemaProperty, getReferencedDefinitions, getReferencesInType, Member, TypeDeclaration } from 'types-as-schema'
+import { Definition, FunctionParameter, generateTypescriptOfFunctionParameter, generateTypescriptOfType, getAllDefinitions, getJsonSchemaProperty, getReferencedDefinitions, getReferencesInType, Member, TypeDeclaration, getDeclarationParameters } from 'types-as-schema'
 
 export default (typeDeclarations: TypeDeclaration[]): { path: string, content: string }[] => {
   const backendResult: string[] = []
@@ -32,7 +32,8 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
     if (declaration.kind === 'function' && declaration.method && declaration.path && declaration.tags && declaration.tags.length > 0) {
       // register
       let path = declaration.path
-      for (const parameter of declaration.parameters) {
+      const declarationParameters = getDeclarationParameters(declaration, typeDeclarations)
+      for (const parameter of declarationParameters) {
         if (parameter.in === 'path') {
           path = path.split(`{${parameter.name}}`).join(`:${parameter.name}`)
         }
@@ -43,7 +44,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       // json schema
       const requestMergedDefinitions: { [name: string]: Definition } = {}
       const requestReferenceNames: string[] = []
-      for (const parameter of declaration.parameters) {
+      for (const parameter of declarationParameters) {
         requestReferenceNames.push(...getReferencesInType(parameter.type).map((r) => r.name))
       }
       for (const referenceName of requestReferenceNames) {
@@ -60,7 +61,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
 
       const members: Member[] = []
       for (const type of allTypes) {
-        const params = declaration.parameters.filter((d) => d.in === type)
+        const params = declarationParameters.filter((d) => d.in === type)
         members.push({
           name: type,
           type: {
@@ -112,7 +113,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
 
       // import reference
       references.push(...getReferencesInType(declaration.type).map((r) => r.name))
-      for (const parameter of declaration.parameters) {
+      for (const parameter of declarationParameters) {
         references.push(...getReferencesInType(parameter.type).map((r) => r.name))
       }
 
@@ -124,7 +125,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       const getRequestApiUrlPathParam: { optional: boolean, value: string }[] = []
       let frontendPath = declaration.path
       for (const type of allTypes) {
-        const parameter = declaration.parameters.filter((d) => d.in === type)
+        const parameter = declarationParameters.filter((d) => d.in === type)
         if (parameter.length > 0) {
           if (type === 'query') {
             getRequestApiUrlParam.push(getParam(type, parameter))
@@ -208,7 +209,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       responseJsonSchema.omittedReferences = Array.from(omittedReferences)
 
       let ignorableField = ''
-      for (const p of declaration.parameters) {
+      for (const p of declarationParameters) {
         if (p.name === 'ignoredFields' && p.type.kind === 'array' && p.type.type.kind === 'reference') {
           ignorableField = p.type.type.name
         }

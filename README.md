@@ -130,12 +130,12 @@ HTTP/1.1 400 Bad Request
 {"message":"must be number"}
 ```
 
-### request normalization(remove additional fields, fill default value)
+### request normalization(remove additional fields, fill default value, type '123' -> 123)
 
 ```txt
-curl -v http://localhost:3000/api/blogs?content=abc&foo=123
+curl -v http://localhost:3000/api/blogs?content=abc&foo=123&skip=10
 
-{ content: 'abc', skip: 0, take: 10, sortField: 'id', sortType: 'asc' }
+{ content: 'abc', skip: 10, take: 10, sortField: 'id', sortType: 'asc' }
 ```
 
 ## usage
@@ -195,38 +195,14 @@ import { BlogSchema, PostSchema } from "./db-schema"
  * @tags blog
  */
 declare function getBlogs(
-  /**
-   * @in query
-   * @default 0
-   */
-  skip?: number,
-  /**
-   * @in query
-   * @default 10
-   */
-  take?: number,
-  /**
-   * @in query
-   */
-  content?: string,
-  /**
-   * @in query
-   * @default id
-   */
-  sortField?: 'id' | 'content',
-  /**
-   * @in query
-   * @default asc
-   */
-  sortType?: 'asc' | 'desc',
-  /**
-   * @in query
-   */
-  ignoredFields?: BlogIgnorableField[],
-  /**
-   * @in query
-   */
-  ids?: string[],
+  query: PaginationFields & BlogIgnoredField & SortTypeField & {
+    content?: string,
+    /**
+     * @default id
+     */
+    sortField?: 'id' | 'content',
+    ids?: string[],
+  },
 ): Promise<{ result: Blog[], count: number }>
 
 /**
@@ -235,14 +211,8 @@ declare function getBlogs(
  * @tags blog
  */
 declare function getBlogById(
-  /**
-   * @in path
-   */
-  id: number,
-  /**
-   * @in query
-   */
-  ignoredFields?: BlogIgnorableField[],
+  query: BlogIgnoredField,
+  path: IdField,
 ): Promise<{ result?: Blog }>
 
 /**
@@ -251,14 +221,10 @@ declare function getBlogById(
  * @tags blog
  */
 declare function createBlog(
-  /**
-   * @in body
-   */
-  content: string,
-  /**
-   * @in query
-   */
-  ignoredFields?: BlogIgnorableField[],
+  query: BlogIgnoredField,
+  body: {
+    content: string,
+  },
 ): Promise<{ result: Blog }>
 
 /**
@@ -267,22 +233,12 @@ declare function createBlog(
  * @tags blog
  */
 declare function patchBlog(
-  /**
-   * @in path
-   */
-  id: number,
-  /**
-   * @in body
-   */
-  content?: string,
-  /**
-   * @in body
-   */
-  meta?: unknown,
-  /**
-   * @in query
-   */
-  ignoredFields?: BlogIgnorableField[],
+  query: BlogIgnoredField,
+  path: IdField,
+  body: {
+    content?: string,
+    meta?: unknown,
+  },
 ): Promise<{ result: Blog }>
 
 /**
@@ -291,16 +247,39 @@ declare function patchBlog(
  * @tags blog
  */
 declare function deleteBlog(
-  /**
-   * @in path
-   */
-  id: number,
+  path: IdField,
 ): Promise<{}>
 
 export type BlogIgnorableField = 'posts' | 'meta'
 
 export interface Blog extends BlogSchema {
   posts: PostSchema[]
+}
+
+interface PaginationFields {
+  /**
+   * @default 0
+   */
+  skip?: number,
+  /**
+   * @default 10
+   */
+  take?: number,
+}
+
+interface SortTypeField {
+  /**
+   * @default asc
+   */
+  sortType?: 'asc' | 'desc',
+}
+
+interface IdField {
+  id: number,
+}
+
+interface BlogIgnoredField {
+  ignoredFields?: BlogIgnorableField[],
 }
 
 // 5. generate restful api declaration

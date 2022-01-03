@@ -4,7 +4,7 @@ import type { Application } from 'express'
 import { ajvBackend, HandleHttpRequest } from '../dist/nodejs'
 import { Blog, BlogIgnorableField } from './restful-api-schema'
 
-export type GetBlogs = <T extends BlogIgnorableField = never>(req: { query: { skip: number, take: number, content?: string, sortField: "id" | "content", sortType: "asc" | "desc", ignoredFields?: T[], ids?: string[] } }) => Promise<{ result: Omit<Blog, T>[], count: number }>
+export type GetBlogs = <T extends BlogIgnorableField = never>(req: { query: { skip: number, take: number, ignoredFields?: T[], sortType: "asc" | "desc", content?: string, sortField: "id" | "content", ids?: string[] } }) => Promise<{ result: Omit<Blog, T>[], count: number }>
 export type GetBlogById = <T extends BlogIgnorableField = never>(req: { path: { id: number }, query?: { ignoredFields?: T[] } }) => Promise<{ result?: Omit<Blog, T> }>
 export type CreateBlog = <T extends BlogIgnorableField = never>(req: { query?: { ignoredFields?: T[] }, body: { content: string } }) => Promise<{ result: Omit<Blog, T> }>
 export type PatchBlog = <T extends BlogIgnorableField = never>(req: { path: { id: number }, query?: { ignoredFields?: T[] }, body?: { content?: string, meta?: unknown } }) => Promise<{ result: Omit<Blog, T> }>
@@ -29,6 +29,20 @@ const getBlogsValidate = ajvBackend.compile({
           "type": "number",
           "default": 10
         },
+        "ignoredFields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BlogIgnorableField"
+          }
+        },
+        "sortType": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "asc"
+        },
         "content": {
           "type": "string"
         },
@@ -39,20 +53,6 @@ const getBlogsValidate = ajvBackend.compile({
             "content"
           ],
           "default": "id"
-        },
-        "sortType": {
-          "type": "string",
-          "enum": [
-            "asc",
-            "desc"
-          ],
-          "default": "asc"
-        },
-        "ignoredFields": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/BlogIgnorableField"
-          }
         },
         "ids": {
           "type": "array",

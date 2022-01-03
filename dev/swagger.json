@@ -24,6 +24,30 @@
             }
           },
           {
+            "name": "ignoredFields",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BlogIgnorableField"
+              }
+            }
+          },
+          {
+            "name": "sortType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            }
+          },
+          {
             "name": "content",
             "required": false,
             "in": "query",
@@ -42,30 +66,6 @@
                 "content"
               ],
               "default": "id"
-            }
-          },
-          {
-            "name": "sortType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "asc",
-                "desc"
-              ],
-              "default": "asc"
-            }
-          },
-          {
-            "name": "ignoredFields",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/BlogIgnorableField"
-              }
             }
           },
           {
@@ -111,14 +111,6 @@
         "operationId": "createBlog",
         "parameters": [
           {
-            "name": "content",
-            "required": true,
-            "in": "body",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "ignoredFields",
             "required": false,
             "in": "query",
@@ -127,6 +119,14 @@
               "items": {
                 "$ref": "#/definitions/BlogIgnorableField"
               }
+            }
+          },
+          {
+            "name": "content",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -156,14 +156,6 @@
         "operationId": "getBlogById",
         "parameters": [
           {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
             "name": "ignoredFields",
             "required": false,
             "in": "query",
@@ -172,6 +164,14 @@
               "items": {
                 "$ref": "#/definitions/BlogIgnorableField"
               }
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
             }
           }
         ],
@@ -197,6 +197,17 @@
         "operationId": "patchBlog",
         "parameters": [
           {
+            "name": "ignoredFields",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BlogIgnorableField"
+              }
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -217,17 +228,6 @@
             "required": false,
             "in": "body",
             "schema": {}
-          },
-          {
-            "name": "ignoredFields",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/BlogIgnorableField"
-              }
-            }
           }
         ],
         "tags": [
