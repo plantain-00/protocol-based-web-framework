@@ -2,7 +2,9 @@ import { Configuration } from 'clean-release'
 
 const config: Configuration = {
   include: [
-    'dist',
+    'dist/**/*.js',
+    'dist/**/*.d.ts',
+    'dist/index.d.ts',
     'LICENSE',
     'package.json',
     'README.md'
