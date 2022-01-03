@@ -1,20 +1,19 @@
 import * as sqlite from 'sqlite3'
 import express from 'express'
 import * as bodyParser from 'body-parser'
-import { RowFilterOptions, SqliteAccessor } from '../dist'
+import { RowFilterOptions, SqliteAccessor, HandleHttpRequest } from '../dist/nodejs'
 import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from './db-declaration'
 import { CreateBlog, DeleteBlog, GetBlogById, GetBlogs, PatchBlog, registerCreateBlog, registerDeleteBlog, registerGetBlogById, registerGetBlogs, registerPatchBlog } from './restful-api-backend-declaration'
-import { HandleHttpRequest } from '../dist/nodejs/restful-api-backend-declaration-lib'
 import { Blog, BlogIgnorableField } from './restful-api-schema'
 import { BlogSchema } from './db-schema'
 
 const sqliteAccessor = new SqliteAccessor(new sqlite.Database(':memory:'), tableSchemas)
-const insertRow: InsertRow = sqliteAccessor.insertRow
-const updateRow: UpdateRow = sqliteAccessor.updateRow
-const getRow: GetRow = sqliteAccessor.getRow
-const selectRow: SelectRow = sqliteAccessor.selectRow
-const deleteRow: DeleteRow = sqliteAccessor.deleteRow
-const countRow: CountRow = sqliteAccessor.countRow
+const insertRow: InsertRow = sqliteAccessor.insertRow.bind(sqliteAccessor)
+const updateRow: UpdateRow = sqliteAccessor.updateRow.bind(sqliteAccessor)
+const getRow: GetRow = sqliteAccessor.getRow.bind(sqliteAccessor)
+const selectRow: SelectRow = sqliteAccessor.selectRow.bind(sqliteAccessor)
+const deleteRow: DeleteRow = sqliteAccessor.deleteRow.bind(sqliteAccessor)
+const countRow: CountRow = sqliteAccessor.countRow.bind(sqliteAccessor)
 
 export async function start() {
   for (const tableName of tableNames) {

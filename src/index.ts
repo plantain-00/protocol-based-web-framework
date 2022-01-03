@@ -1,3 +1,5 @@
 export * from './db-declaration-lib'
 export * from './db-access-sqlite'
 export * from './api-access-fetch'
+export * from './restful-api-backend-declaration-lib'
+export * from './restful-api-frontend-declaration-lib'

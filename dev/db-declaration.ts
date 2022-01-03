@@ -1,4 +1,4 @@
-import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, getKeys } from "../dist"
+import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, getKeys } from "../dist/nodejs"
 import { BlogSchema, PostSchema } from "./db-schema"
 
 export type GetRow = {

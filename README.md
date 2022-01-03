@@ -151,7 +151,7 @@ export interface PostSchema {
 }
 
 // 2. generate db declaration
-`DB_SCHEMA_PATH=./db-schema OUTPUT_PATH=./dev/db-declaration.ts yarn types-as-schema ./dev/db-schema.ts --config ./node_modules/protocol-based-web-framework/dist/nodejs/generate-db-declaration.js`
+`DB_SCHEMA_PATH=./db-schema OUTPUT_PATH=./dev/db-declaration.ts types-as-schema ./dev/db-schema.ts --config ./node_modules/protocol-based-web-framework/nodejs/generate-db-declaration.js`
 
 // 3. access db sqlite
 import * as sqlite from 'sqlite3'
@@ -159,12 +159,12 @@ import { SqliteAccessor } from 'protocol-based-web-framework'
 import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from './db-declaration'
 
 const sqliteAccessor = new SqliteAccessor(new sqlite.Database(':memory:'), tableSchemas)
-const insertRow: InsertRow = sqliteAccessor.insertRow
-const updateRow: UpdateRow = sqliteAccessor.updateRow
-const getRow: GetRow = sqliteAccessor.getRow
-const selectRow: SelectRow = sqliteAccessor.selectRow
-const deleteRow: DeleteRow = sqliteAccessor.deleteRow
-const countRow: CountRow = sqliteAccessor.countRow
+const insertRow: InsertRow = sqliteAccessor.insertRow.bind(sqliteAccessor)
+const updateRow: UpdateRow = sqliteAccessor.updateRow.bind(sqliteAccessor)
+const getRow: GetRow = sqliteAccessor.getRow.bind(sqliteAccessor)
+const selectRow: SelectRow = sqliteAccessor.selectRow.bind(sqliteAccessor)
+const deleteRow: DeleteRow = sqliteAccessor.deleteRow.bind(sqliteAccessor)
+const countRow: CountRow = sqliteAccessor.countRow.bind(sqliteAccessor)
 
 for (const tableName of tableNames) {
   await sqliteAccessor.createTable(tableName)
@@ -295,11 +295,11 @@ export interface Blog extends BlogSchema {
 }
 
 // 5. generate restful api declaration
-`RESTFUL_API_SCHEMA_PATH=./restful-api-schema BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts types-as-schema ./dev/restful-api-schema.ts ./dev/db-schema.ts --swagger ./dev/swagger.json --config ./node_modules/protocol-based-web-framework/dist/nodejs/generate-restful-api-declaration.js`
+`RESTFUL_API_SCHEMA_PATH=./restful-api-schema BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts types-as-schema ./dev/restful-api-schema.ts ./dev/db-schema.ts --swagger ./dev/swagger.json --config ./node_modules/protocol-based-web-framework/nodejs/generate-restful-api-declaration.js`
 
 // 6. implement HandleHttpRequest
 import express from 'express'
-import { HandleHttpRequest } from 'protocol-based-web-framework/dist/nodejs/restful-api-backend-declaration-lib'
+import { HandleHttpRequest } from 'protocol-based-web-framework'
 const handleHttpRequest: HandleHttpRequest = (app, method, url, _tag, validate, handler) => {
   app[method](url, async (req: express.Request<{}, {}, {}>, res: express.Response<{}>) => {
     try {
@@ -440,7 +440,7 @@ app.listen(3000)
 // 10. access restful api
 import { ApiAccessorFetch } from 'protocol-based-web-framework'
 const apiAccessor = new ApiAccessorFetch(validations)
-const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI
+const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI.bind(apiAccessor)
 await requestRestfulAPI('GET', '/api/blogs', { query: { ignoredFields: ['posts', 'meta'] } })
 await requestRestfulAPI('GET', '/api/blogs/{id}', { path: { id: 1 } })
 await requestRestfulAPI('POST', '/api/blogs', { body: { content: 'test' } })

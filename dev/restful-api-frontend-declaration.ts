@@ -1,5 +1,5 @@
 import { Blog, BlogIgnorableField } from './restful-api-schema'
-import { ajv } from '../dist/nodejs/restful-api-frontend-declaration-lib'
+import { ajvFrontend } from '../dist/browser'
 
 export type RequestRestfulAPI = {
   <T extends BlogIgnorableField = never>(method: 'GET', url: `/api/blogs`, args?: { query?: { skip?: number, take?: number, content?: string, sortField?: "id" | "content", sortType?: "asc" | "desc", ignoredFields?: T[], ids?: string[] } }): Promise<{ result: Omit<Blog, T>[], count: number }>
@@ -265,34 +265,34 @@ export const validations = [
     method: 'GET',
     schema: getBlogsJsonSchema,
     omittedReferences: ['Blog'],
-    validate: ajv.compile(getBlogsJsonSchema),
+    validate: ajvFrontend.compile(getBlogsJsonSchema),
   },
   {
     url: '/api/blogs/{id}',
     method: 'GET',
     schema: getBlogByIdJsonSchema,
     omittedReferences: ['Blog'],
-    validate: ajv.compile(getBlogByIdJsonSchema),
+    validate: ajvFrontend.compile(getBlogByIdJsonSchema),
   },
   {
     url: '/api/blogs',
     method: 'POST',
     schema: createBlogJsonSchema,
     omittedReferences: ['Blog'],
-    validate: ajv.compile(createBlogJsonSchema),
+    validate: ajvFrontend.compile(createBlogJsonSchema),
   },
   {
     url: '/api/blogs/{id}',
     method: 'PATCH',
     schema: patchBlogJsonSchema,
     omittedReferences: ['Blog'],
-    validate: ajv.compile(patchBlogJsonSchema),
+    validate: ajvFrontend.compile(patchBlogJsonSchema),
   },
   {
     url: '/api/blogs/{id}',
     method: 'DELETE',
     schema: deleteBlogJsonSchema,
     omittedReferences: [],
-    validate: ajv.compile(deleteBlogJsonSchema),
+    validate: ajvFrontend.compile(deleteBlogJsonSchema),
   },
 ]

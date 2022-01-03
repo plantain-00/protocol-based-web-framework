@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 import type { Application } from 'express'
-import { ajv, HandleHttpRequest } from '../dist/nodejs/restful-api-backend-declaration-lib'
+import { ajvBackend, HandleHttpRequest } from '../dist/nodejs'
 import { Blog, BlogIgnorableField } from './restful-api-schema'
 
 export type GetBlogs = <T extends BlogIgnorableField = never>(req: { query: { skip: number, take: number, content?: string, sortField: "id" | "content", sortType: "asc" | "desc", ignoredFields?: T[], ids?: string[] } }) => Promise<{ result: Omit<Blog, T>[], count: number }>
@@ -10,7 +10,7 @@ export type CreateBlog = <T extends BlogIgnorableField = never>(req: { query?: {
 export type PatchBlog = <T extends BlogIgnorableField = never>(req: { path: { id: number }, query?: { ignoredFields?: T[] }, body?: { content?: string, meta?: unknown } }) => Promise<{ result: Omit<Blog, T> }>
 export type DeleteBlog = (req: { path: { id: number } }) => Promise<{  }>
 
-const getBlogsValidate = ajv.compile({
+const getBlogsValidate = ajvBackend.compile({
   "type": "object",
   "properties": {
     "path": {
@@ -80,7 +80,7 @@ const getBlogsValidate = ajv.compile({
     }
   }
 })
-const getBlogByIdValidate = ajv.compile({
+const getBlogByIdValidate = ajvBackend.compile({
   "type": "object",
   "properties": {
     "path": {
@@ -125,7 +125,7 @@ const getBlogByIdValidate = ajv.compile({
     }
   }
 })
-const createBlogValidate = ajv.compile({
+const createBlogValidate = ajvBackend.compile({
   "type": "object",
   "properties": {
     "path": {
@@ -170,7 +170,7 @@ const createBlogValidate = ajv.compile({
     }
   }
 })
-const patchBlogValidate = ajv.compile({
+const patchBlogValidate = ajvBackend.compile({
   "type": "object",
   "properties": {
     "path": {
@@ -220,7 +220,7 @@ const patchBlogValidate = ajv.compile({
     }
   }
 })
-const deleteBlogValidate = ajv.compile({
+const deleteBlogValidate = ajvBackend.compile({
   "type": "object",
   "properties": {
     "path": {

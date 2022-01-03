@@ -1,0 +1,24 @@
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
+module.exports = {
+  mode: 'development',
+  entry: './dev/client.ts',
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js']
+  },
+  module: {
+    rules: [
+      { test: /\.tsx?$/, loader: 'ts-loader' }
+    ]
+  },
+  plugins: [
+    new HtmlWebpackPlugin()
+  ],
+  devServer: {
+    static: './dev',
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+    port: 4000,
+  },
+}

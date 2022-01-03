@@ -193,11 +193,13 @@ export class SqliteAccessor<TableName extends string> {
 
   private get<T extends Record<string, unknown>>(sql: string, complexFields: string[], ...args: unknown[]) {
     return new Promise<T | undefined>((resolve, reject) => {
-      this.db.get(sql, args, (err, row: T) => {
+      this.db.get(sql, args, (err, row: T | undefined) => {
         if (err) {
           reject(err)
         } else {
-          this.restoreComplexFields(complexFields, row)
+          if (row) {
+            this.restoreComplexFields(complexFields, row)
+          }
           resolve(row)
         }
       })

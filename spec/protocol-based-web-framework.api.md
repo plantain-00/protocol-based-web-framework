@@ -4,8 +4,19 @@
 
 ```ts
 
+/// <reference types="node" />
+
+import Ajv from 'ajv';
+import type { Application } from 'express';
 import type { Database } from 'sqlite3';
-import type { ValidateFunction } from 'ajv';
+import type { Readable } from 'stream';
+import { ValidateFunction } from 'ajv';
+
+// @public (undocumented)
+export const ajvBackend: Ajv;
+
+// @public (undocumented)
+export const ajvFrontend: Ajv;
 
 // @public (undocumented)
 export class ApiAccessorFetch<T extends {
@@ -47,6 +58,9 @@ export class ApiAccessorFetch<T extends {
 
 // @public (undocumented)
 export const getKeys: <T>(obj: T) => (keyof T)[];
+
+// @public (undocumented)
+export type HandleHttpRequest = (app: Application, method: 'get' | 'post' | 'put' | 'patch' | 'delete', url: string, tag: string, validate: ValidateFunction, handler: (input: any) => Promise<{} | Readable>) => void;
 
 // @public (undocumented)
 export type RowFilterOptions<T> = Partial<{

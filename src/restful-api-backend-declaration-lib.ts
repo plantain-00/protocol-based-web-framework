@@ -1,11 +1,11 @@
 import Ajv, { ValidateFunction } from 'ajv'
-import { Application } from 'express'
-import { Readable } from 'stream'
+import type { Application } from 'express'
+import type { Readable } from 'stream'
 
 /**
  * @public
  */
-export const ajv = new Ajv({
+export const ajvBackend = new Ajv({
   removeAdditional: true,
   useDefaults: true,
   coerceTypes: true,

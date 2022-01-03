@@ -1,7 +1,7 @@
 import produce from 'immer'
 import qs from 'qs'
 import type { ValidateFunction } from 'ajv'
-import { ajv } from './restful-api-backend-declaration-lib'
+import { ajvFrontend } from './restful-api-frontend-declaration-lib'
 
 /**
  * @public
@@ -62,9 +62,9 @@ export class ApiAccessorFetch<T extends {
             }
           }
         )
-        ajv.validate(schemaWithoutIgnoredFields, input)
-        if (ajv.errors?.[0]?.message) {
-          throw new Error(ajv.errors[0].message)
+        ajvFrontend.validate(schemaWithoutIgnoredFields, input)
+        if (ajvFrontend.errors?.[0]?.message) {
+          throw new Error(ajvFrontend.errors[0].message)
         }
       } else {
         validation.validate(input)

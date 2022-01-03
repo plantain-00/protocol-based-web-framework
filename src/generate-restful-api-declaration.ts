@@ -238,18 +238,18 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   }
   const backendContent = `/* eslint-disable */
 
-import type { Application } from 'express'${readableReferenced ? `import { Readable } from 'stream'\n` : ''}
-import { ajv, HandleHttpRequest } from '${process.env.BACKEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework/dist/nodejs/restful-api-backend-declaration-lib'}'
+import type { Application } from 'express'${readableReferenced ? `\nimport { Readable } from 'stream'` : ''}
+import { ajvBackend, HandleHttpRequest } from '${process.env.BACKEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
 import { ${Array.from(new Set(references)).join(', ')} } from './restful-api-schema'
 
 ${backendResult.join('\n')}
 
-${requestJsonSchemas.map((s) => `const ${s.name}Validate = ajv.compile(${s.schema})`).join('\n')}
+${requestJsonSchemas.map((s) => `const ${s.name}Validate = ajvBackend.compile(${s.schema})`).join('\n')}
 
 ${registers.join('\n')}
 `
   const frontendContent = `import { ${Array.from(new Set(references)).join(', ')} } from '${process.env.RESTFUL_API_SCHEMA_PATH || '../src/restful-api-schema'}'
-import { ajv } from '${process.env.FRONTEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework/dist/nodejs/restful-api-frontend-declaration-lib'}'
+import { ajvFrontend } from '${process.env.FRONTEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
 
 export type RequestRestfulAPI = {
 ${frontendResult.join('\n')}
@@ -267,7 +267,7 @@ ${responseJsonSchemas.map((s) => `  {
     method: '${s.method.toUpperCase()}',
     schema: ${s.name}JsonSchema,
     omittedReferences: [${s.omittedReferences.map((m) => `'${m}'`).join(',')}],
-    validate: ajv.compile(${s.name}JsonSchema),
+    validate: ajvFrontend.compile(${s.name}JsonSchema),
   },`).join('\n')}
 ]
 `
