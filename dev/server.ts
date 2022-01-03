@@ -61,7 +61,7 @@ const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip,
         type: sortType,
       }
     ],
-    ignoredFields: extractDbIgnoredFields(ignoredFields),
+    ignoredFields: extractDbIgnoredFieldsFromBlogIgnoredField(ignoredFields),
     pagination: {
       take,
       skip,
@@ -76,7 +76,7 @@ const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip,
 }
 
 const getBlogById: GetBlogById = async ({ query, path: { id } }) => {
-  const blog = await getRow('blogs', { filter: { id }, ignoredFields: extractDbIgnoredFields(query?.ignoredFields) })
+  const blog = await getRow('blogs', { filter: { id }, ignoredFields: extractDbIgnoredFieldsFromBlogIgnoredField(query?.ignoredFields) })
   return {
     result: blog ? await getBlogWithoutIngoredFields(blog, query?.ignoredFields) : undefined
   }
@@ -100,7 +100,7 @@ const createBlog: CreateBlog = async ({ query, body: { content } }) => {
 
 const patchBlog: PatchBlog = async ({ path: { id }, query, body }) => {
   await updateRow('blogs', body, { filter: { id } })
-  const blog = await getRow('blogs', { filter: { id }, ignoredFields: extractDbIgnoredFields(query?.ignoredFields) })
+  const blog = await getRow('blogs', { filter: { id }, ignoredFields: extractDbIgnoredFieldsFromBlogIgnoredField(query?.ignoredFields) })
   if (!blog) {
     throw new HttpError('invalid parameter: id', 400)
   }
@@ -141,7 +141,7 @@ class HttpError extends Error {
 
 type BlogDbIgnorableField = Extract<BlogIgnorableField, keyof BlogSchema>
 
-function extractDbIgnoredFields(ignoredFields?: BlogIgnorableField[]) {
+function extractDbIgnoredFieldsFromBlogIgnoredField(ignoredFields?: BlogIgnorableField[]) {
   if (!ignoredFields) {
     return undefined
   }

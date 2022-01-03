@@ -20,5 +20,5 @@ export type HandleHttpRequest = (
   url: string,
   tag: string,
   validate: ValidateFunction,
-  handler: (input: unknown) => Promise<{} | Readable>
+  handler: (input: any) => Promise<{} | Readable>
 ) => void

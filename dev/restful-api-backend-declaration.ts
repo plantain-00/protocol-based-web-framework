@@ -1,7 +1,6 @@
 /* eslint-disable */
 
 import type { Application } from 'express'
-import { Readable } from 'stream'
 import { ajv, HandleHttpRequest } from '../dist/nodejs/restful-api-backend-declaration-lib'
 import { Blog, BlogIgnorableField } from './restful-api-schema'
 

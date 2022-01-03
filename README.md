@@ -15,7 +15,119 @@ A protocol and code generation based web framework.
 
 `yarn add protocol-based-web-framework types-as-schema`
 
-## fearures
+## features
+
+### generating swagger for restful api
+
+`./dev/swagger.json`
+
+### type safe ignorable field in db access
+
+```ts
+const blog = await selectRows('blogs', {
+  ignoredFields: ['content', 'meta'],
+})
+// blog: Omit<BlogSchema, "content" | "meta">[]
+[
+  {
+    id: 1,
+  },
+  {
+    id: 2,
+  },
+]
+```
+
+### type safe ignorable field in restful api backend access
+
+```ts
+const blog = await createBlog({
+  body: {
+    content: 'test'
+  },
+  query: {
+    ignoredFields: ['posts', 'meta'],
+  },
+})
+// blog: { result: Omit<Blog, "meta" | "posts"> }
+{
+  result: {
+    content: 'test',
+    id: 3,
+    meta: undefined,
+    posts: undefined,
+  },
+}
+```
+
+### type safe ignorable field in restful api frontend side access
+
+```ts
+const blogsResult = await requestRestfulAPI('GET', '/api/blogs', { query: { ignoredFields: ['posts', 'meta'] } })
+// blogsResult: { result: Omit<Blog, "posts" | "meta">[] count: number; }
+{
+  result: [
+    {
+      content: 'test',
+      id: 3,
+    },
+  ],
+  count: 1,
+}
+```
+
+### type safe requestRestfulAPI
+
+```ts
+await requestRestfulAPI('GET', `/api/blogs/1`)
+await requestRestfulAPI('GET', `/api/blogs/abc`) // error
+await requestRestfulAPI('GET', '/api/blogs/{id}', { path: { id: 1 } })
+await requestRestfulAPI('GET', '/api/blogs/{id}', { path: { id: 'abc' } }) // error
+```
+
+### optional query population
+
+```ts
+async function getBlogWithoutIngoredFields<T extends BlogIgnorableField = never>(
+  blog: Pick<Partial<Blog>, BlogDbIgnorableField> & Omit<BlogSchema, BlogDbIgnorableField>,
+  ignoredFields?: T[],
+) {
+  const fields: BlogIgnorableField[] | undefined = ignoredFields
+  return {
+    ...blog,
+    posts: fields?.includes('posts') ? undefined : await selectRows('posts', { filter: { blogId: blog.id } }), // ignored or populated
+    meta: fields?.includes('meta') ? undefined : blog.meta,
+  } as Omit<Blog, T>
+}
+```
+
+### filters
+
+```ts
+const blogs = await selectRows('blogs', {
+  filter: {
+    id: [1, 2],
+    content: 'www',
+  },
+  fuzzyFilter: {
+    content: 'abc',
+  },
+  rawFilter: {
+    sql: '(id = ? OR content = ?)',
+    value: [1, 'abc'],
+  },
+})
+// SELECT id, content, meta FROM blogs WHERE id IN (?, ?) AND content = ? AND content LIKE '%' || ? || '%' AND (id = ? OR content = ?)
+```
+
+### request and response validation
+
+```txt
+curl -v http://localhost:3000/api/blogs/abc
+
+HTTP/1.1 400 Bad Request
+{"message":"must be number"}
+```
 
 ## usage
 
@@ -29,7 +141,6 @@ export interface BlogSchema {
   content: string
   meta: unknown
 }
-
 /**
  * @entry posts
  */
@@ -184,7 +295,7 @@ export interface Blog extends BlogSchema {
 }
 
 // 5. generate restful api declaration
-`FRONTEND_SCHEMA_PATH=./restful-api-schema BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts BACKEND_DECLARATION_LIB_PATH=./node_modules/protocol-based-web-framework/dist/nodejs/restful-api-backend-declaration-lib FRONTEND_DECLARATION_LIB_PATH=./node_modules/protocol-based-web-framework/dist/nodejs/restful-api-frontend-declaration-lib types-as-schema ./dev/restful-api-schema.ts ./dev/db-schema.ts --swagger ./dev/swagger.json --config ./node_modules/protocol-based-web-framework/dist/nodejs/generate-restful-api-declaration.js`
+`RESTFUL_API_SCHEMA_PATH=./restful-api-schema BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts types-as-schema ./dev/restful-api-schema.ts ./dev/db-schema.ts --swagger ./dev/swagger.json --config ./node_modules/protocol-based-web-framework/dist/nodejs/generate-restful-api-declaration.js`
 
 // 6. implement HandleHttpRequest
 import express from 'express'
@@ -229,7 +340,7 @@ const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip,
         type: sortType,
       }
     ],
-    ignoredFields: extractDbIgnoredFields(ignoredFields),
+    ignoredFields: extractDbIgnoredFieldsFromBlogIgnoredField(ignoredFields),
     pagination: {
       take,
       skip,
@@ -243,7 +354,7 @@ const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip,
   }
 }
 const getBlogById: GetBlogById = async ({ query, path: { id } }) => {
-  const blog = await getRow('blogs', { filter: { id }, ignoredFields: extractDbIgnoredFields(query?.ignoredFields) })
+  const blog = await getRow('blogs', { filter: { id }, ignoredFields: extractDbIgnoredFieldsFromBlogIgnoredField(query?.ignoredFields) })
   return {
     result: blog ? await getBlogWithoutIngoredFields(blog, query?.ignoredFields) : undefined
   }
@@ -265,7 +376,7 @@ const createBlog: CreateBlog = async ({ query, body: { content } }) => {
 }
 const patchBlog: PatchBlog = async ({ path: { id }, query, body }) => {
   await updateRow('blogs', body, { filter: { id } })
-  const blog = await getRow('blogs', { filter: { id }, ignoredFields: extractDbIgnoredFields(query?.ignoredFields) })
+  const blog = await getRow('blogs', { filter: { id }, ignoredFields: extractDbIgnoredFieldsFromBlogIgnoredField(query?.ignoredFields) })
   if (!blog) {
     throw new HttpError('invalid parameter: id', 400)
   }
@@ -278,7 +389,7 @@ const deleteBlog: DeleteBlog = async ({ path: { id } }) => {
   return {}
 }
 type BlogDbIgnorableField = Extract<BlogIgnorableField, keyof BlogSchema>
-function extractDbIgnoredFields(ignoredFields?: BlogIgnorableField[]) {
+function extractDbIgnoredFieldsFromBlogIgnoredField(ignoredFields?: BlogIgnorableField[]) {
   if (!ignoredFields) {
     return undefined
   }
@@ -326,101 +437,13 @@ registerPatchBlog(app, handleHttpRequest, patchBlog)
 registerDeleteBlog(app, handleHttpRequest, deleteBlog)
 app.listen(3000)
 
-// 10. frontend implement RequestRestfulAPI
-import produce from 'immer'
-import qs from 'qs'
-import { ajv } from "protocol-based-web-framework/dist/browser/restful-api-frontend-declaration-lib"
-import { RequestRestfulAPI, validations } from "./restful-api-frontend-declaration"
-const composeUrl = (
-  url: string,
-  args?: { path?: { [key: string]: string | number }, query?: {} }
-) => {
-  if (args?.path) {
-    for (const key in args.path) {
-      url = url.replace(`{${key}}`, args.path[key].toString())
-    }
-  }
-  if (args?.query) {
-    url += '?' + qs.stringify(args.query, {
-      arrayFormat: 'brackets',
-    })
-  }
-  return url
-}
-function validateByJsonSchema(
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
-  url: string,
-  ignoredFields: string[] | undefined,
-  input: unknown,
-) {
-  const validation = validations.find((v) => v.method === method && v.url === url)
-  if (validation) {
-    if (ignoredFields && ignoredFields.length > 0) {
-      const schemaWithoutIgnoredFields = produce(
-        validation.schema as {
-          definitions: {
-            [key: string]: {
-              properties: { [key: string]: unknown }
-              required?: string[]
-            }
-          }
-        },
-        (draft) => {
-          for (const omittedReference of validation.omittedReferences) {
-            for (const ignoredField of ignoredFields) {
-              delete draft.definitions[omittedReference].properties[ignoredField]
-            }
-            const required = draft.definitions[omittedReference].required
-            if (required) {
-              draft.definitions[omittedReference].required = required.filter((r) => !ignoredFields.includes(r))
-            }
-          }
-        }
-      )
-      ajv.validate(schemaWithoutIgnoredFields, input)
-      if (ajv.errors?.[0]?.message) {
-        throw new Error(ajv.errors[0].message)
-      }
-    } else {
-      validation.validate(input)
-      if (validation.validate.errors?.[0]?.message) {
-        throw new Error(validation.validate.errors[0].message)
-      }
-    }
-  }
-}
-const requestRestfulAPI: RequestRestfulAPI = async (
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
-  url: string,
-  args?: {
-    path?: { [key: string]: string | number },
-    query?: { ignoredFields?: string[], attachmentFileName?: string },
-    body?: {}
-  }
-) => {
-  const composedUrl = composeUrl(url, args)
-  let body: BodyInit | undefined
-  let headers: HeadersInit | undefined
-  if (args?.body) {
-    body = JSON.stringify(args.body)
-    headers = { 'content-type': 'application/json' }
-  }
-  const result = await fetch(
-    composedUrl,
-    {
-      method,
-      body,
-      headers,
-    })
-  const contentType = result.headers.get('content-type')
-  if (contentType && contentType.includes('application/json')) {
-    const json = await result.json()
-    validateByJsonSchema(method, url, args?.query?.ignoredFields, json)
-    return json
-  }
-  return result.blob()
-}
-
-// 11. frontend request api
-requestRestfulAPI('GET', '/api/blogs/{id}', { path: { id: 1 } })
+// 10. access restful api
+import { ApiAccessorFetch } from 'protocol-based-web-framework'
+const apiAccessor = new ApiAccessorFetch(validations)
+const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI
+await requestRestfulAPI('GET', '/api/blogs', { query: { ignoredFields: ['posts', 'meta'] } })
+await requestRestfulAPI('GET', '/api/blogs/{id}', { path: { id: 1 } })
+await requestRestfulAPI('POST', '/api/blogs', { body: { content: 'test' } })
+await requestRestfulAPI('PATCH', '/api/blogs/1', { body: { content: 'test222' } })
+await requestRestfulAPI('DELETE', '/api/blogs/2')
 ```

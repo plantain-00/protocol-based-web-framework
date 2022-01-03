@@ -8,7 +8,26 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   const requestJsonSchemas: Array<{ name: string, schema: string }> = []
   const responseJsonSchemas: Array<{ name: string, url: string, method: string, schema: string, omittedReferences: string[] }> = []
   const registers: string[] = []
+  let readableReferenced = false
   const definitions = getAllDefinitions({ declarations: typeDeclarations, looseMode: true })
+
+  function getParam(type: typeof allTypes[number], parameter: FunctionParameter[], backend?: boolean) {
+    const optional = parameter.every((q) => q.optional) ? '?' : ''
+    return {
+      optional: parameter.every((q) => q.optional),
+      value: `${type}${optional}: { ${parameter.map((q) => {
+        if (q.name === 'ignoredFields' && q.type.kind === 'array' && q.type.type.kind === 'reference') {
+          return 'ignoredFields?: T[]'
+        }
+        if (backend && q.type.kind === 'file') {
+          readableReferenced = true
+          return `${q.name}${q.optional ? '?' : ''}: Readable`
+        }
+        return generateTypescriptOfFunctionParameter(q)
+      }).join(', ')} }`
+    }
+  }
+
   for (const declaration of typeDeclarations) {
     if (declaration.kind === 'function' && declaration.method && declaration.path && declaration.tags && declaration.tags.length > 0) {
       // register
@@ -176,6 +195,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       if (declaration.type.kind === 'file') {
         returnType = 'Readable'
         frontendReturnType = 'Blob'
+        readableReferenced = true
       } else {
         returnType = generateTypescriptOfType(declaration.type, (child) => {
           if (child.kind === 'reference') {
@@ -218,9 +238,8 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   }
   const backendContent = `/* eslint-disable */
 
-import type { Application } from 'express'
-import { Readable } from 'stream'
-import { ajv, HandleHttpRequest } from '${process.env.BACKEND_DECLARATION_LIB_PATH || './restful-api-declaration-lib'}'
+import type { Application } from 'express'${readableReferenced ? `import { Readable } from 'stream'\n` : ''}
+import { ajv, HandleHttpRequest } from '${process.env.BACKEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework/dist/nodejs/restful-api-backend-declaration-lib'}'
 import { ${Array.from(new Set(references)).join(', ')} } from './restful-api-schema'
 
 ${backendResult.join('\n')}
@@ -229,8 +248,8 @@ ${requestJsonSchemas.map((s) => `const ${s.name}Validate = ajv.compile(${s.schem
 
 ${registers.join('\n')}
 `
-  const frontendContent = `import { ${Array.from(new Set(references)).join(', ')} } from '${process.env.FRONTEND_SCHEMA_PATH || '../src/restful-api-schema'}'
-import { ajv } from '${process.env.FRONTEND_DECLARATION_LIB_PATH || './restful-api-declaration-lib'}'
+  const frontendContent = `import { ${Array.from(new Set(references)).join(', ')} } from '${process.env.RESTFUL_API_SCHEMA_PATH || '../src/restful-api-schema'}'
+import { ajv } from '${process.env.FRONTEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework/dist/nodejs/restful-api-frontend-declaration-lib'}'
 
 export type RequestRestfulAPI = {
 ${frontendResult.join('\n')}
@@ -265,19 +284,3 @@ ${responseJsonSchemas.map((s) => `  {
 }
 
 const allTypes = ['path', 'query', 'body'] as const
-
-function getParam(type: typeof allTypes[number], parameter: FunctionParameter[], backend?: boolean) {
-  const optional = parameter.every((q) => q.optional) ? '?' : ''
-  return {
-    optional: parameter.every((q) => q.optional),
-    value: `${type}${optional}: { ${parameter.map((q) => {
-      if (q.name === 'ignoredFields' && q.type.kind === 'array' && q.type.type.kind === 'reference') {
-        return 'ignoredFields?: T[]'
-      }
-      if (backend && q.type.kind === 'file') {
-        return `${q.name}${q.optional ? '?' : ''}: Readable`
-      }
-      return generateTypescriptOfFunctionParameter(q)
-    }).join(', ')} }`
-  }
-}

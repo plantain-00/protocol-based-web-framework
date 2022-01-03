@@ -5,6 +5,45 @@
 ```ts
 
 import type { Database } from 'sqlite3';
+import type { ValidateFunction } from 'ajv';
+
+// @public (undocumented)
+export class ApiAccessorFetch<T extends {
+    method: string;
+    url: string;
+    schema: {
+        definitions: {
+            [key: string]: {
+                properties: {
+                    [key: string]: unknown;
+                };
+                required?: string[];
+            };
+        };
+    };
+    omittedReferences: string[];
+    validate: ValidateFunction;
+}> {
+    constructor(validations: T[]);
+    // (undocumented)
+    composeUrl(url: string, args?: {
+        path?: {
+            [key: string]: string | number;
+        };
+        query?: {};
+    }): string;
+    // (undocumented)
+    requestRestfulAPI(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, args?: {
+        path?: {
+            [key: string]: string | number;
+        };
+        query?: {
+            ignoredFields?: string[];
+            attachmentFileName?: string;
+        };
+        body?: {};
+    }): Promise<any>;
+}
 
 // @public (undocumented)
 export const getKeys: <T>(obj: T) => (keyof T)[];
