@@ -12,7 +12,8 @@ export class ApiAccessorFetch<T extends {
   schema: {
     definitions: {
       [key: string]: {
-        properties: { [key: string]: unknown }
+        $ref?: string
+        properties?: { [key: string]: unknown }
         required?: string[]
       }
     }
@@ -53,7 +54,7 @@ export class ApiAccessorFetch<T extends {
           (draft) => {
             for (const omittedReference of validation.omittedReferences) {
               for (const ignoredField of ignoredFields) {
-                delete draft.definitions[omittedReference].properties[ignoredField]
+                delete draft.definitions[omittedReference].properties?.[ignoredField]
               }
               const required = draft.definitions[omittedReference].required
               if (required) {
