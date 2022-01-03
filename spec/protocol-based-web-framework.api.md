@@ -25,7 +25,8 @@ export class ApiAccessorFetch<T extends {
     schema: {
         definitions: {
             [key: string]: {
-                properties: {
+                $ref?: string;
+                properties?: {
                     [key: string]: unknown;
                 };
                 required?: string[];
