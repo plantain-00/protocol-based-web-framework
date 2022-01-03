@@ -24,6 +24,7 @@
   "devDependencies": {
     "@microsoft/api-extractor": "7.19.3",
     "@types/express": "4.17.13",
+    "@types/multer": "1.4.7",
     "@types/sqlite3": "3.1.8",
     "@typescript-eslint/eslint-plugin": "5.8.1",
     "@typescript-eslint/parser": "5.8.1",
@@ -60,6 +61,6 @@
     "registry": "https://registry.npmjs.org/"
   },
   "typeCoverage": {
-    "atLeast": 99.81
+    "atLeast": 99.7
   }
 }

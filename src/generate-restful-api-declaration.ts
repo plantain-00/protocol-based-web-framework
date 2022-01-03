@@ -38,7 +38,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
         }
       }
       const interfaceName = declaration.name[0].toUpperCase() + declaration.name.substring(1)
-      registers.push(`export const register${interfaceName} = (app: Application, handleHttpRequest: HandleHttpRequest, handler: ${interfaceName}) => handleHttpRequest(app, '${declaration.method}', '${path}', '${declaration.tags[0]}', ${declaration.name}Validate, handler)`)
+      registers.push(`export const register${interfaceName} = (app: Application, handleHttpRequest: HandleHttpRequest, handler: ${interfaceName}) => handleHttpRequest(app, '${declaration.method}', '${path}', [${declaration.tags.map((t) => JSON.stringify(t)).join(', ')}], ${declaration.name}Validate, handler)`)
 
       // json schema
       const requestMergedDefinitions: { [name: string]: Definition } = {}

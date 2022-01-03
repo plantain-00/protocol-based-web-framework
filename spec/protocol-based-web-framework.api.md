@@ -5,11 +5,15 @@
 ```ts
 
 /// <reference types="node" />
+/// <reference types="qs" />
 
 import Ajv from 'ajv';
 import type { Application } from 'express';
 import type { Database } from 'sqlite3';
+import { ParsedQs } from 'qs';
 import type { Readable } from 'stream';
+import type { Request as Request_2 } from 'express';
+import type { Response as Response_2 } from 'express';
 import { ValidateFunction } from 'ajv';
 
 // @public (undocumented)
@@ -38,30 +42,42 @@ export class ApiAccessorFetch<T extends {
 }> {
     constructor(validations: T[]);
     // (undocumented)
-    composeUrl(url: string, args?: {
+    composeUrl: (url: string, args?: {
         path?: {
             [key: string]: string | number;
-        };
-        query?: {};
-    }): string;
+        } | undefined;
+        query?: {} | undefined;
+    } | undefined) => string;
     // (undocumented)
-    requestRestfulAPI(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, args?: {
+    requestRestfulAPI: (method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, args?: {
         path?: {
             [key: string]: string | number;
-        };
+        } | undefined;
         query?: {
-            ignoredFields?: string[];
-            attachmentFileName?: string;
-        };
-        body?: {};
-    }): Promise<any>;
+            ignoredFields?: string[] | undefined;
+            attachmentFileName?: string | undefined;
+        } | undefined;
+        body?: {} | undefined;
+    } | undefined) => Promise<any>;
 }
+
+// @public (undocumented)
+export function getAndValidateRequestInput(req: Request_2<{}, {}, {}>, validate: ValidateFunction<unknown>): string | {
+    path: {};
+    query: ParsedQs;
+    body: {
+        [key: string]: unknown;
+    };
+};
 
 // @public (undocumented)
 export const getKeys: <T>(obj: T) => (keyof T)[];
 
 // @public (undocumented)
-export type HandleHttpRequest = (app: Application, method: 'get' | 'post' | 'put' | 'patch' | 'delete', url: string, tag: string, validate: ValidateFunction, handler: (input: any) => Promise<{} | Readable>) => void;
+export type HandleHttpRequest = (app: Application, method: 'get' | 'post' | 'put' | 'patch' | 'delete', url: string, tags: string[], validate: ValidateFunction, handler: (input: any) => Promise<{} | Readable>) => void;
+
+// @public (undocumented)
+export function respondHandleResult(result: {} | Readable, req: Request_2<{}, {}, {}>, res: Response_2<{}>): void;
 
 // @public (undocumented)
 export type RowFilterOptions<T> = Partial<{
@@ -101,19 +117,40 @@ export class SqliteAccessor<TableName extends string> {
         complexFields: string[];
     }>);
     // (undocumented)
-    countRow<T>(tableName: TableName, options?: RowFilterOptions<T>): Promise<number>;
+    countRow: <T>(tableName: TableName, options?: Partial<{
+        filter: { [P in keyof T]?: T[P] | readonly T[P][] | undefined; };
+        fuzzyFilter: { [P_1 in keyof T]?: T[P_1] | readonly T[P_1][] | undefined; };
+        rawFilter: {
+            sql: string;
+            value: unknown[];
+        };
+    }> | undefined) => Promise<number>;
     // (undocumented)
-    createTable(tableName: TableName): Promise<void>;
+    createTable: (tableName: TableName) => Promise<void>;
     // (undocumented)
-    deleteRow<T>(tableName: TableName, options?: RowFilterOptions<T>): Promise<void>;
+    deleteRow: <T>(tableName: TableName, options?: Partial<{
+        filter: { [P in keyof T]?: T[P] | readonly T[P][] | undefined; };
+        fuzzyFilter: { [P_1 in keyof T]?: T[P_1] | readonly T[P_1][] | undefined; };
+        rawFilter: {
+            sql: string;
+            value: unknown[];
+        };
+    }> | undefined) => Promise<void>;
     // (undocumented)
-    getRow<T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOneOptions<T>): Promise<T | undefined>;
+    getRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOneOptions<T> | undefined) => Promise<T | undefined>;
     // (undocumented)
-    insertRow<T extends Record<string, unknown>>(tableName: TableName, value: T): Promise<T>;
+    insertRow: <T extends Record<string, unknown>>(tableName: TableName, value: T) => Promise<T>;
     // (undocumented)
-    selectRow<T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOptions<T>): Promise<T[]>;
+    selectRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOptions<T> | undefined) => Promise<T[]>;
     // (undocumented)
-    updateRow<T extends Record<string, unknown>>(tableName: TableName, value?: T, options?: RowFilterOptions<T>): Promise<void>;
+    updateRow: <T extends Record<string, unknown>>(tableName: TableName, value?: T | undefined, options?: Partial<{
+        filter: { [P in keyof T]?: T[P] | readonly T[P][] | undefined; };
+        fuzzyFilter: { [P_1 in keyof T]?: T[P_1] | readonly T[P_1][] | undefined; };
+        rawFilter: {
+            sql: string;
+            value: unknown[];
+        };
+    }> | undefined) => Promise<void>;
 }
 
 // (No @packageDocumentation comment for this package)

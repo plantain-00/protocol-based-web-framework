@@ -159,12 +159,12 @@ import { SqliteAccessor } from 'protocol-based-web-framework'
 import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from './db-declaration'
 
 const sqliteAccessor = new SqliteAccessor(new sqlite.Database(':memory:'), tableSchemas)
-const insertRow: InsertRow = sqliteAccessor.insertRow.bind(sqliteAccessor)
-const updateRow: UpdateRow = sqliteAccessor.updateRow.bind(sqliteAccessor)
-const getRow: GetRow = sqliteAccessor.getRow.bind(sqliteAccessor)
-const selectRow: SelectRow = sqliteAccessor.selectRow.bind(sqliteAccessor)
-const deleteRow: DeleteRow = sqliteAccessor.deleteRow.bind(sqliteAccessor)
-const countRow: CountRow = sqliteAccessor.countRow.bind(sqliteAccessor)
+const insertRow: InsertRow = sqliteAccessor.insertRow
+const updateRow: UpdateRow = sqliteAccessor.updateRow
+const getRow: GetRow = sqliteAccessor.getRow
+const selectRow: SelectRow = sqliteAccessor.selectRow
+const deleteRow: DeleteRow = sqliteAccessor.deleteRow
+const countRow: CountRow = sqliteAccessor.countRow
 
 for (const tableName of tableNames) {
   await sqliteAccessor.createTable(tableName)
@@ -299,18 +299,16 @@ export interface Blog extends BlogSchema {
 
 // 6. implement HandleHttpRequest
 import express from 'express'
-import { HandleHttpRequest } from 'protocol-based-web-framework'
-const handleHttpRequest: HandleHttpRequest = (app, method, url, _tag, validate, handler) => {
+import { HandleHttpRequest, getAndValidateRequestInput, respondHandleResult } from 'protocol-based-web-framework'
+const handleHttpRequest: HandleHttpRequest = (app, method, url, tags, validate, handler) => {
   app[method](url, async (req: express.Request<{}, {}, {}>, res: express.Response<{}>) => {
     try {
-      const body: { [key: string]: unknown } = req.body
-      const input = { path: req.params, query: req.query, body }
-      const valid = validate(input)
-      if (!valid && validate.errors?.[0]?.message) {
-        throw new HttpError(validate.errors[0].message, 400)
+      const input = getAndValidateRequestInput(req, validate)
+      if (typeof input === 'string') {
+        throw new HttpError(input, 400)
       }
       const result = await handler(input)
-      res.json(result)
+      respondHandleResult(result, req, res)
     } catch (error: unknown) {
       const statusCode = error instanceof HttpError ? error.statusCode : 500
       const message = error instanceof Error ? error.message : error
@@ -440,7 +438,7 @@ app.listen(3000)
 // 10. access restful api
 import { ApiAccessorFetch } from 'protocol-based-web-framework'
 const apiAccessor = new ApiAccessorFetch(validations)
-const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI.bind(apiAccessor)
+const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI
 await requestRestfulAPI('GET', '/api/blogs', { query: { ignoredFields: ['posts', 'meta'] } })
 await requestRestfulAPI('GET', '/api/blogs/{id}', { path: { id: 1 } })
 await requestRestfulAPI('POST', '/api/blogs', { body: { content: 'test' } })

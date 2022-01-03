@@ -23,10 +23,10 @@ export class ApiAccessorFetch<T extends {
 }> {
   constructor(private validations: T[]) { }
 
-  public composeUrl(
+  public composeUrl = (
     url: string,
     args?: { path?: { [key: string]: string | number }, query?: {} }
-  ) {
+  ) => {
     if (args?.path) {
       for (const key in args.path) {
         url = url.replace(`{${key}}`, args.path[key].toString())
@@ -40,12 +40,12 @@ export class ApiAccessorFetch<T extends {
     return url
   }
 
-  private validateByJsonSchema(
+  private validateByJsonSchema = (
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     url: string,
     ignoredFields: string[] | undefined,
     input: unknown,
-  ) {
+  ) => {
     const validation = this.validations.find((v) => v.method === method && v.url === url)
     if (validation) {
       if (ignoredFields && ignoredFields.length > 0) {
@@ -76,7 +76,7 @@ export class ApiAccessorFetch<T extends {
     }
   }
 
-  public async requestRestfulAPI(
+  public requestRestfulAPI = async (
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     url: string,
     args?: {
@@ -84,7 +84,7 @@ export class ApiAccessorFetch<T extends {
       query?: { ignoredFields?: string[], attachmentFileName?: string },
       body?: {}
     }
-  ) {
+  ) => {
     const composedUrl = this.composeUrl(url, args)
     let body: BodyInit | undefined
     let headers: HeadersInit | undefined

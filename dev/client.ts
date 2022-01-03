@@ -3,7 +3,7 @@ import { ApiAccessorFetch } from '../dist/browser'
 
 const apiAccessor = new ApiAccessorFetch(validations)
 
-const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI.bind(apiAccessor)
+const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI
 
 async function start() {
   await requestRestfulAPI('GET', '/api/blogs', { query: { ignoredFields: ['posts', 'meta'] } })
