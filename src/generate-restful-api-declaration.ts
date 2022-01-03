@@ -132,9 +132,9 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
           } else if (type === 'path') {
             getRequestApiUrlPathParam.push(getParam(type, parameter))
           }
-          if (type !== 'path') {
+          if (type === 'query' || type === 'body') {
             frontendParams.push(getParam(type, parameter))
-          } else {
+          } else if (type === 'path') {
             frontendPathParams.push(getParam(type, parameter))
           }
           parameter.forEach((q) => {
@@ -284,4 +284,4 @@ ${responseJsonSchemas.map((s) => `  {
   ]
 }
 
-const allTypes = ['path', 'query', 'body'] as const
+const allTypes = ['path', 'query', 'body', 'cookie'] as const

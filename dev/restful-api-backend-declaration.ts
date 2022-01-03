@@ -4,11 +4,11 @@ import type { Application } from 'express'
 import { ajvBackend, HandleHttpRequest } from '../dist/nodejs'
 import { Blog, BlogIgnorableField } from './restful-api-schema'
 
-export type GetBlogs = <T extends BlogIgnorableField = never>(req: { query: { skip: number, take: number, ignoredFields?: T[], sortType: "asc" | "desc", content?: string, sortField: "id" | "content", ids?: string[] } }) => Promise<{ result: Omit<Blog, T>[], count: number }>
-export type GetBlogById = <T extends BlogIgnorableField = never>(req: { path: { id: number }, query?: { ignoredFields?: T[] } }) => Promise<{ result?: Omit<Blog, T> }>
-export type CreateBlog = <T extends BlogIgnorableField = never>(req: { query?: { ignoredFields?: T[] }, body: { content: string } }) => Promise<{ result: Omit<Blog, T> }>
-export type PatchBlog = <T extends BlogIgnorableField = never>(req: { path: { id: number }, query?: { ignoredFields?: T[] }, body?: { content?: string, meta?: unknown } }) => Promise<{ result: Omit<Blog, T> }>
-export type DeleteBlog = (req: { path: { id: number } }) => Promise<{  }>
+export type GetBlogs = <T extends BlogIgnorableField = never>(req: { query: { skip: number, take: number, ignoredFields?: T[], sortType: "asc" | "desc", content?: string, sortField: "id" | "content", ids?: string[] }, cookie: { myUserId: number } }) => Promise<{ result: Omit<Blog, T>[], count: number }>
+export type GetBlogById = <T extends BlogIgnorableField = never>(req: { path: { id: number }, query?: { ignoredFields?: T[] }, cookie: { myUserId: number } }) => Promise<{ result?: Omit<Blog, T> }>
+export type CreateBlog = <T extends BlogIgnorableField = never>(req: { query?: { ignoredFields?: T[] }, body: { content: string }, cookie: { myUserId: number } }) => Promise<{ result: Omit<Blog, T> }>
+export type PatchBlog = <T extends BlogIgnorableField = never>(req: { path: { id: number }, query?: { ignoredFields?: T[] }, body?: { content?: string, meta?: unknown }, cookie: { myUserId: number } }) => Promise<{ result: Omit<Blog, T> }>
+export type DeleteBlog = (req: { path: { id: number }, cookie: { myUserId: number } }) => Promise<{  }>
 
 const getBlogsValidate = ajvBackend.compile({
   "type": "object",
@@ -67,9 +67,22 @@ const getBlogsValidate = ajvBackend.compile({
       "type": "object",
       "properties": {},
       "required": []
+    },
+    "cookie": {
+      "type": "object",
+      "properties": {
+        "myUserId": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "myUserId"
+      ]
     }
   },
-  "required": [],
+  "required": [
+    "cookie"
+  ],
   "definitions": {
     "BlogIgnorableField": {
       "type": "string",
@@ -110,10 +123,22 @@ const getBlogByIdValidate = ajvBackend.compile({
       "type": "object",
       "properties": {},
       "required": []
+    },
+    "cookie": {
+      "type": "object",
+      "properties": {
+        "myUserId": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "myUserId"
+      ]
     }
   },
   "required": [
-    "path"
+    "path",
+    "cookie"
   ],
   "definitions": {
     "BlogIgnorableField": {
@@ -155,10 +180,22 @@ const createBlogValidate = ajvBackend.compile({
       "required": [
         "content"
       ]
+    },
+    "cookie": {
+      "type": "object",
+      "properties": {
+        "myUserId": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "myUserId"
+      ]
     }
   },
   "required": [
-    "body"
+    "body",
+    "cookie"
   ],
   "definitions": {
     "BlogIgnorableField": {
@@ -205,10 +242,22 @@ const patchBlogValidate = ajvBackend.compile({
         "meta": {}
       },
       "required": []
+    },
+    "cookie": {
+      "type": "object",
+      "properties": {
+        "myUserId": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "myUserId"
+      ]
     }
   },
   "required": [
-    "path"
+    "path",
+    "cookie"
   ],
   "definitions": {
     "BlogIgnorableField": {
@@ -243,10 +292,22 @@ const deleteBlogValidate = ajvBackend.compile({
       "type": "object",
       "properties": {},
       "required": []
+    },
+    "cookie": {
+      "type": "object",
+      "properties": {
+        "myUserId": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "myUserId"
+      ]
     }
   },
   "required": [
-    "path"
+    "path",
+    "cookie"
   ],
   "definitions": {}
 })

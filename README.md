@@ -196,13 +196,14 @@ import { BlogSchema, PostSchema } from "./db-schema"
  */
 declare function getBlogs(
   query: PaginationFields & BlogIgnoredField & SortTypeField & {
-    content?: string,
+    content?: string
     /**
      * @default id
      */
-    sortField?: 'id' | 'content',
-    ids?: string[],
+    sortField?: 'id' | 'content'
+    ids?: string[]
   },
+  cookie: MyUserIdField,
 ): Promise<{ result: Blog[], count: number }>
 
 /**
@@ -213,6 +214,7 @@ declare function getBlogs(
 declare function getBlogById(
   query: BlogIgnoredField,
   path: IdField,
+  cookie: MyUserIdField,
 ): Promise<{ result?: Blog }>
 
 /**
@@ -223,8 +225,9 @@ declare function getBlogById(
 declare function createBlog(
   query: BlogIgnoredField,
   body: {
-    content: string,
+    content: string
   },
+  cookie: MyUserIdField,
 ): Promise<{ result: Blog }>
 
 /**
@@ -236,9 +239,10 @@ declare function patchBlog(
   query: BlogIgnoredField,
   path: IdField,
   body: {
-    content?: string,
-    meta?: unknown,
+    content?: string
+    meta?: unknown
   },
+  cookie: MyUserIdField,
 ): Promise<{ result: Blog }>
 
 /**
@@ -248,6 +252,7 @@ declare function patchBlog(
  */
 declare function deleteBlog(
   path: IdField,
+  cookie: MyUserIdField,
 ): Promise<{}>
 
 export type BlogIgnorableField = 'posts' | 'meta'
@@ -260,26 +265,30 @@ interface PaginationFields {
   /**
    * @default 0
    */
-  skip?: number,
+  skip?: number
   /**
    * @default 10
    */
-  take?: number,
+  take?: number
 }
 
 interface SortTypeField {
   /**
    * @default asc
    */
-  sortType?: 'asc' | 'desc',
+  sortType?: 'asc' | 'desc'
 }
 
 interface IdField {
-  id: number,
+  id: number
 }
 
 interface BlogIgnoredField {
-  ignoredFields?: BlogIgnorableField[],
+  ignoredFields?: BlogIgnorableField[]
+}
+
+interface MyUserIdField {
+  myUserId: number
 }
 
 // 5. generate restful api declaration
@@ -388,12 +397,13 @@ t.snapshot(blog)
 // 8. backend implement HandleHttpRequest and register restful api
 import express from 'express'
 import * as bodyParser from 'body-parser'
+import cookieParser from 'cookie-parser'
 import { HandleHttpRequest, getAndValidateRequestInput, respondHandleResult } from 'protocol-based-web-framework'
 import { registerCreateBlog, registerDeleteBlog, registerGetBlogById, registerGetBlogs, registerPatchBlog } from './restful-api-backend-declaration'
 const handleHttpRequest: HandleHttpRequest = (app, method, url, tags, validate, handler) => {
   app[method](url, async (req: express.Request<{}, {}, {}>, res: express.Response<{}>) => {
     try {
-      const input = getAndValidateRequestInput(req, validate)
+      const input = getAndValidateRequestInput(req, validate, { myUserId: req.cookies.sid })
       if (typeof input === 'string') {
         throw new HttpError(input, 400)
       }
@@ -413,6 +423,7 @@ class HttpError extends Error {
 }
 const app = express()
 app.use(bodyParser.json())
+app.use(cookieParser())
 registerGetBlogs(app, handleHttpRequest, getBlogs)
 registerGetBlogById(app, handleHttpRequest, getBlogById)
 registerCreateBlog(app, handleHttpRequest, createBlog)

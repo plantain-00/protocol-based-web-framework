@@ -62,12 +62,13 @@ export class ApiAccessorFetch<T extends {
 }
 
 // @public (undocumented)
-export function getAndValidateRequestInput(req: Request_2<{}, {}, {}>, validate: ValidateFunction<unknown>): string | {
+export function getAndValidateRequestInput(req: Request_2<{}, {}, {}>, validate: ValidateFunction<unknown>, cookie?: unknown): string | {
     path: {};
     query: ParsedQs;
     body: {
         [key: string]: unknown;
     };
+    cookie: unknown;
 };
 
 // @public (undocumented)

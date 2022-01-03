@@ -78,6 +78,14 @@
                 "type": "string"
               }
             }
+          },
+          {
+            "name": "myUserId",
+            "required": true,
+            "in": "cookie",
+            "schema": {
+              "type": "number"
+            }
           }
         ],
         "tags": [
@@ -128,6 +136,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "myUserId",
+            "required": true,
+            "in": "cookie",
+            "schema": {
+              "type": "number"
+            }
           }
         ],
         "tags": [
@@ -170,6 +186,14 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "myUserId",
+            "required": true,
+            "in": "cookie",
             "schema": {
               "type": "number"
             }
@@ -228,6 +252,14 @@
             "required": false,
             "in": "body",
             "schema": {}
+          },
+          {
+            "name": "myUserId",
+            "required": true,
+            "in": "cookie",
+            "schema": {
+              "type": "number"
+            }
           }
         ],
         "tags": [
@@ -257,6 +289,14 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "myUserId",
+            "required": true,
+            "in": "cookie",
             "schema": {
               "type": "number"
             }

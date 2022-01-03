@@ -1,6 +1,7 @@
 import * as sqlite from 'sqlite3'
 import express from 'express'
 import * as bodyParser from 'body-parser'
+import cookieParser from 'cookie-parser'
 import { RowFilterOptions, SqliteAccessor, HandleHttpRequest, getAndValidateRequestInput, respondHandleResult } from '../dist/nodejs'
 import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from './db-declaration'
 import { CreateBlog, DeleteBlog, GetBlogById, GetBlogs, PatchBlog, registerCreateBlog, registerDeleteBlog, registerGetBlogById, registerGetBlogs, registerPatchBlog } from './restful-api-backend-declaration'
@@ -38,6 +39,7 @@ export async function start() {
 
   const app = express()
   app.use(bodyParser.json())
+  app.use(cookieParser())
   registerGetBlogs(app, handleHttpRequest, getBlogs)
   registerGetBlogById(app, handleHttpRequest, getBlogById)
   registerCreateBlog(app, handleHttpRequest, createBlog)
@@ -116,7 +118,7 @@ const deleteBlog: DeleteBlog = async ({ path: { id } }) => {
 const handleHttpRequest: HandleHttpRequest = (app, method, url, tags, validate, handler) => {
   app[method](url, async (req: express.Request<{}, {}, {}>, res: express.Response<{}>) => {
     try {
-      const input = getAndValidateRequestInput(req, validate)
+      const input = getAndValidateRequestInput(req, validate, { myUserId: req.cookies.sid })
       if (typeof input === 'string') {
         throw new HttpError(input, 400)
       }
