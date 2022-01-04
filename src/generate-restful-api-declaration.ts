@@ -69,20 +69,22 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       const members: Member[] = []
       for (const type of allTypes) {
         const params = declarationParameters.filter((d) => d.in === type)
-        members.push({
-          name: type,
-          type: {
-            kind: 'object',
-            members: params,
-            minProperties: params.filter((p) => !p.optional).length,
-            position: {
-              file: '',
-              line: 0,
-              character: 0,
-            }
-          },
-          optional: params.every((p) => p.optional),
-        })
+        if (params.length > 0) {
+          members.push({
+            name: type,
+            type: {
+              kind: 'object',
+              members: params,
+              minProperties: params.filter((p) => !p.optional).length,
+              position: {
+                file: '',
+                line: 0,
+                character: 0,
+              }
+            },
+            optional: params.every((p) => p.optional),
+          })
+        }
       }
       requestJsonSchemas.push({
         name: declaration.name,

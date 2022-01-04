@@ -13,11 +13,6 @@ export type DeleteBlog = (req: { path: { id: number }, cookie: { myUserId: numbe
 const getBlogsValidate = ajvBackend.compile({
   "type": "object",
   "properties": {
-    "path": {
-      "type": "object",
-      "properties": {},
-      "required": []
-    },
     "query": {
       "type": "object",
       "properties": {
@@ -61,11 +56,6 @@ const getBlogsValidate = ajvBackend.compile({
           }
         }
       },
-      "required": []
-    },
-    "body": {
-      "type": "object",
-      "properties": {},
       "required": []
     },
     "cookie": {
@@ -119,11 +109,6 @@ const getBlogByIdValidate = ajvBackend.compile({
       },
       "required": []
     },
-    "body": {
-      "type": "object",
-      "properties": {},
-      "required": []
-    },
     "cookie": {
       "type": "object",
       "properties": {
@@ -153,11 +138,6 @@ const getBlogByIdValidate = ajvBackend.compile({
 const createBlogValidate = ajvBackend.compile({
   "type": "object",
   "properties": {
-    "path": {
-      "type": "object",
-      "properties": {},
-      "required": []
-    },
     "query": {
       "type": "object",
       "properties": {
@@ -282,16 +262,6 @@ const deleteBlogValidate = ajvBackend.compile({
       "required": [
         "id"
       ]
-    },
-    "query": {
-      "type": "object",
-      "properties": {},
-      "required": []
-    },
-    "body": {
-      "type": "object",
-      "properties": {},
-      "required": []
     },
     "cookie": {
       "type": "object",
