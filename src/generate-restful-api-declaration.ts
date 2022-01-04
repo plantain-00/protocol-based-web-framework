@@ -7,8 +7,8 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   const references: string[] = []
   const requestJsonSchemas: Array<{ name: string, schema: string }> = []
   const responseJsonSchemas: Array<{ name: string, url: string, method: string, schema: string, omittedReferences: string[] }> = []
-  const registers: string[] = []
-  let readableReferenced = false
+  const bindRestfulApiHandlerTypes: string[] = []
+  const apiSchemas: string[] = []
   const definitions = getAllDefinitions({ declarations: typeDeclarations, looseMode: true })
 
   function getParam(type: typeof allTypes[number], parameter: FunctionParameter[], backend?: boolean) {
@@ -20,7 +20,6 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
           return 'ignoredFields?: T[]'
         }
         if (backend && q.type.kind === 'file') {
-          readableReferenced = true
           return `${q.name}${q.optional ? '?' : ''}: Readable`
         }
         return generateTypescriptOfFunctionParameter(q)
@@ -39,7 +38,15 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
         }
       }
       const interfaceName = declaration.name[0].toUpperCase() + declaration.name.substring(1)
-      registers.push(`export const register${interfaceName} = (app: Application, handleHttpRequest: HandleHttpRequest, handler: ${interfaceName}) => handleHttpRequest(app, '${declaration.method}', '${path}', [${declaration.tags.map((t) => JSON.stringify(t)).join(', ')}], ${declaration.name}Validate, handler)`)
+      bindRestfulApiHandlerTypes.push(`  (name: '${interfaceName}', req: ${interfaceName}): void`)
+      apiSchemas.push(`  {
+    name: '${interfaceName}',
+    method: '${declaration.method}' as const,
+    url: '${path}',
+    tags: [${declaration.tags.map((t) => JSON.stringify(t)).join(', ')}],
+    validate: ${declaration.name}Validate,
+    handler: undefined as ((req: unknown) => Promise<{} | Readable>) | undefined,
+  },`)
 
       // json schema
       const requestMergedDefinitions: { [name: string]: Definition } = {}
@@ -196,7 +203,6 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       if (declaration.type.kind === 'file') {
         returnType = 'Readable'
         frontendReturnType = 'Blob'
-        readableReferenced = true
       } else {
         returnType = generateTypescriptOfType(declaration.type, (child) => {
           if (child.kind === 'reference') {
@@ -239,15 +245,26 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   }
   const backendContent = `/* eslint-disable */
 
-import type { Application } from 'express'${readableReferenced ? `\nimport { Readable } from 'stream'` : ''}
-import { ajvBackend, HandleHttpRequest } from '${process.env.BACKEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
+import type { Readable } from 'stream'
+import { ajvBackend } from '${process.env.BACKEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
 import { ${Array.from(new Set(references)).join(', ')} } from './restful-api-schema'
 
 ${backendResult.join('\n')}
 
 ${requestJsonSchemas.map((s) => `const ${s.name}Validate = ajvBackend.compile(${s.schema})`).join('\n')}
 
-${registers.join('\n')}
+export const apiSchemas = [
+${apiSchemas.join('\n')}
+]
+
+export const bindRestfulApiHandler: {
+${bindRestfulApiHandlerTypes.join('\n')}
+} = (name: string, handler: (input: any) => Promise<{} | Readable>) => {
+  const schema = apiSchemas.find((s) => s.name === name)
+  if (schema) {
+    schema.handler = handler
+  }
+}
 `
   const frontendContent = `import { ${Array.from(new Set(references)).join(', ')} } from '${process.env.RESTFUL_API_SCHEMA_PATH || '../src/restful-api-schema'}'
 import { ajvFrontend } from '${process.env.FRONTEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'

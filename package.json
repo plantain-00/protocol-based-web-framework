@@ -43,7 +43,7 @@
     "rimraf": "3.0.2",
     "sqlite3": "5.0.2",
     "ts-loader": "9.2.6",
-    "ts-node": "10.4.0",
+    "ts-node-dev": "1.1.8",
     "tsconfig-plantain": "0.0.2",
     "type-coverage": "2.19.0",
     "types-as-schema": "1.41.1",

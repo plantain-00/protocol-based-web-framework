@@ -1,5 +1,5 @@
 import Ajv, { ValidateFunction } from 'ajv'
-import type { Application, Request, Response } from 'express'
+import type { Request, Response } from 'express'
 import type { Readable } from 'stream'
 
 /**
@@ -10,18 +10,6 @@ export const ajvBackend = new Ajv({
   useDefaults: true,
   coerceTypes: true,
 })
-
-/**
- * @public
- */
-export type HandleHttpRequest = (
-  app: Application,
-  method: 'get' | 'post' | 'put' | 'patch' | 'delete',
-  url: string,
-  tags: string[],
-  validate: ValidateFunction,
-  handler: (input: any) => Promise<{} | Readable>
-) => void
 
 /**
  * @public

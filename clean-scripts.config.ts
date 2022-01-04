@@ -16,7 +16,7 @@ export default {
     'RESTFUL_API_SCHEMA_PATH=./restful-api-schema BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts BACKEND_DECLARATION_LIB_PATH=../dist/nodejs FRONTEND_DECLARATION_LIB_PATH=../dist/browser types-as-schema ./dev/restful-api-schema.ts ./dev/db-schema.ts --swagger ./dev/swagger.json --config ./dist/nodejs/generate-restful-api-declaration.js',
   ],
   dev: {
-    server: 'ts-node ./dev/server.ts',
+    server: 'ts-node-dev ./dev/server.ts',
     client: 'webpack serve --config ./dev/webpack.config.js'
   },
   lint: {

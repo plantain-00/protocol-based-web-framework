@@ -8,7 +8,6 @@
 /// <reference types="qs" />
 
 import Ajv from 'ajv';
-import type { Application } from 'express';
 import type { Database } from 'sqlite3';
 import { ParsedQs } from 'qs';
 import type { Readable } from 'stream';
@@ -73,9 +72,6 @@ export function getAndValidateRequestInput(req: Request_2<{}, {}, {}>, validate:
 
 // @public (undocumented)
 export const getKeys: <T>(obj: T) => (keyof T)[];
-
-// @public (undocumented)
-export type HandleHttpRequest = (app: Application, method: 'get' | 'post' | 'put' | 'patch' | 'delete', url: string, tags: string[], validate: ValidateFunction, handler: (input: any) => Promise<{} | Readable>) => void;
 
 // @public (undocumented)
 export function respondHandleResult(result: {} | Readable, req: Request_2<{}, {}, {}>, res: Response_2<{}>): void;

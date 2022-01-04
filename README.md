@@ -294,8 +294,8 @@ interface MyUserIdField {
 // 5. generate restful api declaration
 `RESTFUL_API_SCHEMA_PATH=./restful-api-schema BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts types-as-schema ./dev/restful-api-schema.ts ./dev/db-schema.ts --swagger ./dev/swagger.json --config ./node_modules/protocol-based-web-framework/nodejs/generate-restful-api-declaration.js`
 
-// 6. backend implement restful api declaration
-import { CreateBlog, DeleteBlog, GetBlogById, GetBlogs, PatchBlog } from './restful-api-backend-declaration'
+// 6. backend implement restful api declaration and binded to api
+import { CreateBlog, DeleteBlog, GetBlogById, GetBlogs, PatchBlog, bindRestfulApiHandler } from './restful-api-backend-declaration'
 const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip, take, ignoredFields } }) => {
   const filter: RowFilterOptions<BlogSchema> = {
     fuzzyFilter: {
@@ -323,12 +323,14 @@ const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip,
     count: total,
   }
 }
+bindRestfulApiHandler('GetBlogs', getBlogs)
 const getBlogById: GetBlogById = async ({ query, path: { id } }) => {
   const blog = await getRow('blogs', { filter: { id }, ignoredFields: extractDbIgnoredFieldsFromBlogIgnoredField(query?.ignoredFields) })
   return {
     result: blog ? await getBlogWithoutIngoredFields(blog, query?.ignoredFields) : undefined
   }
 }
+bindRestfulApiHandler('GetBlogById', getBlogById)
 const createBlog: CreateBlog = async ({ query, body: { content } }) => {
   if (!content) {
     throw new HttpError('invalid parameter: content', 400)
@@ -344,6 +346,7 @@ const createBlog: CreateBlog = async ({ query, body: { content } }) => {
     result: await getBlogWithoutIngoredFields(blog, query?.ignoredFields)
   }
 }
+bindRestfulApiHandler('CreateBlog', createBlog)
 const patchBlog: PatchBlog = async ({ path: { id }, query, body }) => {
   await updateRow('blogs', body, { filter: { id } })
   const blog = await getRow('blogs', { filter: { id }, ignoredFields: extractDbIgnoredFieldsFromBlogIgnoredField(query?.ignoredFields) })
@@ -354,10 +357,12 @@ const patchBlog: PatchBlog = async ({ path: { id }, query, body }) => {
     result: await getBlogWithoutIngoredFields(blog, query?.ignoredFields)
   }
 }
+bindRestfulApiHandler('PatchBlog', patchBlog)
 const deleteBlog: DeleteBlog = async ({ path: { id } }) => {
   await deleteRow('blogs', { filter: { id } })
   return {}
 }
+bindRestfulApiHandler('DeleteBlog', deleteBlog)
 type BlogDbIgnorableField = Extract<BlogIgnorableField, keyof BlogSchema>
 function extractDbIgnoredFieldsFromBlogIgnoredField(ignoredFields?: BlogIgnorableField[]) {
   if (!ignoredFields) {
@@ -385,6 +390,11 @@ async function getBlogWithoutIngoredFields<T extends BlogIgnorableField = never>
     meta: fields?.includes('meta') ? undefined : blog.meta,
   } as Omit<Blog, T>
 }
+class HttpError extends Error {
+  constructor(message: string, public statusCode = 500) {
+    super(message)
+  }
+}
 
 // 7. access restful api in backend unit test
 const blog = await createBlog({
@@ -394,15 +404,22 @@ const blog = await createBlog({
 })
 t.snapshot(blog)
 
-// 8. backend implement HandleHttpRequest and register restful api
+// 8. backend register restful api
 import express from 'express'
 import * as bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
-import { HandleHttpRequest, getAndValidateRequestInput, respondHandleResult } from 'protocol-based-web-framework'
-import { registerCreateBlog, registerDeleteBlog, registerGetBlogById, registerGetBlogs, registerPatchBlog } from './restful-api-backend-declaration'
-const handleHttpRequest: HandleHttpRequest = (app, method, url, tags, validate, handler) => {
+import { getAndValidateRequestInput, respondHandleResult } from 'protocol-based-web-framework'
+import { apiSchemas } from './restful-api-backend-declaration'
+
+const app = express()
+app.use(bodyParser.json())
+app.use(cookieParser())
+for (const { method, url, validate, handler } of apiSchemas) {
   app[method](url, async (req: express.Request<{}, {}, {}>, res: express.Response<{}>) => {
     try {
+      if (!handler) {
+        throw new HttpError('this api handler is not binded', 500)
+      }
       const input = getAndValidateRequestInput(req, validate, { myUserId: req.cookies.sid })
       if (typeof input === 'string') {
         throw new HttpError(input, 400)
@@ -416,23 +433,11 @@ const handleHttpRequest: HandleHttpRequest = (app, method, url, tags, validate, 
     }
   })
 }
-class HttpError extends Error {
-  constructor(message: string, public statusCode = 500) {
-    super(message)
-  }
-}
-const app = express()
-app.use(bodyParser.json())
-app.use(cookieParser())
-registerGetBlogs(app, handleHttpRequest, getBlogs)
-registerGetBlogById(app, handleHttpRequest, getBlogById)
-registerCreateBlog(app, handleHttpRequest, createBlog)
-registerPatchBlog(app, handleHttpRequest, patchBlog)
-registerDeleteBlog(app, handleHttpRequest, deleteBlog)
 app.listen(3000)
 
 // 9. access restful api
 import { ApiAccessorFetch } from 'protocol-based-web-framework'
+import { RequestRestfulAPI, validations } from "./restful-api-frontend-declaration"
 const apiAccessor = new ApiAccessorFetch(validations)
 const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI
 await requestRestfulAPI('GET', '/api/blogs', { query: { ignoredFields: ['posts', 'meta'] } })

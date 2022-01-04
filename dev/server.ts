@@ -2,9 +2,9 @@ import * as sqlite from 'sqlite3'
 import express from 'express'
 import * as bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
-import { RowFilterOptions, SqliteAccessor, HandleHttpRequest, getAndValidateRequestInput, respondHandleResult } from '../dist/nodejs'
+import { RowFilterOptions, SqliteAccessor, getAndValidateRequestInput, respondHandleResult } from '../dist/nodejs'
 import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from './db-declaration'
-import { CreateBlog, DeleteBlog, GetBlogById, GetBlogs, PatchBlog, registerCreateBlog, registerDeleteBlog, registerGetBlogById, registerGetBlogs, registerPatchBlog } from './restful-api-backend-declaration'
+import { apiSchemas, bindRestfulApiHandler, CreateBlog, DeleteBlog, GetBlogById, GetBlogs, PatchBlog } from './restful-api-backend-declaration'
 import { Blog, BlogIgnorableField } from './restful-api-schema'
 import { BlogSchema } from './db-schema'
 
@@ -40,11 +40,26 @@ export async function start() {
   const app = express()
   app.use(bodyParser.json())
   app.use(cookieParser())
-  registerGetBlogs(app, handleHttpRequest, getBlogs)
-  registerGetBlogById(app, handleHttpRequest, getBlogById)
-  registerCreateBlog(app, handleHttpRequest, createBlog)
-  registerPatchBlog(app, handleHttpRequest, patchBlog)
-  registerDeleteBlog(app, handleHttpRequest, deleteBlog)
+
+  for (const { method, url, validate, handler } of apiSchemas) {
+    app[method](url, async (req: express.Request<{}, {}, {}>, res: express.Response<{}>) => {
+      try {
+        if (!handler) {
+          throw new HttpError('this api handler is not binded', 500)
+        }
+        const input = getAndValidateRequestInput(req, validate, { myUserId: req.cookies.sid })
+        if (typeof input === 'string') {
+          throw new HttpError(input, 400)
+        }
+        const result = await handler(input)
+        respondHandleResult(result, req, res)
+      } catch (error: unknown) {
+        const statusCode = error instanceof HttpError ? error.statusCode : 500
+        const message = error instanceof Error ? error.message : error
+        res.status(statusCode).json({ message }).end()
+      }
+    })
+  }
   app.listen(3000)
 }
 
@@ -75,6 +90,7 @@ const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip,
     count: total,
   }
 }
+bindRestfulApiHandler('GetBlogs', getBlogs)
 
 const getBlogById: GetBlogById = async ({ query, path: { id } }) => {
   const blog = await getRow('blogs', { filter: { id }, ignoredFields: extractDbIgnoredFieldsFromBlogIgnoredField(query?.ignoredFields) })
@@ -82,6 +98,7 @@ const getBlogById: GetBlogById = async ({ query, path: { id } }) => {
     result: blog ? await getBlogWithoutIngoredFields(blog, query?.ignoredFields) : undefined
   }
 }
+bindRestfulApiHandler('GetBlogById', getBlogById)
 
 const createBlog: CreateBlog = async ({ query, body: { content } }) => {
   if (!content) {
@@ -98,6 +115,7 @@ const createBlog: CreateBlog = async ({ query, body: { content } }) => {
     result: await getBlogWithoutIngoredFields(blog, query?.ignoredFields)
   }
 }
+bindRestfulApiHandler('CreateBlog', createBlog)
 
 const patchBlog: PatchBlog = async ({ path: { id }, query, body }) => {
   await updateRow('blogs', body, { filter: { id } })
@@ -109,28 +127,13 @@ const patchBlog: PatchBlog = async ({ path: { id }, query, body }) => {
     result: await getBlogWithoutIngoredFields(blog, query?.ignoredFields)
   }
 }
+bindRestfulApiHandler('PatchBlog', patchBlog)
 
 const deleteBlog: DeleteBlog = async ({ path: { id } }) => {
   await deleteRow('blogs', { filter: { id } })
   return {}
 }
-
-const handleHttpRequest: HandleHttpRequest = (app, method, url, tags, validate, handler) => {
-  app[method](url, async (req: express.Request<{}, {}, {}>, res: express.Response<{}>) => {
-    try {
-      const input = getAndValidateRequestInput(req, validate, { myUserId: req.cookies.sid })
-      if (typeof input === 'string') {
-        throw new HttpError(input, 400)
-      }
-      const result = await handler(input)
-      respondHandleResult(result, req, res)
-    } catch (error: unknown) {
-      const statusCode = error instanceof HttpError ? error.statusCode : 500
-      const message = error instanceof Error ? error.message : error
-      res.status(statusCode).json({ message }).end()
-    }
-  })
-}
+bindRestfulApiHandler('DeleteBlog', deleteBlog)
 
 class HttpError extends Error {
   constructor(message: string, public statusCode = 500) {

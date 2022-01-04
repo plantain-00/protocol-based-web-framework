@@ -1,7 +1,7 @@
 /* eslint-disable */
 
-import type { Application } from 'express'
-import { ajvBackend, HandleHttpRequest } from '../dist/nodejs'
+import type { Readable } from 'stream'
+import { ajvBackend } from '../dist/nodejs'
 import { Blog, BlogIgnorableField } from './restful-api-schema'
 
 export type GetBlogs = <T extends BlogIgnorableField = never>(req: { query: { skip: number, take: number, ignoredFields?: T[], sortType: "asc" | "desc", content?: string, sortField: "id" | "content", ids?: string[] }, cookie: { myUserId: number } }) => Promise<{ result: Omit<Blog, T>[], count: number }>
@@ -312,8 +312,58 @@ const deleteBlogValidate = ajvBackend.compile({
   "definitions": {}
 })
 
-export const registerGetBlogs = (app: Application, handleHttpRequest: HandleHttpRequest, handler: GetBlogs) => handleHttpRequest(app, 'get', '/api/blogs', ["blog"], getBlogsValidate, handler)
-export const registerGetBlogById = (app: Application, handleHttpRequest: HandleHttpRequest, handler: GetBlogById) => handleHttpRequest(app, 'get', '/api/blogs/:id', ["blog"], getBlogByIdValidate, handler)
-export const registerCreateBlog = (app: Application, handleHttpRequest: HandleHttpRequest, handler: CreateBlog) => handleHttpRequest(app, 'post', '/api/blogs', ["blog"], createBlogValidate, handler)
-export const registerPatchBlog = (app: Application, handleHttpRequest: HandleHttpRequest, handler: PatchBlog) => handleHttpRequest(app, 'patch', '/api/blogs/:id', ["blog"], patchBlogValidate, handler)
-export const registerDeleteBlog = (app: Application, handleHttpRequest: HandleHttpRequest, handler: DeleteBlog) => handleHttpRequest(app, 'delete', '/api/blogs/:id', ["blog"], deleteBlogValidate, handler)
+export const apiSchemas = [
+  {
+    name: 'GetBlogs',
+    method: 'get' as const,
+    url: '/api/blogs',
+    tags: ["blog"],
+    validate: getBlogsValidate,
+    handler: undefined as ((req: unknown) => Promise<{} | Readable>) | undefined,
+  },
+  {
+    name: 'GetBlogById',
+    method: 'get' as const,
+    url: '/api/blogs/:id',
+    tags: ["blog"],
+    validate: getBlogByIdValidate,
+    handler: undefined as ((req: unknown) => Promise<{} | Readable>) | undefined,
+  },
+  {
+    name: 'CreateBlog',
+    method: 'post' as const,
+    url: '/api/blogs',
+    tags: ["blog"],
+    validate: createBlogValidate,
+    handler: undefined as ((req: unknown) => Promise<{} | Readable>) | undefined,
+  },
+  {
+    name: 'PatchBlog',
+    method: 'patch' as const,
+    url: '/api/blogs/:id',
+    tags: ["blog"],
+    validate: patchBlogValidate,
+    handler: undefined as ((req: unknown) => Promise<{} | Readable>) | undefined,
+  },
+  {
+    name: 'DeleteBlog',
+    method: 'delete' as const,
+    url: '/api/blogs/:id',
+    tags: ["blog"],
+    validate: deleteBlogValidate,
+    handler: undefined as ((req: unknown) => Promise<{} | Readable>) | undefined,
+  },
+]
+
+export const bindRestfulApiHandler: {
+  (name: 'GetBlogs', req: GetBlogs): void
+  (name: 'GetBlogById', req: GetBlogById): void
+  (name: 'CreateBlog', req: CreateBlog): void
+  (name: 'PatchBlog', req: PatchBlog): void
+  (name: 'DeleteBlog', req: DeleteBlog): void
+} = (name: string, handler: (input: any) => Promise<{} | Readable>) => {
+  const schema = apiSchemas.find((s) => s.name === name)
+  if (schema) {
+    schema.handler = handler
+  }
+}
