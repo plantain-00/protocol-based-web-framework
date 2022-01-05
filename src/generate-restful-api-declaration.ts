@@ -156,7 +156,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
               q.optional = false
             }
             if (type === 'path') {
-              frontendPath = frontendPath.split('{id}').join(`\${${q.type.kind}}`)
+              frontendPath = frontendPath.split(`{${q.name}}`).join(`\${${q.type.kind}}`)
             }
           })
           backendParams.push(getParam(type, parameter, true))
