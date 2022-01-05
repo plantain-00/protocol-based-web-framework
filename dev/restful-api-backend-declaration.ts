@@ -4,10 +4,10 @@ import type { Readable } from 'stream'
 import { ajvBackend } from '../dist/nodejs'
 import { Blog, BlogIgnorableField } from './restful-api-schema'
 
-export type GetBlogs = <T extends BlogIgnorableField = never>(req: { query: { skip: number, take: number, ignoredFields?: T[], sortType: "asc" | "desc", content?: string, sortField: "id" | "content", ids?: string[] }, cookie: { myUserId: number } }) => Promise<{ result: Omit<Blog, T>[], count: number }>
-export type GetBlogById = <T extends BlogIgnorableField = never>(req: { path: { id: number }, query?: { ignoredFields?: T[] }, cookie: { myUserId: number } }) => Promise<{ result?: Omit<Blog, T> }>
-export type CreateBlog = <T extends BlogIgnorableField = never>(req: { query?: { ignoredFields?: T[] }, body: { content: string }, cookie: { myUserId: number } }) => Promise<{ result: Omit<Blog, T> }>
-export type PatchBlog = <T extends BlogIgnorableField = never>(req: { path: { id: number }, query?: { ignoredFields?: T[] }, body?: { content?: string, meta?: unknown }, cookie: { myUserId: number } }) => Promise<{ result: Omit<Blog, T> }>
+export type GetBlogs = <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(req: { query: { skip: number, take: number, ignoredFields?: TIgnored[], pickedFields?: TPicked[], sortType: "asc" | "desc", content?: string, sortField: "id" | "content", ids?: string[] }, cookie: { myUserId: number } }) => Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored>[], count: number }>
+export type GetBlogById = <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(req: { path: { id: number }, query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }, cookie: { myUserId: number } }) => Promise<{ result?: Omit<Pick<Blog, TPicked>, TIgnored> }>
+export type CreateBlog = <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(req: { query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }, body: { content: string }, cookie: { myUserId: number } }) => Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored> }>
+export type PatchBlog = <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(req: { path: { id: number }, query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }, body?: { content?: string, meta?: unknown }, cookie: { myUserId: number } }) => Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored> }>
 export type DeleteBlog = (req: { path: { id: number }, cookie: { myUserId: number } }) => Promise<{  }>
 
 const getBlogsValidate = ajvBackend.compile({
@@ -28,6 +28,18 @@ const getBlogsValidate = ajvBackend.compile({
           "type": "array",
           "items": {
             "$ref": "#/definitions/BlogIgnorableField"
+          }
+        },
+        "pickedFields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "posts",
+              "id",
+              "content",
+              "meta"
+            ]
           }
         },
         "sortType": {
@@ -105,6 +117,18 @@ const getBlogByIdValidate = ajvBackend.compile({
           "items": {
             "$ref": "#/definitions/BlogIgnorableField"
           }
+        },
+        "pickedFields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "posts",
+              "id",
+              "content",
+              "meta"
+            ]
+          }
         }
       },
       "required": []
@@ -145,6 +169,18 @@ const createBlogValidate = ajvBackend.compile({
           "type": "array",
           "items": {
             "$ref": "#/definitions/BlogIgnorableField"
+          }
+        },
+        "pickedFields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "posts",
+              "id",
+              "content",
+              "meta"
+            ]
           }
         }
       },
@@ -208,6 +244,18 @@ const patchBlogValidate = ajvBackend.compile({
           "type": "array",
           "items": {
             "$ref": "#/definitions/BlogIgnorableField"
+          }
+        },
+        "pickedFields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "posts",
+              "id",
+              "content",
+              "meta"
+            ]
           }
         }
       },

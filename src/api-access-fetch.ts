@@ -44,21 +44,34 @@ export class ApiAccessorFetch<T extends {
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     url: string,
     ignoredFields: string[] | undefined,
+    pickedFields: string[] | undefined,
     input: unknown,
   ) => {
     const validation = this.validations.find((v) => v.method === method && v.url === url)
     if (validation) {
-      if (ignoredFields && ignoredFields.length > 0) {
+      if ((ignoredFields && ignoredFields.length > 0) || pickedFields) {
         const schemaWithoutIgnoredFields = produce(
           validation.schema,
           (draft) => {
             for (const omittedReference of validation.omittedReferences) {
-              for (const ignoredField of ignoredFields) {
-                delete draft.definitions[omittedReference].properties?.[ignoredField]
+              const properties = draft.definitions[omittedReference].properties
+              if (properties) {
+                if (ignoredFields) {
+                  for (const ignoredField of ignoredFields) {
+                    delete properties[ignoredField]
+                  }
+                }
+                if (pickedFields) {
+                  for (const key of Object.keys(properties)) {
+                    if (!pickedFields.includes(key)) {
+                      delete properties[key]
+                    }
+                  }
+                }
               }
               const required = draft.definitions[omittedReference].required
               if (required) {
-                draft.definitions[omittedReference].required = required.filter((r) => !ignoredFields.includes(r))
+                draft.definitions[omittedReference].required = required.filter((r) => (!pickedFields || pickedFields.includes(r)) && !ignoredFields?.includes(r))
               }
             }
           }
@@ -81,7 +94,7 @@ export class ApiAccessorFetch<T extends {
     url: string,
     args?: {
       path?: { [key: string]: string | number },
-      query?: { ignoredFields?: string[], attachmentFileName?: string },
+      query?: { ignoredFields?: string[], pickedFields?: string[], attachmentFileName?: string },
       body?: {}
     }
   ) => {
@@ -111,12 +124,12 @@ export class ApiAccessorFetch<T extends {
     if (contentType) {
       if (contentType.includes('application/json')) {
         const json = await result.json()
-        this.validateByJsonSchema(method, url, args?.query?.ignoredFields, json)
+        this.validateByJsonSchema(method, url, args?.query?.ignoredFields, args?.query?.pickedFields, json)
         return json
       }
       if (contentType.includes('text/')) {
         const text = await result.text()
-        this.validateByJsonSchema(method, url, args?.query?.ignoredFields, text)
+        this.validateByJsonSchema(method, url, args?.query?.ignoredFields, args?.query?.pickedFields, text)
         return text
       }
     }

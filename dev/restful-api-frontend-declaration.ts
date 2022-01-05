@@ -2,23 +2,23 @@ import { Blog, BlogIgnorableField } from './restful-api-schema'
 import { ajvFrontend } from '../dist/browser'
 
 export type RequestRestfulAPI = {
-  <T extends BlogIgnorableField = never>(method: 'GET', url: `/api/blogs`, args?: { query?: { skip?: number, take?: number, ignoredFields?: T[], sortType?: "asc" | "desc", content?: string, sortField?: "id" | "content", ids?: string[] } }): Promise<{ result: Omit<Blog, T>[], count: number }>
-  <T extends BlogIgnorableField = never>(method: 'GET', url: `/api/blogs/${number}`, args?: { query?: { ignoredFields?: T[] } }): Promise<{ result?: Omit<Blog, T> }>
-  <T extends BlogIgnorableField = never>(method: 'GET', url: '/api/blogs/{id}', args: { path: { id: number }, query?: { ignoredFields?: T[] } }): Promise<{ result?: Omit<Blog, T> }>
-  <T extends BlogIgnorableField = never>(method: 'POST', url: `/api/blogs`, args: { query?: { ignoredFields?: T[] }, body: { content: string } }): Promise<{ result: Omit<Blog, T> }>
-  <T extends BlogIgnorableField = never>(method: 'PATCH', url: `/api/blogs/${number}`, args?: { query?: { ignoredFields?: T[] }, body?: { content?: string, meta?: unknown } }): Promise<{ result: Omit<Blog, T> }>
-  <T extends BlogIgnorableField = never>(method: 'PATCH', url: '/api/blogs/{id}', args: { path: { id: number }, query?: { ignoredFields?: T[] }, body?: { content?: string, meta?: unknown } }): Promise<{ result: Omit<Blog, T> }>
+  <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(method: 'GET', url: `/api/blogs`, args?: { query?: { skip?: number, take?: number, ignoredFields?: TIgnored[], pickedFields?: TPicked[], sortType?: "asc" | "desc", content?: string, sortField?: "id" | "content", ids?: string[] } }): Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored>[], count: number }>
+  <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(method: 'GET', url: `/api/blogs/${number}`, args?: { query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] } }): Promise<{ result?: Omit<Pick<Blog, TPicked>, TIgnored> }>
+  <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(method: 'GET', url: '/api/blogs/{id}', args: { path: { id: number }, query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] } }): Promise<{ result?: Omit<Pick<Blog, TPicked>, TIgnored> }>
+  <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(method: 'POST', url: `/api/blogs`, args: { query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }, body: { content: string } }): Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored> }>
+  <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(method: 'PATCH', url: `/api/blogs/${number}`, args?: { query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }, body?: { content?: string, meta?: unknown } }): Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored> }>
+  <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(method: 'PATCH', url: '/api/blogs/{id}', args: { path: { id: number }, query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }, body?: { content?: string, meta?: unknown } }): Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored> }>
   (method: 'DELETE', url: `/api/blogs/${number}`): Promise<{  }>
   (method: 'DELETE', url: '/api/blogs/{id}', args: { path: { id: number } }): Promise<{  }>
 }
 
 export type GetRequestApiUrl = {
-  <T extends BlogIgnorableField = never>(url: `/api/blogs`, args?: { query?: { skip?: number, take?: number, ignoredFields?: T[], sortType?: "asc" | "desc", content?: string, sortField?: "id" | "content", ids?: string[] } }): string
-  <T extends BlogIgnorableField = never>(url: `/api/blogs/${number}`, args?: { query?: { ignoredFields?: T[] } }): string
-  <T extends BlogIgnorableField = never>(url: '/api/blogs/{id}', args: { path: { id: number }, query?: { ignoredFields?: T[] } }): string
-  <T extends BlogIgnorableField = never>(url: `/api/blogs`, args?: { query?: { ignoredFields?: T[] } }): string
-  <T extends BlogIgnorableField = never>(url: `/api/blogs/${number}`, args?: { query?: { ignoredFields?: T[] } }): string
-  <T extends BlogIgnorableField = never>(url: '/api/blogs/{id}', args: { path: { id: number }, query?: { ignoredFields?: T[] } }): string
+  <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(url: `/api/blogs`, args?: { query?: { skip?: number, take?: number, ignoredFields?: TIgnored[], pickedFields?: TPicked[], sortType?: "asc" | "desc", content?: string, sortField?: "id" | "content", ids?: string[] } }): string
+  <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(url: `/api/blogs/${number}`, args?: { query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] } }): string
+  <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(url: '/api/blogs/{id}', args: { path: { id: number }, query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] } }): string
+  <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(url: `/api/blogs`, args?: { query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] } }): string
+  <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(url: `/api/blogs/${number}`, args?: { query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] } }): string
+  <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(url: '/api/blogs/{id}', args: { path: { id: number }, query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] } }): string
   (url: `/api/blogs/${number}`): string
   (url: '/api/blogs/{id}', args: { path: { id: number } }): string
 }

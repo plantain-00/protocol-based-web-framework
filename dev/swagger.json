@@ -35,6 +35,23 @@
             }
           },
           {
+            "name": "pickedFields",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "posts",
+                  "id",
+                  "content",
+                  "meta"
+                ]
+              }
+            }
+          },
+          {
             "name": "sortType",
             "required": false,
             "in": "query",
@@ -130,6 +147,23 @@
             }
           },
           {
+            "name": "pickedFields",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "posts",
+                  "id",
+                  "content",
+                  "meta"
+                ]
+              }
+            }
+          },
+          {
             "name": "content",
             "required": true,
             "in": "body",
@@ -183,6 +217,23 @@
             }
           },
           {
+            "name": "pickedFields",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "posts",
+                  "id",
+                  "content",
+                  "meta"
+                ]
+              }
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -228,6 +279,23 @@
               "type": "array",
               "items": {
                 "$ref": "#/definitions/BlogIgnorableField"
+              }
+            }
+          },
+          {
+            "name": "pickedFields",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "posts",
+                  "id",
+                  "content",
+                  "meta"
+                ]
               }
             }
           },

@@ -5124,10 +5124,10 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-types-as-schema@1.41.1:
-  version "1.41.1"
-  resolved "https://registry.yarnpkg.com/types-as-schema/-/types-as-schema-1.41.1.tgz#a8bdc304e06819284b7287957750e02f3484a505"
-  integrity sha512-aMfcmTi7mlgTqP9WhRGXAXc1F0q1vBtQO1Mr9/YDQ3JMwgR++ID7RVurKJwMaD8pJBwNkQfSDce9qyXP7L4jWw==
+types-as-schema@1.42.0:
+  version "1.42.0"
+  resolved "https://registry.yarnpkg.com/types-as-schema/-/types-as-schema-1.42.0.tgz#55e277dde66cb89d03f8df3105d525612eb048ac"
+  integrity sha512-pIfcWwtlOLWt/adZ16L98aK7iNQl4Dr/cOvFirozcliIxW/80e6N5QgEqbXPEavxeX77W0+GEltYVL/YZXpblw==
   dependencies:
     ajv "7 || 8"
     chokidar "3"

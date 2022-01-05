@@ -54,6 +54,7 @@ export class ApiAccessorFetch<T extends {
         } | undefined;
         query?: {
             ignoredFields?: string[] | undefined;
+            pickedFields?: string[] | undefined;
             attachmentFileName?: string | undefined;
         } | undefined;
         body?: {} | undefined;
@@ -93,6 +94,7 @@ export type RowFilterOptions<T> = Partial<{
 // @public (undocumented)
 export type RowSelectOneOptions<T> = Partial<{
     ignoredFields: (keyof T)[];
+    pickedFields: (keyof T)[];
     sort: {
         field: keyof T;
         type: 'asc' | 'desc';

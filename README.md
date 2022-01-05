@@ -21,60 +21,68 @@ A protocol and code generation based web framework.
 
 `./dev/swagger.json`
 
-### type safe ignorable field in db access
+### type safe ignorable/pickable field in db access
 
 ```ts
-const blog = await selectRow('blogs', {
+const blogs1 = await selectRow('blogs', {
   ignoredFields: ['content', 'meta'],
 })
 // sql: SELECT id FROM blogs
-// blog: Omit<BlogSchema, "content" | "meta">[]
-[
-  {
-    id: 1,
-  },
-  {
-    id: 2,
-  },
-]
+// blogs1: Omit<Pick<BlogSchema, keyof BlogSchema>, "content" | "meta">[]
+// blogs1: [ { id: 2 } ]
+
+const blogs2 = await selectRow('blogs', {
+  pickedFields: ['id', 'content'],
+})
+// sql: SELECT id, content FROM blogs
+// blogs2: Omit<Pick<BlogSchema, "id" | "content">, never>[]
+// blogs2: [ { id: 2, content: 'blog 2 content' } ]
 ```
 
-### type safe ignorable field in restful api backend access
+### type safe ignorable/pickable field in restful api backend access
 
 ```ts
-const blog = await createBlog({
-  body: {
-    content: 'test'
-  },
+const blogs1 = await getBlogs({
   query: {
+    skip: 0,
+    take: 10,
+    sortField: 'id',
+    sortType: 'asc',
     ignoredFields: ['posts', 'meta'],
   },
-})
-// blog: { result: Omit<Blog, "meta" | "posts"> }
-{
-  result: {
-    content: 'test',
-    id: 3,
-    meta: undefined,
-    posts: undefined,
+  cookie: {
+    myUserId: 1,
   },
-}
+})
+// blogs1: { result: Omit<Pick<Blog, "posts" | "id" | "content" | "meta">, "posts" | "meta">[]; count: number; }
+// blogs1: { result: [ { id: 2, content: 'blog 2 content' } ], count: 1 }
+
+const blogs2 = await getBlogs({
+  query: {
+    skip: 0,
+    take: 10,
+    sortField: 'id',
+    sortType: 'asc',
+    pickedFields: ['id', 'posts'],
+  },
+  cookie: {
+    myUserId: 1,
+  },
+})
+// blogs2: { result: Omit<Pick<Blog, "posts" | "id">, never>[]; count: number; }
+// blogs2: { result: [ { id: 2, posts: [Array] } ], count: 1 }
 ```
 
-### type safe ignorable field in restful api frontend side access
+### type safe ignorable/pickable field in restful api frontend side access
 
 ```ts
-const blogsResult = await requestRestfulAPI('GET', '/api/blogs', { query: { ignoredFields: ['posts', 'meta'] } })
-// blogsResult: { result: Omit<Blog, "posts" | "meta">[] count: number; }
-{
-  result: [
-    {
-      content: 'test',
-      id: 3,
-    },
-  ],
-  count: 1,
-}
+const blogs1 = await requestRestfulAPI('GET', '/api/blogs', { query: { ignoredFields: ['posts', 'meta'] } })
+// blogs1: { result: Omit<Pick<Blog, "posts" | "id" | "content" | "meta">, "posts" | "meta">[]; count: number; }
+// blogs1: { result: [ { id: 2, content: 'blog 2 content' } ], count: 1 }
+
+const blogs2 = await requestRestfulAPI('GET', '/api/blogs', { query: { pickedFields: ['id', 'content'] } })
+// blogs2: { result: Omit<Pick<Blog, "id" | "content">, never>[]; count: number; }
+// blogs2: { result: [ { id: 2, content: 'blog 2 content' } ], count: 1 }
 ```
 
 ### type safe requestRestfulAPI
@@ -89,16 +97,21 @@ await requestRestfulAPI('GET', '/api/blogs/{id}', { path: { id: 'abc' } }) // er
 ### optional query population
 
 ```ts
-async function getBlogWithoutIngoredFields<T extends BlogIgnorableField = never>(
-  blog: Pick<Partial<Blog>, BlogDbIgnorableField> & Omit<BlogSchema, BlogDbIgnorableField>,
-  ignoredFields?: T[],
+async function getBlogFilteredFields<TIgnored extends BlogIgnorableField = never, TPicked extends keyof Blog = keyof Blog>(
+  blog: Partial<BlogSchema>,
+  filter?: Partial<{
+    ignoredFields: TIgnored[]
+    pickedFields: TPicked[]
+  }>
 ) {
-  const fields: BlogIgnorableField[] | undefined = ignoredFields
+  const ignoredFields: BlogIgnorableField[] | undefined = filter?.ignoredFields
+  const pickedFields: (keyof Blog)[] | undefined = filter?.pickedFields
+  const isIncluded = (field: Extract<BlogIgnorableField, keyof Blog>) => (!pickedFields || pickedFields.includes(field)) && !ignoredFields?.includes(field)
   return {
     ...blog,
-    posts: fields?.includes('posts') ? undefined : await selectRow('posts', { filter: { blogId: blog.id } }), // ignored or populated
-    meta: fields?.includes('meta') ? undefined : blog.meta,
-  } as Omit<Blog, T>
+    posts: !isIncluded('posts') ? undefined : await selectRow('posts', { filter: { blogId: blog.id } }), // ignored or populated
+    meta: !isIncluded('meta') ? undefined : blog.meta,
+  } as Omit<Pick<Blog, TPicked>, TIgnored>
 }
 ```
 
@@ -195,7 +208,7 @@ import { BlogSchema, PostSchema } from "./db-schema"
  * @tags blog
  */
 declare function getBlogs(
-  query: PaginationFields & BlogIgnoredField & SortTypeField & {
+  query: PaginationFields & BlogFieldFilter & SortTypeField & {
     content?: string
     /**
      * @default id
@@ -212,7 +225,7 @@ declare function getBlogs(
  * @tags blog
  */
 declare function getBlogById(
-  query: BlogIgnoredField,
+  query: BlogFieldFilter,
   path: IdField,
   cookie: MyUserIdField,
 ): Promise<{ result?: Blog }>
@@ -223,7 +236,7 @@ declare function getBlogById(
  * @tags blog
  */
 declare function createBlog(
-  query: BlogIgnoredField,
+  query: BlogFieldFilter,
   body: {
     content: string
   },
@@ -236,7 +249,7 @@ declare function createBlog(
  * @tags blog
  */
 declare function patchBlog(
-  query: BlogIgnoredField,
+  query: BlogFieldFilter,
   path: IdField,
   body: {
     content?: string
@@ -283,8 +296,9 @@ interface IdField {
   id: number
 }
 
-interface BlogIgnoredField {
+interface BlogFieldFilter {
   ignoredFields?: BlogIgnorableField[]
+  pickedFields?: (keyof Blog)[]
 }
 
 interface MyUserIdField {
@@ -295,8 +309,11 @@ interface MyUserIdField {
 `RESTFUL_API_SCHEMA_PATH=./restful-api-schema BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts types-as-schema ./dev/restful-api-schema.ts ./dev/db-schema.ts --swagger ./dev/swagger.json --config ./node_modules/protocol-based-web-framework/nodejs/generate-restful-api-declaration.js`
 
 // 6. backend implement restful api declaration and binded to api
-import { CreateBlog, DeleteBlog, GetBlogById, GetBlogs, PatchBlog, bindRestfulApiHandler } from './restful-api-backend-declaration'
-const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip, take, ignoredFields } }) => {
+import { RowFilterOptions } from 'protocol-based-web-framework'
+import { tableSchemas } from './db-declaration'
+import { bindRestfulApiHandler, CreateBlog, DeleteBlog, GetBlogById, GetBlogs, PatchBlog } from './restful-api-backend-declaration'
+
+const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip, take, ignoredFields, pickedFields } }) => {
   const filter: RowFilterOptions<BlogSchema> = {
     fuzzyFilter: {
       content,
@@ -310,7 +327,7 @@ const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip,
         type: sortType,
       }
     ],
-    ignoredFields: extractDbIgnoredFieldsFromBlogIgnoredField(ignoredFields),
+    ...extractBlogDbFilteredFields({ ignoredFields, pickedFields }),
     pagination: {
       take,
       skip,
@@ -319,15 +336,15 @@ const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip,
   const total = await countRow('blogs', filter)
 
   return {
-    result: await Promise.all(filteredBlogs.map((blog) => getBlogWithoutIngoredFields(blog, ignoredFields))),
+    result: await Promise.all(filteredBlogs.map((blog) => getBlogFilteredFields(blog, { ignoredFields, pickedFields }))),
     count: total,
   }
 }
 bindRestfulApiHandler('GetBlogs', getBlogs)
 const getBlogById: GetBlogById = async ({ query, path: { id } }) => {
-  const blog = await getRow('blogs', { filter: { id }, ignoredFields: extractDbIgnoredFieldsFromBlogIgnoredField(query?.ignoredFields) })
+  const blog = await getRow('blogs', { filter: { id }, ...extractBlogDbFilteredFields(query) })
   return {
-    result: blog ? await getBlogWithoutIngoredFields(blog, query?.ignoredFields) : undefined
+    result: blog ? await getBlogFilteredFields(blog, query) : undefined
   }
 }
 bindRestfulApiHandler('GetBlogById', getBlogById)
@@ -343,18 +360,18 @@ const createBlog: CreateBlog = async ({ query, body: { content } }) => {
     },
   })
   return {
-    result: await getBlogWithoutIngoredFields(blog, query?.ignoredFields)
+    result: await getBlogFilteredFields(blog, query)
   }
 }
 bindRestfulApiHandler('CreateBlog', createBlog)
 const patchBlog: PatchBlog = async ({ path: { id }, query, body }) => {
   await updateRow('blogs', body, { filter: { id } })
-  const blog = await getRow('blogs', { filter: { id }, ignoredFields: extractDbIgnoredFieldsFromBlogIgnoredField(query?.ignoredFields) })
+  const blog = await getRow('blogs', { filter: { id }, ...extractBlogDbFilteredFields(query) })
   if (!blog) {
     throw new HttpError('invalid parameter: id', 400)
   }
   return {
-    result: await getBlogWithoutIngoredFields(blog, query?.ignoredFields)
+    result: await getBlogFilteredFields(blog, query)
   }
 }
 bindRestfulApiHandler('PatchBlog', patchBlog)
@@ -363,32 +380,59 @@ const deleteBlog: DeleteBlog = async ({ path: { id } }) => {
   return {}
 }
 bindRestfulApiHandler('DeleteBlog', deleteBlog)
-type BlogDbIgnorableField = Extract<BlogIgnorableField, keyof BlogSchema>
-function extractDbIgnoredFieldsFromBlogIgnoredField(ignoredFields?: BlogIgnorableField[]) {
-  if (!ignoredFields) {
-    return undefined
-  }
-  const result: BlogDbIgnorableField[] = []
-  for (const item of ignoredFields) {
-    for (const r of tableSchemas.blogs.fieldNames) {
-      if (item === r) {
-        result.push(item)
-        break
+
+function extractBlogDbFilteredFields<TIgnored extends BlogIgnorableField = never, TPicked extends keyof Blog = keyof Blog>(
+  filter?: Partial<{
+    ignoredFields: TIgnored[]
+    pickedFields: TPicked[]
+  }>,
+) {
+  const result: {
+    ignoredFields?: Extract<BlogIgnorableField, keyof BlogSchema>[]
+    pickedFields?: (keyof BlogSchema)[]
+  } = {}
+  if (filter?.ignoredFields) {
+    const ignoredFields: Extract<BlogIgnorableField, keyof BlogSchema>[] = []
+    for (const item of filter.ignoredFields) {
+      for (const r of tableSchemas.blogs.fieldNames) {
+        if (item === r) {
+          ignoredFields.push(item)
+          break
+        }
       }
     }
+    result.ignoredFields = ignoredFields
+  }
+  if (filter?.pickedFields) {
+    const pickedFields: (keyof BlogSchema)[] = []
+    for (const item of filter.pickedFields) {
+      for (const r of tableSchemas.blogs.fieldNames) {
+        if (item === r) {
+          pickedFields.push(item)
+          break
+        }
+      }
+    }
+    result.pickedFields = pickedFields
   }
   return result
 }
-async function getBlogWithoutIngoredFields<T extends BlogIgnorableField = never>(
-  blog: Pick<Partial<Blog>, BlogDbIgnorableField> & Omit<BlogSchema, BlogDbIgnorableField>,
-  ignoredFields?: T[],
+
+async function getBlogFilteredFields<TIgnored extends BlogIgnorableField = never, TPicked extends keyof Blog = keyof Blog>(
+  blog: Partial<BlogSchema>,
+  filter?: Partial<{
+    ignoredFields: TIgnored[]
+    pickedFields: TPicked[]
+  }>
 ) {
-  const fields: BlogIgnorableField[] | undefined = ignoredFields
+  const ignoredFields: BlogIgnorableField[] | undefined = filter?.ignoredFields
+  const pickedFields: (keyof Blog)[] | undefined = filter?.pickedFields
+  const isIncluded = (field: Extract<BlogIgnorableField, keyof Blog>) => (!pickedFields || pickedFields.includes(field)) && !ignoredFields?.includes(field)
   return {
     ...blog,
-    posts: fields?.includes('posts') ? undefined : await selectRow('posts', { filter: { blogId: blog.id } }),
-    meta: fields?.includes('meta') ? undefined : blog.meta,
-  } as Omit<Blog, T>
+    posts: !isIncluded('posts') ? undefined : await selectRow('posts', { filter: { blogId: blog.id } }),
+    meta: !isIncluded('meta') ? undefined : blog.meta,
+  } as Omit<Pick<Blog, TPicked>, TIgnored>
 }
 class HttpError extends Error {
   constructor(message: string, public statusCode = 500) {

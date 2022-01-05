@@ -4,6 +4,7 @@ export type RowSelectOptions<T> = Partial<{
 
 export type RowSelectOneOptions<T> = Partial<{
   ignoredFields: (keyof T)[]
+  pickedFields: (keyof T)[]
   sort: { field: keyof T, type: 'asc' | 'desc' }[]
 }> & RowFilterOptions<T>
 

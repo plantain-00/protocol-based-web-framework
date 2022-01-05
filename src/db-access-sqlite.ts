@@ -156,7 +156,7 @@ export class SqliteAccessor<TableName extends string> {
       orderBy = 'ORDER BY ' + options.sort.map((s) => `${s.field} ${s.type}`).join(', ')
     }
     const allFields: string[] = this.tableSchemas[tableName].fieldNames
-    const fieldNames = allFields.filter((f) => !options?.ignoredFields?.includes(f)).join(', ')
+    const fieldNames = allFields.filter((f) => (!options?.pickedFields || options.pickedFields.includes(f)) && !options?.ignoredFields?.includes(f)).join(', ')
     return {
       sql: `SELECT ${fieldNames} FROM ${tableName} ${sql} ${orderBy}`,
       values,

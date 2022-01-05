@@ -10,14 +10,19 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   const bindRestfulApiHandlerTypes: string[] = []
   const apiSchemas: string[] = []
   const definitions = getAllDefinitions({ declarations: typeDeclarations, looseMode: true })
+  const ignoredFieldsName = process.env.IGNORED_FIELDS_NAME || 'ignoredFields'
+  const pickedFieldsName = process.env.PICKED_FIELDS_NAME || 'pickedFields'
 
   function getParam(type: typeof allTypes[number], parameter: FunctionParameter[], backend?: boolean) {
     const optional = parameter.every((q) => q.optional) ? '?' : ''
     return {
       optional: parameter.every((q) => q.optional),
       value: `${type}${optional}: { ${parameter.map((q) => {
-        if (q.name === 'ignoredFields' && q.type.kind === 'array' && q.type.type.kind === 'reference') {
-          return 'ignoredFields?: T[]'
+        if (q.name === ignoredFieldsName && q.type.kind === 'array') {
+          return `${ignoredFieldsName}?: TIgnored[]`
+        }
+        if (q.name === pickedFieldsName && q.type.kind === 'array') {
+          return `${pickedFieldsName}?: TPicked[]`
         }
         if (backend && q.type.kind === 'file') {
           return `${q.name}${q.optional ? '?' : ''}: Readable`
@@ -199,6 +204,17 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
         backendParameters.push(`req${optional}: { ${backendParams.map((p) => p.value).join(', ')} }`)
       }
 
+      let ignorableField = ''
+      let pickedField = ''
+      for (const p of declarationParameters) {
+        if (p.name === ignoredFieldsName && p.type.kind === 'array') {
+          ignorableField = generateTypescriptOfType(p.type.type)
+        }
+        if (p.name === pickedFieldsName && p.type.kind === 'array') {
+          pickedField = generateTypescriptOfType(p.type.type)
+        }
+      }
+
       let returnType: string
       let frontendReturnType: string | undefined
       const omittedReferences = new Set<string>()
@@ -209,40 +225,36 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
         returnType = generateTypescriptOfType(declaration.type, (child) => {
           if (child.kind === 'reference') {
             omittedReferences.add(child.name)
-            return `Omit<${child.name}, T>`
+            if (ignorableField && pickedField) {
+              return `Omit<Pick<${child.name}, TPicked>, TIgnored>`
+            }
+            if (pickedField) {
+              return `Pick<${child.name}, TPicked>`
+            }
+            return `Omit<${child.name}, TIgnored>`
           }
           return undefined
         })
       }
       responseJsonSchema.omittedReferences = Array.from(omittedReferences)
-
-      let ignorableField = ''
-      for (const p of declarationParameters) {
-        if (p.name === 'ignoredFields' && p.type.kind === 'array' && p.type.type.kind === 'reference') {
-          ignorableField = p.type.type.name
-        }
-      }
+      
+      const generics: string[] = []
       if (ignorableField) {
-        frontendResult.push(`  <T extends ${ignorableField} = never>(${frontendParameters.join(', ')}): Promise<${frontendReturnType || returnType}>`)
-        if (frontendParameters2.length > 0) {
-          frontendResult.push(`  <T extends ${ignorableField} = never>(${frontendParameters2.join(', ')}): Promise<${frontendReturnType || returnType}>`)
-        }
-        getRequestApiUrlResult.push(`  <T extends ${ignorableField} = never>(${getRequestApiUrlParameters.join(', ')}): string`)
-        if (getRequestApiUrlParameters2.length > 0) {
-          getRequestApiUrlResult.push(`  <T extends ${ignorableField} = never>(${getRequestApiUrlParameters2.join(', ')}): string`)
-        }
-        backendResult.push(`export type ${interfaceName} = <T extends ${ignorableField} = never>(${backendParameters.join(', ')}) => Promise<${returnType}>`)
-      } else {
-        frontendResult.push(`  (${frontendParameters.join(', ')}): Promise<${frontendReturnType || returnType}>`)
-        if (frontendParameters2.length > 0) {
-          frontendResult.push(`  (${frontendParameters2.join(', ')}): Promise<${frontendReturnType || returnType}>`)
-        }
-        getRequestApiUrlResult.push(`  (${getRequestApiUrlParameters.join(', ')}): string`)
-        if (getRequestApiUrlParameters2.length > 0) {
-          getRequestApiUrlResult.push(`  (${getRequestApiUrlParameters2.join(', ')}): string`)
-        }
-        backendResult.push(`export type ${interfaceName} = (${backendParameters.join(', ')}) => Promise<${returnType}>`)
+        generics.push(`TIgnored extends ${ignorableField} = never`)
       }
+      if (pickedField) {
+        generics.push(`TPicked extends ${pickedField} = ${pickedField}`)
+      }
+      const genericString = generics.length > 0 ? `<${generics.join(', ')}>` : ''
+      frontendResult.push(`  ${genericString}(${frontendParameters.join(', ')}): Promise<${frontendReturnType || returnType}>`)
+      if (frontendParameters2.length > 0) {
+        frontendResult.push(`  ${genericString}(${frontendParameters2.join(', ')}): Promise<${frontendReturnType || returnType}>`)
+      }
+      getRequestApiUrlResult.push(`  ${genericString}(${getRequestApiUrlParameters.join(', ')}): string`)
+      if (getRequestApiUrlParameters2.length > 0) {
+        getRequestApiUrlResult.push(`  ${genericString}(${getRequestApiUrlParameters2.join(', ')}): string`)
+      }
+      backendResult.push(`export type ${interfaceName} = ${genericString}(${backendParameters.join(', ')}) => Promise<${returnType}>`)
     }
   }
   const backendContent = `/* eslint-disable */

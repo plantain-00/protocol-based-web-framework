@@ -6,7 +6,7 @@ import { BlogSchema, PostSchema } from "./db-schema"
  * @tags blog
  */
 declare function getBlogs(
-  query: PaginationFields & BlogIgnoredField & SortTypeField & {
+  query: PaginationFields & BlogFieldFilter & SortTypeField & {
     content?: string
     /**
      * @default id
@@ -23,7 +23,7 @@ declare function getBlogs(
  * @tags blog
  */
 declare function getBlogById(
-  query: BlogIgnoredField,
+  query: BlogFieldFilter,
   path: IdField,
   cookie: MyUserIdField,
 ): Promise<{ result?: Blog }>
@@ -34,7 +34,7 @@ declare function getBlogById(
  * @tags blog
  */
 declare function createBlog(
-  query: BlogIgnoredField,
+  query: BlogFieldFilter,
   body: {
     content: string
   },
@@ -47,7 +47,7 @@ declare function createBlog(
  * @tags blog
  */
 declare function patchBlog(
-  query: BlogIgnoredField,
+  query: BlogFieldFilter,
   path: IdField,
   body: {
     content?: string
@@ -94,8 +94,9 @@ interface IdField {
   id: number
 }
 
-interface BlogIgnoredField {
+interface BlogFieldFilter {
   ignoredFields?: BlogIgnorableField[]
+  pickedFields?: (keyof Blog)[]
 }
 
 interface MyUserIdField {

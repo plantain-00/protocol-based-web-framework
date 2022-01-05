@@ -17,11 +17,11 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
 import { ${schemas.map((s) => s.typeName).join(', ')} } from "${process.env.DB_SCHEMA_PATH || './db-schema'}"
 
 export type GetRow = {
-${schemas.map((s) => `  <T extends keyof ${s.typeName} = never>(tableName: '${s.tableName}', options?: RowSelectOneOptions<${s.typeName}> & { ignoredFields?: T[] }): Promise<Omit<${s.typeName}, T> | undefined>`).join('\n')}
+${schemas.map((s) => `  <TIgnored extends keyof ${s.typeName} = never, TPicked extends keyof ${s.typeName} = keyof ${s.typeName}>(tableName: '${s.tableName}', options?: RowSelectOneOptions<${s.typeName}> & { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }): Promise<Omit<Pick<${s.typeName}, TPicked>, TIgnored> | undefined>`).join('\n')}
 }
 
 export type SelectRow = {
-${schemas.map((s) => `  <T extends keyof ${s.typeName} = never>(tableName: '${s.tableName}', options?: RowSelectOptions<${s.typeName}> & { ignoredFields?: T[] }): Promise<Omit<${s.typeName}, T>[]>`).join('\n')}
+${schemas.map((s) => `  <TIgnored extends keyof ${s.typeName} = never, TPicked extends keyof ${s.typeName} = keyof ${s.typeName}>(tableName: '${s.tableName}', options?: RowSelectOptions<${s.typeName}> & { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }): Promise<Omit<Pick<${s.typeName}, TPicked>, TIgnored>[]>`).join('\n')}
 }
 
 export type InsertRow = {
