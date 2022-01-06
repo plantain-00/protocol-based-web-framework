@@ -20,6 +20,7 @@ export class ApiAccessorFetch<T extends {
   }
   omittedReferences: string[]
   validate: ValidateFunction
+  urlPattern?: RegExp
 }> {
   constructor(private validations: T[]) { }
 
@@ -47,7 +48,7 @@ export class ApiAccessorFetch<T extends {
     pickedFields: string[] | undefined,
     input: unknown,
   ) => {
-    const validation = this.validations.find((v) => v.method === method && v.url === url)
+    const validation = this.validations.find((v) => v.method === method && (v.url === url || v.urlPattern?.test(url)))
     if (validation) {
       if ((ignoredFields && ignoredFields.length > 0) || pickedFields) {
         const schemaWithoutIgnoredFields = produce(

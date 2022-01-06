@@ -39,6 +39,7 @@
     "express": "4.17.2",
     "html-webpack-plugin": "5.5.0",
     "markdownlint-cli": "0.30.0",
+    "mongodb": "4.2.2",
     "no-unused-export": "1.14.2",
     "rimraf": "3.0.2",
     "sqlite3": "5.0.2",

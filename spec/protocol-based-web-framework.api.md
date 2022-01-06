@@ -9,11 +9,16 @@
 
 import Ajv from 'ajv';
 import type { Database } from 'sqlite3';
+import type { Db } from 'mongodb';
+import type { Document as Document_2 } from 'mongodb';
+import type { Filter } from 'mongodb';
+import { ObjectID } from 'bson';
 import { ParsedQs } from 'qs';
 import type { Readable } from 'stream';
 import type { Request as Request_2 } from 'express';
 import type { Response as Response_2 } from 'express';
 import { ValidateFunction } from 'ajv';
+import { WithId } from 'mongodb';
 
 // @public (undocumented)
 export const ajvBackend: Ajv;
@@ -38,6 +43,7 @@ export class ApiAccessorFetch<T extends {
     };
     omittedReferences: string[];
     validate: ValidateFunction;
+    urlPattern?: RegExp;
 }> {
     constructor(validations: T[]);
     // (undocumented)
@@ -75,39 +81,77 @@ export function getAndValidateRequestInput(req: Request_2<{}, {}, {}>, validate:
 export const getKeys: <T>(obj: T) => (keyof T)[];
 
 // @public (undocumented)
+export class MongodbAccessor<TableName extends string> {
+    constructor(db: Db, tableSchemas: Record<TableName, {
+        fieldNames: string[];
+    }>);
+    // (undocumented)
+    countRow: <T>(tableName: TableName, options?: Partial<{
+        filter: { [P in keyof T]?: T[P] | readonly T[P][] | undefined; };
+        fuzzyFilter: { [P_1 in keyof T]?: T[P_1] | readonly T[P_1][] | undefined; };
+        rawFilter: MongodbRawFilter;
+    }> | undefined) => Promise<number>;
+    // (undocumented)
+    deleteRow: <T>(tableName: TableName, options?: Partial<{
+        filter: { [P in keyof T]?: T[P] | readonly T[P][] | undefined; };
+        fuzzyFilter: { [P_1 in keyof T]?: T[P_1] | readonly T[P_1][] | undefined; };
+        rawFilter: MongodbRawFilter;
+    }> | undefined) => Promise<void>;
+    // (undocumented)
+    getRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOneOptions<T, MongodbRawFilter> | undefined) => Promise<WithId<Document_2> | undefined>;
+    // (undocumented)
+    insertRow: <T extends Record<string, unknown>>(tableName: TableName, value: T) => Promise<ObjectID>;
+    // (undocumented)
+    selectRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOptions<T, MongodbRawFilter> | undefined) => Promise<Document_2[]>;
+    // (undocumented)
+    updateRow: <T extends Record<string, unknown>>(tableName: TableName, value?: T | undefined, options?: Partial<{
+        filter: { [P in keyof T]?: T[P] | readonly T[P][] | undefined; };
+        fuzzyFilter: { [P_1 in keyof T]?: T[P_1] | readonly T[P_1][] | undefined; };
+        rawFilter: MongodbRawFilter;
+    }> | undefined) => Promise<number>;
+}
+
+// @public (undocumented)
+export type MongodbRawFilter = Filter<unknown>;
+
+// @public (undocumented)
 export function respondHandleResult(result: {} | Readable, req: Request_2<{}, {}, {}>, res: Response_2<{}>): void;
 
 // @public (undocumented)
-export type RowFilterOptions<T> = Partial<{
+export type RowFilterOptions<T, TRaw = SqlRawFilter> = Partial<{
     filter: {
         [P in keyof T]?: T[P] | readonly T[P][];
     };
     fuzzyFilter: {
         [P in keyof T]?: T[P] | readonly T[P][];
     };
-    rawFilter: {
-        sql: string;
-        value: unknown[];
-    };
+    rawFilter: TRaw;
 }>;
 
 // @public (undocumented)
-export type RowSelectOneOptions<T> = Partial<{
-    ignoredFields: (keyof T)[];
-    pickedFields: (keyof T)[];
-    sort: {
-        field: keyof T;
-        type: 'asc' | 'desc';
-    }[];
-}> & RowFilterOptions<T>;
+export type RowSelectOneOptions<T, TRaw = SqlRawFilter> = RowFilterOptions<T, TRaw> & RowSelectSortOption<T> & RowSelectProjectOption<T>;
 
 // @public (undocumented)
-export type RowSelectOptions<T> = Partial<{
+export type RowSelectOptions<T, TRaw = SqlRawFilter> = Partial<{
     pagination: {
         take: number;
         skip: number;
     };
-}> & RowSelectOneOptions<T>;
+}> & RowSelectOneOptions<T, TRaw>;
+
+// @public (undocumented)
+export type RowSelectProjectOption<T> = Partial<{
+    ignoredFields: (keyof T)[];
+    pickedFields: (keyof T)[];
+}>;
+
+// @public (undocumented)
+export type RowSelectSortOption<T> = Partial<{
+    sort: {
+        field: keyof T;
+        type: 'asc' | 'desc';
+    }[];
+}>;
 
 // @public (undocumented)
 export class SqliteAccessor<TableName extends string> {
@@ -119,10 +163,7 @@ export class SqliteAccessor<TableName extends string> {
     countRow: <T>(tableName: TableName, options?: Partial<{
         filter: { [P in keyof T]?: T[P] | readonly T[P][] | undefined; };
         fuzzyFilter: { [P_1 in keyof T]?: T[P_1] | readonly T[P_1][] | undefined; };
-        rawFilter: {
-            sql: string;
-            value: unknown[];
-        };
+        rawFilter: SqlRawFilter;
     }> | undefined) => Promise<number>;
     // (undocumented)
     createTable: (tableName: TableName) => Promise<void>;
@@ -130,26 +171,28 @@ export class SqliteAccessor<TableName extends string> {
     deleteRow: <T>(tableName: TableName, options?: Partial<{
         filter: { [P in keyof T]?: T[P] | readonly T[P][] | undefined; };
         fuzzyFilter: { [P_1 in keyof T]?: T[P_1] | readonly T[P_1][] | undefined; };
-        rawFilter: {
-            sql: string;
-            value: unknown[];
-        };
+        rawFilter: SqlRawFilter;
     }> | undefined) => Promise<void>;
     // (undocumented)
-    getRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOneOptions<T> | undefined) => Promise<T | undefined>;
+    getRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOneOptions<T, SqlRawFilter> | undefined) => Promise<T | undefined>;
     // (undocumented)
-    insertRow: <T extends Record<string, unknown>>(tableName: TableName, value: T) => Promise<T>;
+    insertRow: <T extends Record<string, unknown>>(tableName: TableName, value: T) => Promise<number>;
     // (undocumented)
-    selectRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOptions<T> | undefined) => Promise<T[]>;
+    selectRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOptions<T, SqlRawFilter> | undefined) => Promise<T[]>;
     // (undocumented)
     updateRow: <T extends Record<string, unknown>>(tableName: TableName, value?: T | undefined, options?: Partial<{
         filter: { [P in keyof T]?: T[P] | readonly T[P][] | undefined; };
         fuzzyFilter: { [P_1 in keyof T]?: T[P_1] | readonly T[P_1][] | undefined; };
-        rawFilter: {
-            sql: string;
-            value: unknown[];
-        };
-    }> | undefined) => Promise<void>;
+        rawFilter: SqlRawFilter;
+    }> | undefined) => Promise<number>;
+}
+
+// @public (undocumented)
+export interface SqlRawFilter {
+    // (undocumented)
+    sql: string;
+    // (undocumented)
+    value: unknown[];
 }
 
 // (No @packageDocumentation comment for this package)

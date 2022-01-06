@@ -1,5 +1,5 @@
 import type { Database } from 'sqlite3'
-import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions } from './db-declaration-lib'
+import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, SqlRawFilter } from './db-declaration-lib'
 
 /**
  * @public
@@ -18,23 +18,24 @@ export class SqliteAccessor<TableName extends string> {
     value: T,
   ) => {
     const { values, fields } = this.getFieldsAndValues(tableName, value)
-    await this.run(`INSERT INTO ${tableName} (${fields.join(', ')}) VALUES (${new Array(fields.length).fill('?').join(', ')})`, ...values)
-    return value
+    const result = await this.run(`INSERT INTO ${tableName} (${fields.join(', ')}) VALUES (${new Array(fields.length).fill('?').join(', ')})`, ...values)
+    return result.changes
   }
 
   public updateRow = async<T extends Record<string, unknown>>(
     tableName: TableName,
     value?: T,
-    options?: RowFilterOptions<T>,
+    options?: RowFilterOptions<T, SqlRawFilter>,
   ) => {
     const { values, fields } = this.getFieldsAndValues(tableName, value)
     const { sql, values: whereValues } = this.getWhereSql(tableName, options)
-    await this.run(`UPDATE ${tableName} SET ${fields.map((f) => `${f} = ?`).join(', ')} ${sql}`, ...values, ...whereValues)
+    const { changes } = await this.run(`UPDATE ${tableName} SET ${fields.map((f) => `${f} = ?`).join(', ')} ${sql}`, ...values, ...whereValues)
+    return changes
   }
 
   public deleteRow = async<T>(
     tableName: TableName,
-    options?: RowFilterOptions<T>,
+    options?: RowFilterOptions<T, SqlRawFilter>,
   ) => {
     const { sql, values } = this.getWhereSql(tableName, options)
     await this.run(`DELETE FROM ${tableName} ${sql}`, ...values)
@@ -42,7 +43,7 @@ export class SqliteAccessor<TableName extends string> {
 
   public selectRow = async<T extends Record<string, unknown>>(
     tableName: TableName,
-    options?: RowSelectOptions<T>
+    options?: RowSelectOptions<T, SqlRawFilter>
   ) => {
     const { sql, values } = this.getSelectSql(tableName, options)
     return this.all<T>(sql, this.tableSchemas[tableName].complexFields, ...values)
@@ -50,7 +51,7 @@ export class SqliteAccessor<TableName extends string> {
 
   public countRow = async<T>(
     tableName: TableName,
-    options?: RowFilterOptions<T>
+    options?: RowFilterOptions<T, SqlRawFilter>
   ) => {
     const { sql, values } = this.getWhereSql(tableName, options)
     const result = await this.all<{ 'COUNT(1)': number }>(`SELECT COUNT(1) FROM ${tableName} ${sql}`, [], ...values)
@@ -59,9 +60,9 @@ export class SqliteAccessor<TableName extends string> {
 
   public getRow = async<T extends Record<string, unknown>>(
     tableName: TableName,
-    options?: RowSelectOneOptions<T>
+    options?: RowSelectOneOptions<T, SqlRawFilter>
   ) => {
-    const { sql, values } = this.getSelectSql(tableName, options)
+    const { sql, values } = this.getSelectOneSql(tableName, options)
     return this.get<T>(sql, this.tableSchemas[tableName].complexFields, ...values)
   }
 
@@ -89,7 +90,7 @@ export class SqliteAccessor<TableName extends string> {
 
   private getWhereSql = <T>(
     tableName: TableName,
-    options?: RowFilterOptions<T>,
+    options?: RowFilterOptions<T, SqlRawFilter>,
   ) => {
     const allFields: string[] = this.tableSchemas[tableName].fieldNames
     const values: unknown[] = []
@@ -133,7 +134,7 @@ export class SqliteAccessor<TableName extends string> {
 
   private getSelectSql = <T extends Record<string, unknown>>(
     tableName: TableName,
-    options?: RowSelectOptions<T>
+    options?: RowSelectOptions<T, SqlRawFilter>
   ) => {
     const { sql, values } = this.getSelectOneSql(tableName, options)
     let limit = ''
@@ -148,7 +149,7 @@ export class SqliteAccessor<TableName extends string> {
 
   private getSelectOneSql = <T extends Record<string, unknown>>(
     tableName: TableName,
-    options?: RowSelectOneOptions<T>
+    options?: RowSelectOneOptions<T, SqlRawFilter>
   ) => {
     const { sql, values } = this.getWhereSql(tableName, options)
     let orderBy = ''
@@ -164,12 +165,15 @@ export class SqliteAccessor<TableName extends string> {
   }
 
   private run = (sql: string, ...args: unknown[]) => {
-    return new Promise<void>((resolve, reject) => {
-      this.db.run(sql, args, (err) => {
+    return new Promise<{ lastId: number, changes: number }>((resolve, reject) => {
+      this.db.run(sql, args, function (err) {
         if (err) {
           reject(err)
         } else {
-          resolve()
+          resolve({
+            lastId: this.lastID,
+            changes: this.changes,
+          })
         }
       })
     })

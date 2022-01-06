@@ -352,13 +352,17 @@ const createBlog: CreateBlog = async ({ query, body: { content } }) => {
   if (!content) {
     throw new HttpError('invalid parameter: content', 400)
   }
-  const blog = await insertRow('blogs', {
+  const blog = {
     id: Math.round(Math.random() * 10000),
     content,
     meta: {
       baz: 222
     },
-  })
+  }
+  await insertRow('blogs', blog)
+  return {
+    result: await getBlogFilteredFields(blog, query)
+  }
   return {
     result: await getBlogFilteredFields(blog, query)
   }
