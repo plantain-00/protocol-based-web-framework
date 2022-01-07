@@ -8,12 +8,14 @@
 /// <reference types="qs" />
 
 import Ajv from 'ajv';
+import type { Client } from 'pg';
 import type { Database } from 'sqlite3';
 import type { Db } from 'mongodb';
 import type { Document as Document_2 } from 'mongodb';
 import type { Filter } from 'mongodb';
 import { ObjectID } from 'bson';
 import { ParsedQs } from 'qs';
+import type { Pool } from 'pg';
 import type { Readable } from 'stream';
 import type { Request as Request_2 } from 'express';
 import type { Response as Response_2 } from 'express';
@@ -113,6 +115,40 @@ export class MongodbAccessor<TableName extends string> {
 
 // @public (undocumented)
 export type MongodbRawFilter = Filter<unknown>;
+
+// @public (undocumented)
+export class PostgresAccessor<TableName extends string> {
+    constructor(client: Client | Pool, tableSchemas: Record<TableName, {
+        fieldNames: string[];
+        fieldTypes: string[];
+    }>);
+    // (undocumented)
+    countRow: <T>(tableName: TableName, options?: Partial<{
+        filter: { [P in keyof T]?: T[P] | readonly T[P][] | undefined; };
+        fuzzyFilter: { [P_1 in keyof T]?: T[P_1] | readonly T[P_1][] | undefined; };
+        rawFilter: SqlRawFilter;
+    }> | undefined) => Promise<number>;
+    // (undocumented)
+    createTable: (tableName: TableName) => Promise<void>;
+    // (undocumented)
+    deleteRow: <T>(tableName: TableName, options?: Partial<{
+        filter: { [P in keyof T]?: T[P] | readonly T[P][] | undefined; };
+        fuzzyFilter: { [P_1 in keyof T]?: T[P_1] | readonly T[P_1][] | undefined; };
+        rawFilter: SqlRawFilter;
+    }> | undefined) => Promise<void>;
+    // (undocumented)
+    getRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOneOptions<T, SqlRawFilter> | undefined) => Promise<T>;
+    // (undocumented)
+    insertRow: <T extends Record<string, unknown>>(tableName: TableName, value: T) => Promise<number>;
+    // (undocumented)
+    selectRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOptions<T, SqlRawFilter> | undefined) => Promise<T[]>;
+    // (undocumented)
+    updateRow: <T extends Record<string, unknown>>(tableName: TableName, value?: T | undefined, options?: Partial<{
+        filter: { [P in keyof T]?: T[P] | readonly T[P][] | undefined; };
+        fuzzyFilter: { [P_1 in keyof T]?: T[P_1] | readonly T[P_1][] | undefined; };
+        rawFilter: SqlRawFilter;
+    }> | undefined) => Promise<number>;
+}
 
 // @public (undocumented)
 export function respondHandleResult(result: {} | Readable, req: Request_2<{}, {}, {}>, res: Response_2<{}>): void;

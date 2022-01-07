@@ -1,13 +1,13 @@
-import type { TypeDeclaration } from 'types-as-schema'
+import { Member, Type, TypeDeclaration } from 'types-as-schema'
 
 export default (typeDeclarations: TypeDeclaration[]): { path: string, content: string }[] => {
-  const schemas: { tableName: string, typeName: string, fields: string[], complexFields: string[] }[] = []
+  const schemas: { tableName: string, typeName: string, fields: Member[], complexFields: string[] }[] = []
   for (const declaration of typeDeclarations) {
     if (declaration.kind === 'object' && declaration.entry) {
       schemas.push({
         tableName: declaration.entry,
         typeName: declaration.name,
-        fields: declaration.members.map((m) => m.name),
+        fields: declaration.members,
         complexFields: declaration.members.filter((m) => m.type.kind !== 'string' && m.type.kind !== 'number' && m.type.kind !== 'boolean').map((m) => m.name),
       })
     }
@@ -42,7 +42,8 @@ ${schemas.map((s) => `  (tableName: '${s.tableName}', options?: RowFilterOptions
 
 export const tableSchemas = {
 ${schemas.map((s) => `  ${s.tableName}: {
-    fieldNames: [${s.fields.map((f) => `'${f}'`).join(', ')}] as (keyof ${s.typeName})[],
+    fieldNames: [${s.fields.map((f) => `'${f.name}'`).join(', ')}] as (keyof ${s.typeName})[],
+    fieldTypes: [${s.fields.map((f) => `'${generateTypescriptOfType(f.type)}'`).join(', ')}],
     complexFields: [${s.complexFields.map((f) => `'${f}'`).join(', ')}] as string[],
   },`).join('\n')}
 }
@@ -55,4 +56,17 @@ export const tableNames = getKeys(tableSchemas)
       content: content,
     },
   ]
+}
+
+function generateTypescriptOfType(type: Type): string {
+  if (type.kind === 'number') {
+    return 'real'
+  }
+  if (type.kind === 'string') {
+    return 'text'
+  }
+  if (type.kind === 'boolean') {
+    return 'boolean'
+  }
+  return 'jsonb'
 }

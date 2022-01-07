@@ -1,16 +1,17 @@
-import type { Database } from 'sqlite3'
+import type { Client, Pool, QueryResultRow } from 'pg'
 import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, SqlRawFilter } from './db-declaration-lib'
 
 /**
  * @public
  */
-export class SqliteAccessor<TableName extends string> {
-  constructor(private db: Database, private tableSchemas: Record<TableName, { fieldNames: string[], complexFields: string[] }>) {
+export class PostgresAccessor<TableName extends string> {
+  constructor(private client: Client | Pool, private tableSchemas: Record<TableName, { fieldNames: string[], fieldTypes: string[] }>) {
   }
 
   public createTable = async (tableName: TableName) => {
     const fieldNames = this.tableSchemas[tableName].fieldNames
-    await this.run(`CREATE TABLE IF NOT EXISTS ${tableName}(${fieldNames.join(', ')})`)
+    const fieldTypes = this.tableSchemas[tableName].fieldTypes
+    await this.client.query(`CREATE TABLE IF NOT EXISTS ${tableName}(${fieldNames.map((f, i) => `${f} ${fieldTypes[i]}`).join(', ')})`)
   }
 
   public insertRow = async <T extends Record<string, unknown>>(
@@ -18,8 +19,8 @@ export class SqliteAccessor<TableName extends string> {
     value: T,
   ) => {
     const { values, fields } = this.getFieldsAndValues(tableName, value)
-    const result = await this.run(`INSERT INTO ${tableName} (${fields.join(', ')}) VALUES (${new Array(fields.length).fill('?').join(', ')})`, ...values)
-    return result.lastId
+    const result = await this.client.query<{ id: number }>(`INSERT INTO ${tableName} (${fields.join(', ')}) VALUES (${new Array<unknown>(fields.length).fill(undefined).map((_, i) => `$${i + 1}`).join(', ')}) RETURNING id`, values)
+    return result.rows[0].id
   }
 
   public updateRow = async<T extends Record<string, unknown>>(
@@ -28,17 +29,17 @@ export class SqliteAccessor<TableName extends string> {
     options?: RowFilterOptions<T, SqlRawFilter>,
   ) => {
     const { values, fields } = this.getFieldsAndValues(tableName, value)
-    const { sql, values: whereValues } = this.getWhereSql(tableName, options)
-    const { changes } = await this.run(`UPDATE ${tableName} SET ${fields.map((f) => `${f} = ?`).join(', ')} ${sql}`, ...values, ...whereValues)
-    return changes
+    const { sql, values: whereValues } = this.getWhereSql(tableName, fields.length, options)
+    const result = await this.client.query<QueryResultRow>(`UPDATE ${tableName} SET ${fields.map((f, i) => `${f} = $${i + 1}`).join(', ')} ${sql}`, [...values, ...whereValues])
+    return result.rowCount
   }
 
   public deleteRow = async<T>(
     tableName: TableName,
     options?: RowFilterOptions<T, SqlRawFilter>,
   ) => {
-    const { sql, values } = this.getWhereSql(tableName, options)
-    await this.run(`DELETE FROM ${tableName} ${sql}`, ...values)
+    const { sql, values } = this.getWhereSql(tableName, 0, options)
+    await this.client.query(`DELETE FROM ${tableName} ${sql}`, values)
   }
 
   public selectRow = async<T extends Record<string, unknown>>(
@@ -46,16 +47,17 @@ export class SqliteAccessor<TableName extends string> {
     options?: RowSelectOptions<T, SqlRawFilter>
   ) => {
     const { sql, values } = this.getSelectSql(tableName, options)
-    return this.all<T>(sql, this.tableSchemas[tableName].complexFields, ...values)
+    const result = await this.client.query<T>(sql, values)
+    return result.rows
   }
 
   public countRow = async<T>(
     tableName: TableName,
     options?: RowFilterOptions<T, SqlRawFilter>
   ) => {
-    const { sql, values } = this.getWhereSql(tableName, options)
-    const result = await this.all<{ 'COUNT(1)': number }>(`SELECT COUNT(1) FROM ${tableName} ${sql}`, [], ...values)
-    return result[0]['COUNT(1)']
+    const { sql, values } = this.getWhereSql(tableName, 0, options)
+    const result = await this.client.query<{ 'COUNT(1)': number }>(`SELECT COUNT(1) FROM ${tableName} ${sql}`, values)
+    return result.rows[0]['COUNT(1)']
   }
 
   public getRow = async<T extends Record<string, unknown>>(
@@ -63,7 +65,8 @@ export class SqliteAccessor<TableName extends string> {
     options?: RowSelectOneOptions<T, SqlRawFilter>
   ) => {
     const { sql, values } = this.getSelectOneSql(tableName, options)
-    return this.get<T>(sql, this.tableSchemas[tableName].complexFields, ...values)
+    const result = await this.client.query<T>(sql, values)
+    return result.rows[0]
   }
 
   private getFieldsAndValues = <T extends Record<string, unknown>>(
@@ -79,7 +82,7 @@ export class SqliteAccessor<TableName extends string> {
           continue
         }
         fields.push(key)
-        values.push(fieldValue && this.tableSchemas[tableName].complexFields.includes(key) ? JSON.stringify(fieldValue) : fieldValue)
+        values.push(fieldValue)
       }
     }
     return {
@@ -90,6 +93,7 @@ export class SqliteAccessor<TableName extends string> {
 
   private getWhereSql = <T>(
     tableName: TableName,
+    startIndex: number,
     options?: RowFilterOptions<T, SqlRawFilter>,
   ) => {
     const allFields: string[] = this.tableSchemas[tableName].fieldNames
@@ -101,11 +105,13 @@ export class SqliteAccessor<TableName extends string> {
           continue
         }
         if (isArray(fieldValue)) {
-          filterValue.push(`${key} IN (${new Array(fieldValue.length).fill('?').join(', ')})`)
+          filterValue.push(`${key} IN (${new Array<unknown>(fieldValue.length).fill(undefined).map((_, i) => `$${i + startIndex}`).join(', ')})`)
+          startIndex += fieldValue.length
           values.push(...fieldValue)
         } else {
-          filterValue.push(`${key} = ?`)
-          values.push(fieldValue && this.tableSchemas[tableName].complexFields.includes(key) ? JSON.stringify(fieldValue) : fieldValue)
+          filterValue.push(`${key} = $${startIndex + 1}`)
+          startIndex++
+          values.push(fieldValue)
         }
       }
     }
@@ -114,7 +120,8 @@ export class SqliteAccessor<TableName extends string> {
         if (!allFields.includes(key) || fieldValue === undefined) {
           continue
         }
-        filterValue.push(`${key} LIKE '%' || ? || '%'`)
+        filterValue.push(`${key} ILIKE '%' || $${startIndex + 1} || '%'`)
+        startIndex++
         values.push(String(fieldValue))
       }
     }
@@ -151,7 +158,7 @@ export class SqliteAccessor<TableName extends string> {
     tableName: TableName,
     options?: RowSelectOneOptions<T, SqlRawFilter>
   ) => {
-    const { sql, values } = this.getWhereSql(tableName, options)
+    const { sql, values } = this.getWhereSql(tableName, 0, options)
     let orderBy = ''
     if (options?.sort && options.sort.length > 0) {
       orderBy = 'ORDER BY ' + options.sort.map((s) => `${s.field} ${s.type}`).join(', ')
@@ -162,61 +169,6 @@ export class SqliteAccessor<TableName extends string> {
       sql: `SELECT ${fieldNames} FROM ${tableName} ${sql} ${orderBy}`,
       values,
     }
-  }
-
-  private run = (sql: string, ...args: unknown[]) => {
-    return new Promise<{ lastId: number, changes: number }>((resolve, reject) => {
-      this.db.run(sql, args, function (err) {
-        if (err) {
-          reject(err)
-        } else {
-          resolve({
-            lastId: this.lastID,
-            changes: this.changes,
-          })
-        }
-      })
-    })
-  }
-
-  private all = <T extends Record<string, unknown>>(sql: string, complexFields: string[], ...args: unknown[]) => {
-    return new Promise<T[]>((resolve, reject) => {
-      this.db.all(sql, args, (err, rows: T[]) => {
-        if (err) {
-          reject(err)
-        } else {
-          for (const row of rows) {
-            this.restoreComplexFields(complexFields, row)
-          }
-          resolve(rows)
-        }
-      })
-    })
-  }
-
-  private get = <T extends Record<string, unknown>>(sql: string, complexFields: string[], ...args: unknown[]) => {
-    return new Promise<T | undefined>((resolve, reject) => {
-      this.db.get(sql, args, (err, row: T | undefined) => {
-        if (err) {
-          reject(err)
-        } else {
-          if (row) {
-            this.restoreComplexFields(complexFields, row)
-          }
-          resolve(row)
-        }
-      })
-    })
-  }
-
-  private restoreComplexFields = (complexFields: string[], row: Record<string, unknown>) => {
-    for (const field of complexFields) {
-      const value = row[field]
-      if (value && typeof value === 'string') {
-        row[field] = JSON.parse(value)
-      }
-    }
-    return row
   }
 }
 

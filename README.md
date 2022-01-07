@@ -181,6 +181,17 @@ import { SqliteAccessor } from 'protocol-based-web-framework'
 import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from './db-declaration'
 
 const sqliteAccessor = new SqliteAccessor(new sqlite.Database(':memory:'), tableSchemas)
+
+// import { MongoClient } from 'mongodb'
+// const client = new MongoClient('mongodb://localhost:27017')
+// await client.connect()
+// const mongodbAccessor = new MongodbAccessor(client.db('test'), tableSchemas)
+
+// import { Client } from 'pg'
+// const client = new Client()
+// await client.connect()
+// const postgresAccessor = new PostgresAccessor(client, tableSchemas)
+
 const insertRow: InsertRow = sqliteAccessor.insertRow
 const updateRow: UpdateRow = sqliteAccessor.updateRow
 const getRow: GetRow = sqliteAccessor.getRow

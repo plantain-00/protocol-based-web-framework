@@ -34,10 +34,12 @@ export type CountRow<T = SqlRawFilter> = {
 export const tableSchemas = {
   blogs: {
     fieldNames: ['id', 'content', 'meta'] as (keyof BlogSchema)[],
+    fieldTypes: ['real', 'text', 'jsonb'],
     complexFields: ['meta'] as string[],
   },
   posts: {
     fieldNames: ['id', 'content', 'blogId'] as (keyof PostSchema)[],
+    fieldTypes: ['real', 'text', 'real'],
     complexFields: [] as string[],
   },
 }
