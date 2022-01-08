@@ -5,13 +5,38 @@ import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, SqlRawFilter }
  * @public
  */
 export class PostgresAccessor<TableName extends string> {
-  constructor(private client: Client | Pool, private tableSchemas: Record<TableName, { fieldNames: string[], fieldTypes: string[] }>) {
+  constructor(
+    private client: Client | Pool,
+    private tableSchemas: Record<TableName, {
+      fieldNames: string[]
+      fieldTypes: string[]
+      autoIncrementField?: string
+      optionalFields: string[]
+      uniqueFields: string[]
+      indexFields: string[]
+    }>) {
   }
 
   public createTable = async (tableName: TableName) => {
-    const fieldNames = this.tableSchemas[tableName].fieldNames
-    const fieldTypes = this.tableSchemas[tableName].fieldTypes
-    await this.client.query(`CREATE TABLE IF NOT EXISTS ${tableName}(${fieldNames.map((f, i) => `${f} ${fieldTypes[i]}`).join(', ')})`)
+    const schema = this.tableSchemas[tableName]
+    const fields = schema.fieldNames.map((f, i) => {
+      const parts = [f]
+      if (schema.autoIncrementField === f) {
+        parts.push('SERIAL')
+      }
+      parts.push(schema.fieldTypes[i])
+      if (!schema.optionalFields.includes(f)) {
+        parts.push('NOT NULL')
+      }
+      if (schema.uniqueFields.includes(f)) {
+        parts.push('UNIQUE')
+      }
+      return parts.join(' ')
+    })
+    await this.client.query(`CREATE TABLE IF NOT EXISTS ${tableName}(${fields.join(', ')})`)
+    if (schema.indexFields.length > 0) {
+      await this.client.query(`CREATE INDEX ${tableName}_${schema.indexFields.join('_')}_index ON ${tableName} (${schema.indexFields.join(', ')})`)
+    }
   }
 
   public insertRow = async <T extends Record<string, unknown>>(
@@ -48,7 +73,7 @@ export class PostgresAccessor<TableName extends string> {
   ) => {
     const { sql, values } = this.getSelectSql(tableName, options)
     const result = await this.client.query<T>(sql, values)
-    return result.rows
+    return result.rows.map(this.nullToUndefined)
   }
 
   public countRow = async<T>(
@@ -66,7 +91,7 @@ export class PostgresAccessor<TableName extends string> {
   ) => {
     const { sql, values } = this.getSelectOneSql(tableName, options)
     const result = await this.client.query<T>(sql, values)
-    return result.rows[0]
+    return this.nullToUndefined(result.rows[0])
   }
 
   private getFieldsAndValues = <T extends Record<string, unknown>>(
@@ -169,6 +194,18 @@ export class PostgresAccessor<TableName extends string> {
       sql: `SELECT ${fieldNames} FROM ${tableName} ${sql} ${orderBy}`,
       values,
     }
+  }
+
+  private nullToUndefined = <T extends Record<string, unknown>>(row?: T) => {
+    if (row) {
+      for (const field of Object.keys(row)) {
+        const value = row[field]
+        if (value === null) {
+          delete row[field]
+        }
+      }
+    }
+    return row
   }
 }
 

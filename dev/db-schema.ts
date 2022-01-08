@@ -1,7 +1,10 @@
 /**
  * @entry blogs
  */
- export interface BlogSchema {
+export interface BlogSchema {
+  /**
+   * @autoincrement
+   */
   id: number
   content: string
   meta: unknown

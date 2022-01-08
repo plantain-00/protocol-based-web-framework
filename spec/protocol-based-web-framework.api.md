@@ -121,6 +121,10 @@ export class PostgresAccessor<TableName extends string> {
     constructor(client: Client | Pool, tableSchemas: Record<TableName, {
         fieldNames: string[];
         fieldTypes: string[];
+        autoIncrementField?: string;
+        optionalFields: string[];
+        uniqueFields: string[];
+        indexFields: string[];
     }>);
     // (undocumented)
     countRow: <T>(tableName: TableName, options?: Partial<{
@@ -137,11 +141,11 @@ export class PostgresAccessor<TableName extends string> {
         rawFilter: SqlRawFilter;
     }> | undefined) => Promise<void>;
     // (undocumented)
-    getRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOneOptions<T, SqlRawFilter> | undefined) => Promise<T>;
+    getRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOneOptions<T, SqlRawFilter> | undefined) => Promise<T | undefined>;
     // (undocumented)
     insertRow: <T extends Record<string, unknown>>(tableName: TableName, value: T) => Promise<number>;
     // (undocumented)
-    selectRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOptions<T, SqlRawFilter> | undefined) => Promise<T[]>;
+    selectRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOptions<T, SqlRawFilter> | undefined) => Promise<(T | undefined)[]>;
     // (undocumented)
     updateRow: <T extends Record<string, unknown>>(tableName: TableName, value?: T | undefined, options?: Partial<{
         filter: { [P in keyof T]?: T[P] | readonly T[P][] | undefined; };
@@ -194,6 +198,10 @@ export class SqliteAccessor<TableName extends string> {
     constructor(db: Database, tableSchemas: Record<TableName, {
         fieldNames: string[];
         complexFields: string[];
+        autoIncrementField?: string;
+        optionalFields: string[];
+        uniqueFields: string[];
+        indexFields: string[];
     }>);
     // (undocumented)
     countRow: <T>(tableName: TableName, options?: Partial<{

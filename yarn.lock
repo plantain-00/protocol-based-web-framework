@@ -5291,10 +5291,10 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-types-as-schema@1.42.0:
-  version "1.42.0"
-  resolved "https://registry.yarnpkg.com/types-as-schema/-/types-as-schema-1.42.0.tgz#55e277dde66cb89d03f8df3105d525612eb048ac"
-  integrity sha512-pIfcWwtlOLWt/adZ16L98aK7iNQl4Dr/cOvFirozcliIxW/80e6N5QgEqbXPEavxeX77W0+GEltYVL/YZXpblw==
+types-as-schema@1.43.0:
+  version "1.43.0"
+  resolved "https://registry.yarnpkg.com/types-as-schema/-/types-as-schema-1.43.0.tgz#c06efc781f7d246b93473fcd0cf71d3358264327"
+  integrity sha512-cVhdaRIRtWRM50hdT8hgA+YRyjbANim99ZmT0MTsACbThnusVimvsU93TpSqDhJKoKE+OAJXpo27t3fhgcoDnw==
   dependencies:
     ajv "7 || 8"
     chokidar "3"

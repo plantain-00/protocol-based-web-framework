@@ -12,7 +12,7 @@ export type SelectRow<T = SqlRawFilter> = {
 }
 
 export type InsertRow<T = number> = {
-  (tableName: 'blogs', value: BlogSchema): Promise<T>
+  (tableName: 'blogs', value: Pick<Partial<BlogSchema>, 'id'> & Omit<BlogSchema, 'id'>): Promise<T>
   (tableName: 'posts', value: PostSchema): Promise<T>
 }
 
@@ -36,11 +36,19 @@ export const tableSchemas = {
     fieldNames: ['id', 'content', 'meta'] as (keyof BlogSchema)[],
     fieldTypes: ['real', 'text', 'jsonb'],
     complexFields: ['meta'] as string[],
+    autoIncrementField: 'id' as string | undefined,
+    optionalFields: [] as string[],
+    uniqueFields: [] as string[],
+    indexFields: [] as string[],
   },
   posts: {
     fieldNames: ['id', 'content', 'blogId'] as (keyof PostSchema)[],
     fieldTypes: ['real', 'text', 'real'],
     complexFields: [] as string[],
+    autoIncrementField: undefined as string | undefined,
+    optionalFields: [] as string[],
+    uniqueFields: [] as string[],
+    indexFields: [] as string[],
   },
 }
 

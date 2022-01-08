@@ -84,38 +84,18 @@ export class HttpError extends Error {
   }
 }
 
-function extractBlogDbFilteredFields(
-  filter?: Partial<{
-    ignoredFields: BlogIgnorableField[]
-    pickedFields: (keyof Blog)[]
-  }>,
-) {
-  type IgnoredFields = Extract<BlogIgnorableField, keyof BlogSchema>
-  const result: {
-    ignoredFields?: IgnoredFields[]
-    pickedFields?: (keyof BlogSchema)[]
-  } = {}
-  if (filter?.ignoredFields) {
-    const ignoredFields: string[] = filter.ignoredFields
-    result.ignoredFields = tableSchemas.blogs.fieldNames.filter<IgnoredFields>((f): f is IgnoredFields => ignoredFields.includes(f))
+function extractBlogDbFilteredFields(filter?: Partial<{ ignoredFields?: string[], pickedFields?: string[] }>) {
+  return {
+    ignoredFields: filter?.ignoredFields ? tableSchemas.blogs.fieldNames.filter((f): f is Extract<BlogIgnorableField, keyof BlogSchema> => !!filter?.ignoredFields?.includes(f)) : undefined,
+    pickedFields: filter?.pickedFields ? tableSchemas.blogs.fieldNames.filter((f) => !!filter?.pickedFields?.includes(f)) : undefined,
   }
-  if (filter?.pickedFields) {
-    const pickedFields: string[] = filter.pickedFields
-    result.pickedFields = tableSchemas.blogs.fieldNames.filter<keyof BlogSchema>((f): f is keyof BlogSchema => pickedFields.includes(f))
-  }
-  return result
 }
 
 async function getBlogFilteredFields<TIgnored extends BlogIgnorableField = never, TPicked extends keyof Blog = keyof Blog>(
   blog: Partial<BlogSchema>,
-  filter?: Partial<{
-    ignoredFields: TIgnored[]
-    pickedFields: TPicked[]
-  }>
+  filter?: Partial<{ ignoredFields: BlogIgnorableField[], pickedFields: (keyof Blog)[] }>
 ) {
-  const ignoredFields: BlogIgnorableField[] | undefined = filter?.ignoredFields
-  const pickedFields: (keyof Blog)[] | undefined = filter?.pickedFields
-  const isIncluded = (field: Extract<BlogIgnorableField, keyof Blog>) => (!pickedFields || pickedFields.includes(field)) && !ignoredFields?.includes(field)
+  const isIncluded = (field: Extract<BlogIgnorableField, keyof Blog>) => (!filter?.pickedFields || filter.pickedFields.includes(field)) && !filter?.ignoredFields?.includes(field)
   return {
     ...blog,
     posts: !isIncluded('posts') ? undefined : await selectRow('posts', { filter: { blogId: blog.id } }),

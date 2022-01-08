@@ -5,12 +5,37 @@ import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, SqlRawFilter }
  * @public
  */
 export class SqliteAccessor<TableName extends string> {
-  constructor(private db: Database, private tableSchemas: Record<TableName, { fieldNames: string[], complexFields: string[] }>) {
+  constructor(
+    private db: Database,
+    private tableSchemas: Record<TableName, {
+      fieldNames: string[]
+      complexFields: string[]
+      autoIncrementField?: string
+      optionalFields: string[]
+      uniqueFields: string[]
+      indexFields: string[]
+    }>) {
   }
 
   public createTable = async (tableName: TableName) => {
-    const fieldNames = this.tableSchemas[tableName].fieldNames
-    await this.run(`CREATE TABLE IF NOT EXISTS ${tableName}(${fieldNames.join(', ')})`)
+    const schema = this.tableSchemas[tableName]
+    const fields = schema.fieldNames.map((f) => {
+      const parts = [f]
+      if (schema.autoIncrementField === f) {
+        parts.push('INTEGER PRIMARY KEY')
+      }
+      if (!schema.optionalFields.includes(f)) {
+        parts.push('NOT NULL')
+      }
+      if (schema.uniqueFields.includes(f)) {
+        parts.push('UNIQUE')
+      }
+      return parts.join(' ')
+    })
+    await this.run(`CREATE TABLE IF NOT EXISTS ${tableName}(${fields.join(', ')})`)
+    if (schema.indexFields.length > 0) {
+      await this.run(`CREATE INDEX ${tableName}_${schema.indexFields.join('_')}_index ON ${tableName} (${schema.indexFields.join(', ')})`)
+    }
   }
 
   public insertRow = async <T extends Record<string, unknown>>(
@@ -187,6 +212,7 @@ export class SqliteAccessor<TableName extends string> {
         } else {
           for (const row of rows) {
             this.restoreComplexFields(complexFields, row)
+            this.nullToUndefined(row)
           }
           resolve(rows)
         }
@@ -202,6 +228,7 @@ export class SqliteAccessor<TableName extends string> {
         } else {
           if (row) {
             this.restoreComplexFields(complexFields, row)
+            this.nullToUndefined(row)
           }
           resolve(row)
         }
@@ -214,6 +241,16 @@ export class SqliteAccessor<TableName extends string> {
       const value = row[field]
       if (value && typeof value === 'string') {
         row[field] = JSON.parse(value)
+      }
+    }
+    return row
+  }
+
+  private nullToUndefined = (row: Record<string, unknown>) => {
+    for (const field of Object.keys(row)) {
+      const value = row[field]
+      if (value === null) {
+        delete row[field]
       }
     }
     return row
