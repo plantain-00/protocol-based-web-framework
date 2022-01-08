@@ -3,7 +3,7 @@ import { tableSchemas } from './db-declaration'
 import { bindRestfulApiHandler, CreateBlog, DeleteBlog, GetBlogById, GetBlogs, PatchBlog } from './restful-api-backend-declaration'
 import { Blog, BlogIgnorableField } from './restful-api-schema'
 import { BlogSchema } from './db-schema'
-import { countRow, deleteRow, getRow, insertRow, selectRow, updateRow } from './db-service'
+import { countRow, deleteRow, getRow, insertRow, selectRow, updateRow } from './sqlite-service'
 
 export const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip, take, ignoredFields, pickedFields } }) => {
   const filter: RowFilterOptions<BlogSchema> = {
@@ -84,39 +84,24 @@ export class HttpError extends Error {
   }
 }
 
-function extractBlogDbFilteredFields<TIgnored extends BlogIgnorableField = never, TPicked extends keyof Blog = keyof Blog>(
+function extractBlogDbFilteredFields(
   filter?: Partial<{
-    ignoredFields: TIgnored[]
-    pickedFields: TPicked[]
+    ignoredFields: BlogIgnorableField[]
+    pickedFields: (keyof Blog)[]
   }>,
 ) {
+  type IgnoredFields = Extract<BlogIgnorableField, keyof BlogSchema>
   const result: {
-    ignoredFields?: Extract<BlogIgnorableField, keyof BlogSchema>[]
+    ignoredFields?: IgnoredFields[]
     pickedFields?: (keyof BlogSchema)[]
   } = {}
   if (filter?.ignoredFields) {
-    const ignoredFields: Extract<BlogIgnorableField, keyof BlogSchema>[] = []
-    for (const item of filter.ignoredFields) {
-      for (const r of tableSchemas.blogs.fieldNames) {
-        if (item === r) {
-          ignoredFields.push(item)
-          break
-        }
-      }
-    }
-    result.ignoredFields = ignoredFields
+    const ignoredFields: string[] = filter.ignoredFields
+    result.ignoredFields = tableSchemas.blogs.fieldNames.filter<IgnoredFields>((f): f is IgnoredFields => ignoredFields.includes(f))
   }
   if (filter?.pickedFields) {
-    const pickedFields: (keyof BlogSchema)[] = []
-    for (const item of filter.pickedFields) {
-      for (const r of tableSchemas.blogs.fieldNames) {
-        if (item === r) {
-          pickedFields.push(item)
-          break
-        }
-      }
-    }
-    result.pickedFields = pickedFields
+    const pickedFields: string[] = filter.pickedFields
+    result.pickedFields = tableSchemas.blogs.fieldNames.filter<keyof BlogSchema>((f): f is keyof BlogSchema => pickedFields.includes(f))
   }
   return result
 }

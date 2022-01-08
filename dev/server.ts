@@ -3,7 +3,7 @@ import * as bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import { getAndValidateRequestInput, respondHandleResult } from '../dist/nodejs'
 import { apiSchemas } from './restful-api-backend-declaration'
-import { initializeDatabase } from './db-service'
+import { initializeDatabase } from './sqlite-service'
 import { HttpError } from './blog-service'
 
 const app = express()
