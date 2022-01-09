@@ -235,7 +235,7 @@ export const getBlogs: GetBlogs = async ({ query: { skip, take } }) => {
 bindRestfulApiHandler('GetBlogs', getBlogs)
 ```
 
-[dev/blog.ts](./dev/blog-service.ts)
+[dev/blog-service.ts](./dev/blog-service.ts)
 
 ### 7. access restful api in backend unit test
 
