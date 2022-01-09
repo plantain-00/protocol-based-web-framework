@@ -1,9 +1,19 @@
+import type { RequestInfo, RequestInit, Response, BodyInit, HeadersInit } from 'node-fetch'
+import type NodeFormData = require('form-data')
 import { composeUrl, ApiValidation, ApiAccessorBase } from './api-access-lib'
 
 /**
  * @public
  */
-export class ApiAccessorFetch<T extends ApiValidation> extends ApiAccessorBase<T> {
+export class ApiAccessorNodeFetch<T extends ApiValidation> extends ApiAccessorBase<T> {
+  constructor(
+    validations: T[],
+    private fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
+    private FormData: typeof NodeFormData,
+  ) {
+    super(validations)
+  }
+
   public requestRestfulAPI = async (
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     url: string,
@@ -18,7 +28,7 @@ export class ApiAccessorFetch<T extends ApiValidation> extends ApiAccessorBase<T
     let headers: HeadersInit | undefined
     if (args?.body) {
       if (typeof args.body === 'object' && Object.values(args.body).some((b) => b instanceof Blob)) {
-        const formData = new FormData()
+        const formData = new this.FormData()
         for (const key in args.body) {
           formData.append(key, (args.body as { [key: string]: string | Blob })[key])
         }
@@ -28,7 +38,7 @@ export class ApiAccessorFetch<T extends ApiValidation> extends ApiAccessorBase<T
         headers = { 'content-type': 'application/json' }
       }
     }
-    const result = await fetch(
+    const result = await this.fetch(
       composedUrl,
       {
         method,

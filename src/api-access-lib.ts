@@ -1,6 +1,7 @@
 import produce from 'immer'
 import qs from 'qs'
 import type { ValidateFunction } from 'ajv'
+import type { Response as NodeFetchResponse } from 'node-fetch'
 import { ajvFrontend } from './restful-api-frontend-declaration-lib'
 
 export function composeUrl(
@@ -87,5 +88,33 @@ export class ApiAccessorBase<T extends ApiValidation> {
         }
       }
     }
+  }
+
+  protected getDataFromFetchResponse = async (
+    response: Response | NodeFetchResponse,
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+    url: string,
+    args?: {
+      path?: Record<string, string | number>,
+      query?: Record<string, unknown>,
+      body?: {}
+    },
+  ) => {
+    const contentType = response.headers.get('content-type')
+    if (contentType) {
+      const ignoredFields = args?.query?.ignoredFields as string[] | undefined
+      const pickedFields = args?.query?.pickedFields as string[] | undefined
+      if (contentType.includes('application/json')) {
+        const json = await response.json()
+        this.validateByJsonSchema(method, url, ignoredFields, pickedFields, json)
+        return json
+      }
+      if (contentType.includes('text/')) {
+        const text = await response.text()
+        this.validateByJsonSchema(method, url, ignoredFields, pickedFields, text)
+        return text
+      }
+    }
+    return response.blob()
   }
 }

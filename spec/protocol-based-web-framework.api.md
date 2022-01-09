@@ -14,12 +14,16 @@ import type { Database } from 'sqlite3';
 import type { Db } from 'mongodb';
 import type { Document as Document_2 } from 'mongodb';
 import type { Filter } from 'mongodb';
+import NodeFormData = require('form-data');
 import { ObjectID } from 'bson';
 import { ParsedQs } from 'qs';
 import type { Pool } from 'pg';
 import type { Readable } from 'stream';
 import type { Request as Request_2 } from 'express';
-import type { Response as Response_2 } from 'express';
+import type { RequestInfo as RequestInfo_2 } from 'node-fetch';
+import type { RequestInit as RequestInit_2 } from 'node-fetch';
+import type { Response as Response_2 } from 'node-fetch';
+import type { Response as Response_3 } from 'express';
 import { ValidateFunction } from 'ajv';
 import { WithId } from 'mongodb';
 
@@ -44,11 +48,28 @@ export class ApiAccessorAxios<T extends ApiValidation> extends ApiAccessorBase<T
 export class ApiAccessorBase<T extends ApiValidation> {
     constructor(validations: T[]);
     // (undocumented)
+    protected getDataFromFetchResponse: (response: Response | Response_2, method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, args?: {
+        path?: Record<string, string | number> | undefined;
+        query?: Record<string, unknown> | undefined;
+        body?: {} | undefined;
+    } | undefined) => Promise<any>;
+    // (undocumented)
     protected validateByJsonSchema: (method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, ignoredFields: string[] | undefined, pickedFields: string[] | undefined, input: unknown) => void;
 }
 
 // @public (undocumented)
 export class ApiAccessorFetch<T extends ApiValidation> extends ApiAccessorBase<T> {
+    // (undocumented)
+    requestRestfulAPI: (method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, args?: {
+        path?: Record<string, string | number> | undefined;
+        query?: Record<string, unknown> | undefined;
+        body?: {} | undefined;
+    } | undefined) => Promise<any>;
+}
+
+// @public (undocumented)
+export class ApiAccessorNodeFetch<T extends ApiValidation> extends ApiAccessorBase<T> {
+    constructor(validations: T[], fetch: (input: RequestInfo_2, init?: RequestInit_2) => Promise<Response_2>, FormData: typeof NodeFormData);
     // (undocumented)
     requestRestfulAPI: (method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, args?: {
         path?: Record<string, string | number> | undefined;
@@ -178,7 +199,7 @@ export class PostgresAccessor<TableName extends string> {
 }
 
 // @public (undocumented)
-export function respondHandleResult(result: {} | Readable, req: Request_2<{}, {}, {}>, res: Response_2<{}>): void;
+export function respondHandleResult(result: {} | Readable, req: Request_2<{}, {}, {}>, res: Response_3<{}>): void;
 
 // @public (undocumented)
 export type RowFilterOptions<T, TRaw = SqlRawFilter> = Partial<{

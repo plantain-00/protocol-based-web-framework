@@ -21,7 +21,7 @@ export default {
   },
   lint: {
     ts: `eslint --ext .js,.ts ${tsFiles}`,
-    export: `no-unused-export "src/**/*.ts" --strict --need-module tslib --ignore-module sqlite3 --ignore-module types-as-schema --ignore-module express --ignore-module mongodb --ignore-module pg --ignore-module axios`,
+    export: `no-unused-export "src/**/*.ts" --strict --need-module tslib --ignore-module sqlite3 --ignore-module types-as-schema --ignore-module express --ignore-module mongodb --ignore-module pg --ignore-module axios --ignore-module node-fetch --ignore-module form-data`,
     markdown: `markdownlint README.md`,
     typeCoverage: 'type-coverage -p src/tsconfig.nodejs.json --strict',
     typeCoverageBrowser: 'type-coverage -p src/tsconfig.browser.json --strict'
