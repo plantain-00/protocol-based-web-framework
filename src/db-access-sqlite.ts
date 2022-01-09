@@ -1,5 +1,6 @@
 import type { Database } from 'sqlite3'
 import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, SqlRawFilter } from './db-declaration-lib'
+import { isArray } from './utils'
 
 /**
  * @public
@@ -256,5 +257,3 @@ export class SqliteAccessor<TableName extends string> {
     return row
   }
 }
-
-const isArray = (arg: unknown): arg is unknown[] => Array.isArray(arg)

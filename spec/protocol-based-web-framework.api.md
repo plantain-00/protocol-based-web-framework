@@ -8,6 +8,7 @@
 /// <reference types="qs" />
 
 import Ajv from 'ajv';
+import type { AxiosStatic } from 'axios';
 import type { Client } from 'pg';
 import type { Database } from 'sqlite3';
 import type { Db } from 'mongodb';
@@ -29,9 +30,40 @@ export const ajvBackend: Ajv;
 export const ajvFrontend: Ajv;
 
 // @public (undocumented)
-export class ApiAccessorFetch<T extends {
+export class ApiAccessorAxios<T extends ApiValidation> extends ApiAccessorBase<T> {
+    constructor(validations: T[], axios: AxiosStatic);
+    // (undocumented)
+    requestRestfulAPI: (method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, args?: {
+        path?: Record<string, string | number> | undefined;
+        query?: Record<string, unknown> | undefined;
+        body?: {} | undefined;
+    } | undefined) => Promise<any>;
+}
+
+// @public (undocumented)
+export class ApiAccessorBase<T extends ApiValidation> {
+    constructor(validations: T[]);
+    // (undocumented)
+    protected validateByJsonSchema: (method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, ignoredFields: string[] | undefined, pickedFields: string[] | undefined, input: unknown) => void;
+}
+
+// @public (undocumented)
+export class ApiAccessorFetch<T extends ApiValidation> extends ApiAccessorBase<T> {
+    // (undocumented)
+    requestRestfulAPI: (method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, args?: {
+        path?: Record<string, string | number> | undefined;
+        query?: Record<string, unknown> | undefined;
+        body?: {} | undefined;
+    } | undefined) => Promise<any>;
+}
+
+// @public (undocumented)
+export interface ApiValidation {
+    // (undocumented)
     method: string;
-    url: string;
+    // (undocumented)
+    omittedReferences: string[];
+    // (undocumented)
     schema: {
         definitions: {
             [key: string]: {
@@ -43,31 +75,19 @@ export class ApiAccessorFetch<T extends {
             };
         };
     };
-    omittedReferences: string[];
-    validate: ValidateFunction;
+    // (undocumented)
+    url: string;
+    // (undocumented)
     urlPattern?: RegExp;
-}> {
-    constructor(validations: T[]);
     // (undocumented)
-    composeUrl: (url: string, args?: {
-        path?: {
-            [key: string]: string | number;
-        } | undefined;
-        query?: {} | undefined;
-    } | undefined) => string;
-    // (undocumented)
-    requestRestfulAPI: (method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, args?: {
-        path?: {
-            [key: string]: string | number;
-        } | undefined;
-        query?: {
-            ignoredFields?: string[] | undefined;
-            pickedFields?: string[] | undefined;
-            attachmentFileName?: string | undefined;
-        } | undefined;
-        body?: {} | undefined;
-    } | undefined) => Promise<any>;
+    validate: ValidateFunction;
 }
+
+// @public (undocumented)
+export function composeUrl(url: string, args?: {
+    path?: Record<string, string | number>;
+    query?: {};
+}): string;
 
 // @public (undocumented)
 export function getAndValidateRequestInput(req: Request_2<{}, {}, {}>, validate: ValidateFunction<unknown>, cookie?: unknown): string | {
@@ -81,6 +101,9 @@ export function getAndValidateRequestInput(req: Request_2<{}, {}, {}>, validate:
 
 // @public (undocumented)
 export const getKeys: <T>(obj: T) => (keyof T)[];
+
+// @public (undocumented)
+export const isArray: (arg: unknown) => arg is unknown[];
 
 // @public (undocumented)
 export class MongodbAccessor<TableName extends string> {

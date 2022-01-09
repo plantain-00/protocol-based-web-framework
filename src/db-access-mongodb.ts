@@ -1,5 +1,6 @@
 import type { Db, Filter, Document, Sort } from 'mongodb'
 import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, RowSelectProjectOption, RowSelectSortOption } from './db-declaration-lib'
+import { isArray } from './utils'
 
 /**
  * @public
@@ -158,8 +159,6 @@ export class MongodbAccessor<TableName extends string> {
     return projection
   }
 }
-
-const isArray = (arg: unknown): arg is unknown[] => Array.isArray(arg)
 
 /**
  * @public

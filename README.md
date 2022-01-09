@@ -136,6 +136,20 @@ curl -v http://localhost:3000/api/blogs?content=abc&foo=123&skip=10
 
 ### 1. define db schema
 
+```ts
+/**
+ * @entry blogs
+ */
+export interface BlogSchema {
+  /**
+   * @autoincrement
+   */
+  id: number
+  title: string
+  content: string
+}
+```
+
 [dev/db-schema.ts](./dev/db-schema.ts)
 
 ### 2. generate db declaration
@@ -144,11 +158,57 @@ curl -v http://localhost:3000/api/blogs?content=abc&foo=123&skip=10
 
 ### 3. access db
 
+```ts
+import * as sqlite from 'sqlite3'
+import { SqliteAccessor } from 'protocol-based-web-framework'
+import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from './db-declaration'
+
+const sqliteAccessor = new SqliteAccessor(new sqlite.Database(':memory:'), tableSchemas)
+export const insertRow: InsertRow = sqliteAccessor.insertRow
+export const updateRow: UpdateRow = sqliteAccessor.updateRow
+export const getRow: GetRow = sqliteAccessor.getRow
+export const selectRow: SelectRow = sqliteAccessor.selectRow
+export const deleteRow: DeleteRow = sqliteAccessor.deleteRow
+export const countRow: CountRow = sqliteAccessor.countRow
+
+for (const tableName of tableNames) {
+  await sqliteAccessor.createTable(tableName)
+}
+
+const id = await insertRow('blogs', { title: 'a', content: 'content a' })
+await updateRow('blogs', { content: 'new content' }, { filter: { id } })
+const rows = await selectRow('blogs')
+console.info(rows)
+await deleteRow('blogs', { filter: { id } })
+```
+
 + sqlite: [dev/sqlite-service.ts](./dev/sqlite-service.ts)
 + mongodb: [dev/mongodb-service.ts](./dev/mongodb-service.ts)
 + postgres: [dev/postgres-service.ts](./dev/postgres-service.ts)
 
 ### 4. define restful api schema
+
+```ts
+/**
+ * @method get
+ * @path /api/blogs
+ * @tags blog
+ */
+declare function getBlogs(
+  query: PaginationFields,
+): Promise<{ result: BlogSchema[], count: number }>
+
+interface PaginationFields {
+  /**
+   * @default 0
+   */
+  skip?: number
+  /**
+   * @default 10
+   */
+  take?: number
+}
+```
 
 [dev/restful-api-schema.ts](./dev/restful-api-schema.ts)
 
@@ -158,16 +218,84 @@ curl -v http://localhost:3000/api/blogs?content=abc&foo=123&skip=10
 
 ### 6. backend implement restful api declaration and binded to api
 
+```ts
+import { bindRestfulApiHandler, GetBlogs } from './restful-api-backend-declaration'
+
+export const getBlogs: GetBlogs = async ({ query: { skip, take } }) => {
+  return {
+    result: await selectRow('blogs', {
+      pagination: {
+        take,
+        skip,
+      },
+    }),
+    count: await countRow('blogs'),
+  }
+}
+bindRestfulApiHandler('GetBlogs', getBlogs)
+```
+
 [dev/blog.ts](./dev/blog-service.ts)
 
 ### 7. access restful api in backend unit test
+
+```ts
+const blog = await getBlogs({
+  query: {
+    skip: 0,
+    take: 10,
+  },
+})
+t.snapshot(blog)
+```
 
 [spec/blog-service.ts](./spec/blog-service.ts)
 
 ### 8. backend register restful api
 
+```ts
+import express from 'express'
+import * as bodyParser from 'body-parser'
+import { getAndValidateRequestInput, respondHandleResult } from 'protocol-based-web-framework'
+import { apiSchemas } from './restful-api-backend-declaration'
+
+const app = express()
+app.use(bodyParser.json())
+
+for (const { method, url, validate, handler } of apiSchemas) {
+  app[method](url, async (req: express.Request, res: express.Response) => {
+    try {
+      if (!handler) {
+        throw new Error('this api handler is not binded')
+      }
+      const input = getAndValidateRequestInput(req, validate)
+      if (typeof input === 'string') {
+        throw new Error(input)
+      }
+      const result = await handler(input)
+      respondHandleResult(result, req, res)
+    } catch (error) {
+      res.status(500).json({ message: error instanceof Error ? error.message : error }).end()
+    }
+  })
+}
+app.listen(3000)
+```
+
 [dev/server.ts](./dev/server.ts)
 
 ### 9. access restful api
 
-[dev/client.ts](./dev/client.ts)
+```ts
+import { RequestRestfulAPI, validations } from "./restful-api-frontend-declaration"
+import { ApiAccessorFetch } from 'protocol-based-web-framework'
+
+const apiAccessor = new ApiAccessorFetch(validations)
+const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI
+
+const blogs = await requestRestfulAPI('GET', '/api/blogs', { query: { skip: 0, take: 10 } })
+console.info(blogs)
+```
+
++ fetch: [dev/client-fetch.ts](./dev/client-fetch.ts)
++ axios: [dev/client-axios.ts](./dev/client-axios.ts)

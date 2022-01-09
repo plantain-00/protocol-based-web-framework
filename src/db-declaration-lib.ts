@@ -19,11 +19,6 @@ export type RowFilterOptions<T, TRaw = SqlRawFilter> = Partial<{
   rawFilter: TRaw
 }>
 
-/**
- * @public
- */
-export const getKeys: <T>(obj: T) => (keyof T)[] = Object.keys
-
 export interface SqlRawFilter {
   sql: string
   value: unknown[]

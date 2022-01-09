@@ -1,5 +1,6 @@
 import type { Client, Pool, QueryResultRow } from 'pg'
 import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, SqlRawFilter } from './db-declaration-lib'
+import { isArray } from './utils'
 
 /**
  * @public
@@ -208,5 +209,3 @@ export class PostgresAccessor<TableName extends string> {
     return row
   }
 }
-
-const isArray = (arg: unknown): arg is unknown[] => Array.isArray(arg)

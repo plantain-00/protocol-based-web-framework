@@ -237,7 +237,10 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
             if (pickedField) {
               return `Pick<${child.name}, TPicked>`
             }
-            return `Omit<${child.name}, TIgnored>`
+            if (ignorableField) {
+              return `Omit<${child.name}, TIgnored>`
+            }
+            return child.name
           }
           return undefined
         })
