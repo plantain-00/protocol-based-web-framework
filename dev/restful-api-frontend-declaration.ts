@@ -10,6 +10,11 @@ export type RequestRestfulAPI = {
   <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(method: 'PATCH', url: '/api/blogs/{id}', args: { path: { id: number }, query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }, body?: { content?: string, meta?: unknown } }): Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored> }>
   (method: 'DELETE', url: `/api/blogs/${number}`): Promise<{  }>
   (method: 'DELETE', url: '/api/blogs/{id}', args: { path: { id: number } }): Promise<{  }>
+  (method: 'GET', url: `/api/blogs/${number}/download`, args?: { query?: { attachmentFileName?: string } }): Promise<Blob>
+  (method: 'GET', url: '/api/blogs/{id}/download', args: { path: { id: number }, query?: { attachmentFileName?: string } }): Promise<Blob>
+  (method: 'POST', url: `/api/blogs/upload`, args: { body: { file: File, id: number } }): Promise<{  }>
+  (method: 'GET', url: `/api/blogs/${number}/text`): Promise<string>
+  (method: 'GET', url: '/api/blogs/{id}/text', args: { path: { id: number } }): Promise<string>
 }
 
 export type GetRequestApiUrl = {
@@ -21,6 +26,11 @@ export type GetRequestApiUrl = {
   <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(url: '/api/blogs/{id}', args: { path: { id: number }, query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] } }): string
   (url: `/api/blogs/${number}`): string
   (url: '/api/blogs/{id}', args: { path: { id: number } }): string
+  (url: `/api/blogs/${number}/download`, args?: { query?: { attachmentFileName?: string } }): string
+  (url: '/api/blogs/{id}/download', args: { path: { id: number }, query?: { attachmentFileName?: string } }): string
+  (url: `/api/blogs/upload`): string
+  (url: `/api/blogs/${number}/text`): string
+  (url: '/api/blogs/{id}/text', args: { path: { id: number } }): string
 }
 
 const getBlogsJsonSchema = {
@@ -258,6 +268,19 @@ const deleteBlogJsonSchema = {
   "required": [],
   "definitions": {}
 }
+const downloadBlogJsonSchema = {
+  "definitions": {}
+}
+const uploadBlogJsonSchema = {
+  "type": "object",
+  "properties": {},
+  "required": [],
+  "definitions": {}
+}
+const getBlogTextJsonSchema = {
+  "type": "string",
+  "definitions": {}
+}
 
 export const validations = [
   {
@@ -267,6 +290,7 @@ export const validations = [
     omittedReferences: ['Blog'] as string[],
     validate: ajvFrontend.compile(getBlogsJsonSchema),
     urlPattern: undefined as RegExp | undefined,
+    responseType: 'json' as 'json' | 'text' | 'blob',
   },
   {
     url: '/api/blogs/{id}',
@@ -274,7 +298,8 @@ export const validations = [
     schema: getBlogByIdJsonSchema,
     omittedReferences: ['Blog'] as string[],
     validate: ajvFrontend.compile(getBlogByIdJsonSchema),
-    urlPattern: new RegExp(/^\/api\/blogs\/.+$/) as RegExp | undefined,
+    urlPattern: new RegExp(/^\/api\/blogs\/[^\\/]+$/) as RegExp | undefined,
+    responseType: 'json' as 'json' | 'text' | 'blob',
   },
   {
     url: '/api/blogs',
@@ -283,6 +308,7 @@ export const validations = [
     omittedReferences: ['Blog'] as string[],
     validate: ajvFrontend.compile(createBlogJsonSchema),
     urlPattern: undefined as RegExp | undefined,
+    responseType: 'json' as 'json' | 'text' | 'blob',
   },
   {
     url: '/api/blogs/{id}',
@@ -290,7 +316,8 @@ export const validations = [
     schema: patchBlogJsonSchema,
     omittedReferences: ['Blog'] as string[],
     validate: ajvFrontend.compile(patchBlogJsonSchema),
-    urlPattern: new RegExp(/^\/api\/blogs\/.+$/) as RegExp | undefined,
+    urlPattern: new RegExp(/^\/api\/blogs\/[^\\/]+$/) as RegExp | undefined,
+    responseType: 'json' as 'json' | 'text' | 'blob',
   },
   {
     url: '/api/blogs/{id}',
@@ -298,6 +325,34 @@ export const validations = [
     schema: deleteBlogJsonSchema,
     omittedReferences: [] as string[],
     validate: ajvFrontend.compile(deleteBlogJsonSchema),
-    urlPattern: new RegExp(/^\/api\/blogs\/.+$/) as RegExp | undefined,
+    urlPattern: new RegExp(/^\/api\/blogs\/[^\\/]+$/) as RegExp | undefined,
+    responseType: 'json' as 'json' | 'text' | 'blob',
+  },
+  {
+    url: '/api/blogs/{id}/download',
+    method: 'GET',
+    schema: downloadBlogJsonSchema,
+    omittedReferences: [] as string[],
+    validate: ajvFrontend.compile(downloadBlogJsonSchema),
+    urlPattern: new RegExp(/^\/api\/blogs\/[^\\/]+\/download$/) as RegExp | undefined,
+    responseType: 'blob' as 'json' | 'text' | 'blob',
+  },
+  {
+    url: '/api/blogs/upload',
+    method: 'POST',
+    schema: uploadBlogJsonSchema,
+    omittedReferences: [] as string[],
+    validate: ajvFrontend.compile(uploadBlogJsonSchema),
+    urlPattern: undefined as RegExp | undefined,
+    responseType: 'json' as 'json' | 'text' | 'blob',
+  },
+  {
+    url: '/api/blogs/{id}/text',
+    method: 'GET',
+    schema: getBlogTextJsonSchema,
+    omittedReferences: [] as string[],
+    validate: ajvFrontend.compile(getBlogTextJsonSchema),
+    urlPattern: new RegExp(/^\/api\/blogs\/[^\\/]+\/text$/) as RegExp | undefined,
+    responseType: 'text' as 'json' | 'text' | 'blob',
   },
 ]

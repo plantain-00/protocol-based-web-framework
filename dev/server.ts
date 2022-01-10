@@ -1,6 +1,8 @@
 import express from 'express'
 import * as bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
+import stream from 'stream'
+import multer from 'multer'
 import { getAndValidateRequestInput, respondHandleResult } from '../dist/nodejs'
 import { apiSchemas } from './restful-api-backend-declaration'
 import { initializeDatabase } from './sqlite-service'
@@ -10,8 +12,25 @@ const app = express()
 app.use(bodyParser.json())
 app.use(cookieParser())
 
+class MultipartToStream implements multer.StorageEngine {
+  public _handleFile(_req: express.Request<{}, {}, {}>, file: Express.Multer.File, cb: (error: Error | null, info?: Partial<Express.Multer.File>) => void) {
+    const pass = new stream.PassThrough()
+    file.stream.pipe(pass)
+    cb(null, {
+      stream: pass,
+    })
+  }
+  public _removeFile(_req: express.Request<{}, {}, {}>, _file: Express.Multer.File, cb: (error: Error | null, info?: Partial<Express.Multer.File>) => void) {
+    cb(null)
+  }
+}
+
+const upload = multer({
+  storage: new MultipartToStream(),
+})
+
 for (const { method, url, validate, handler } of apiSchemas) {
-  app[method](url, async (req: express.Request<{}, {}, {}>, res: express.Response<{}>) => {
+  app[method](url, upload.any(), async (req: express.Request<{}, {}, {}>, res: express.Response<{}>) => {
     try {
       if (!handler) {
         throw new HttpError('this api handler is not binded', 500)

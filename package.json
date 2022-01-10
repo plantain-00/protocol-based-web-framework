@@ -43,6 +43,7 @@
     "html-webpack-plugin": "5.5.0",
     "markdownlint-cli": "0.30.0",
     "mongodb": "4.2.2",
+    "multer": "1.4.4",
     "no-unused-export": "1.14.2",
     "node-fetch": "2.6.6",
     "pg": "8.7.1",

@@ -384,6 +384,99 @@
           }
         }
       }
+    },
+    "/api/blogs/{id}/download": {
+      "get": {
+        "operationId": "downloadBlog",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "attachmentFileName",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "blog"
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "file"
+            }
+          }
+        }
+      }
+    },
+    "/api/blogs/upload": {
+      "post": {
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "operationId": "uploadBlog",
+        "parameters": [
+          {
+            "name": "file",
+            "required": true,
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "formData",
+            "type": "number"
+          }
+        ],
+        "tags": [
+          "blog"
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    },
+    "/api/blogs/{id}/text": {
+      "get": {
+        "operationId": "getBlogText",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "tags": [
+          "blog"
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {

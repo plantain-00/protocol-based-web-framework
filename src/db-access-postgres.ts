@@ -32,9 +32,14 @@ export class PostgresAccessor<TableName extends string> {
       if (schema.uniqueFields.includes(f)) {
         parts.push('UNIQUE')
       }
-      return parts.join(' ')
+      return parts
     })
-    await this.client.query(`CREATE TABLE IF NOT EXISTS ${tableName}(${fields.join(', ')})`)
+    await this.client.query(`CREATE TABLE IF NOT EXISTS ${tableName}(${fields.map((f) => f.join(' ')).join(', ')})`)
+
+    for (const [fieldName, ...fieldTypeParts] of fields) {
+      await this.client.query(`ALTER TABLE ${tableName} ADD COLUMN IF NOT EXISTS ${fieldName} ${fieldTypeParts.join(' ')}`)
+    }
+
     if (schema.indexFields.length > 0) {
       await this.client.query(`CREATE INDEX ${tableName}_${schema.indexFields.join('_')}_index ON ${tableName} (${schema.indexFields.join(', ')})`)
     }

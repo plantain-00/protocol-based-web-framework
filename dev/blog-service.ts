@@ -1,6 +1,8 @@
+import * as fs from 'fs'
+import * as path from 'path'
 import { RowFilterOptions } from '../dist/nodejs'
 import { tableSchemas } from './db-declaration'
-import { bindRestfulApiHandler, CreateBlog, DeleteBlog, GetBlogById, GetBlogs, PatchBlog } from './restful-api-backend-declaration'
+import { bindRestfulApiHandler, CreateBlog, DeleteBlog, DownloadBlog, GetBlogById, GetBlogs, GetBlogText, PatchBlog, UploadBlog } from './restful-api-backend-declaration'
 import { Blog, BlogIgnorableField } from './restful-api-schema'
 import { BlogSchema } from './db-schema'
 import { countRow, deleteRow, getRow, insertRow, selectRow, updateRow } from './sqlite-service'
@@ -77,6 +79,25 @@ export const deleteBlog: DeleteBlog = async ({ path: { id } }) => {
   return {}
 }
 bindRestfulApiHandler('DeleteBlog', deleteBlog)
+
+const downloadBlog: DownloadBlog = async ({ path: { id } }) => {
+  console.info(id)
+  return fs.createReadStream(path.resolve(process.cwd(), 'README.md'))
+}
+bindRestfulApiHandler('DownloadBlog', downloadBlog)
+
+const uploadBlog: UploadBlog = async ({ body: { file, id } }) => {
+  console.info(id)
+  file.pipe(fs.createWriteStream('a.png'))
+  return {}
+}
+bindRestfulApiHandler('UploadBlog', uploadBlog)
+
+const getBlogText: GetBlogText = async ({ path: { id } }) => {
+  console.info(id)
+  return fs.readFileSync(path.resolve(process.cwd(), 'README.md')).toString()
+}
+bindRestfulApiHandler('GetBlogText', getBlogText)
 
 export class HttpError extends Error {
   constructor(message: string, public statusCode = 500) {

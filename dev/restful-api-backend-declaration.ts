@@ -9,6 +9,9 @@ export type GetBlogById = <TIgnored extends BlogIgnorableField = never, TPicked 
 export type CreateBlog = <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(req: { query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }, body: { content: string }, cookie: { myUserId: number } }) => Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored> }>
 export type PatchBlog = <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(req: { path: { id: number }, query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }, body?: { content?: string, meta?: unknown }, cookie: { myUserId: number } }) => Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored> }>
 export type DeleteBlog = (req: { path: { id: number }, cookie: { myUserId: number } }) => Promise<{  }>
+export type DownloadBlog = (req: { path: { id: number }, query?: { attachmentFileName?: string } }) => Promise<Readable>
+export type UploadBlog = (req: { body: { file: Readable, id: number } }) => Promise<{  }>
+export type GetBlogText = (req: { path: { id: number } }) => Promise<string>
 
 const getBlogsValidate = ajvBackend.compile({
   "type": "object",
@@ -329,6 +332,77 @@ const deleteBlogValidate = ajvBackend.compile({
   ],
   "definitions": {}
 })
+const downloadBlogValidate = ajvBackend.compile({
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "query": {
+      "type": "object",
+      "properties": {
+        "attachmentFileName": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  "required": [
+    "path"
+  ],
+  "definitions": {}
+})
+const uploadBlogValidate = ajvBackend.compile({
+  "type": "object",
+  "properties": {
+    "body": {
+      "type": "object",
+      "properties": {
+        "file": {},
+        "id": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "file",
+        "id"
+      ]
+    }
+  },
+  "required": [
+    "body"
+  ],
+  "definitions": {}
+})
+const getBlogTextValidate = ajvBackend.compile({
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    }
+  },
+  "required": [
+    "path"
+  ],
+  "definitions": {}
+})
 
 export const apiSchemas = [
   {
@@ -371,6 +445,30 @@ export const apiSchemas = [
     validate: deleteBlogValidate,
     handler: undefined as ((req: unknown) => Promise<{} | Readable>) | undefined,
   },
+  {
+    name: 'DownloadBlog',
+    method: 'get' as const,
+    url: '/api/blogs/:id/download',
+    tags: ["blog"],
+    validate: downloadBlogValidate,
+    handler: undefined as ((req: unknown) => Promise<{} | Readable>) | undefined,
+  },
+  {
+    name: 'UploadBlog',
+    method: 'post' as const,
+    url: '/api/blogs/upload',
+    tags: ["blog"],
+    validate: uploadBlogValidate,
+    handler: undefined as ((req: unknown) => Promise<{} | Readable>) | undefined,
+  },
+  {
+    name: 'GetBlogText',
+    method: 'get' as const,
+    url: '/api/blogs/:id/text',
+    tags: ["blog"],
+    validate: getBlogTextValidate,
+    handler: undefined as ((req: unknown) => Promise<{} | Readable>) | undefined,
+  },
 ]
 
 export const bindRestfulApiHandler: {
@@ -379,6 +477,9 @@ export const bindRestfulApiHandler: {
   (name: 'CreateBlog', req: CreateBlog): void
   (name: 'PatchBlog', req: PatchBlog): void
   (name: 'DeleteBlog', req: DeleteBlog): void
+  (name: 'DownloadBlog', req: DownloadBlog): void
+  (name: 'UploadBlog', req: UploadBlog): void
+  (name: 'GetBlogText', req: GetBlogText): void
 } = (name: string, handler: (input: any) => Promise<{} | Readable>) => {
   const schema = apiSchemas.find((s) => s.name === name)
   if (schema) {

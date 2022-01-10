@@ -36,19 +36,25 @@ export interface ApiValidation {
   omittedReferences: string[]
   validate: ValidateFunction
   urlPattern?: RegExp
+  responseType: 'json' | 'text' | 'blob'
 }
 
 export class ApiAccessorBase<T extends ApiValidation> {
   constructor(private validations: T[]) { }
 
-  protected validateByJsonSchema = (
+  protected getValidation = (
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     url: string,
+  ) => {
+    return this.validations.find((v) => v.method === method && (v.url === url || v.urlPattern?.test(url)))
+  }
+
+  protected validateByJsonSchema = (
+    validation: T | undefined,
     ignoredFields: string[] | undefined,
     pickedFields: string[] | undefined,
     input: unknown,
   ) => {
-    const validation = this.validations.find((v) => v.method === method && (v.url === url || v.urlPattern?.test(url)))
     if (validation) {
       if ((ignoredFields && ignoredFields.length > 0) || pickedFields) {
         const schemaWithoutIgnoredFields = produce(
@@ -104,14 +110,15 @@ export class ApiAccessorBase<T extends ApiValidation> {
     if (contentType) {
       const ignoredFields = args?.query?.ignoredFields as string[] | undefined
       const pickedFields = args?.query?.pickedFields as string[] | undefined
-      if (contentType.includes('application/json')) {
+      const validation = this.getValidation(method, url)
+      if (contentType.includes('application/json') || validation?.responseType === 'json') {
         const json = await response.json()
-        this.validateByJsonSchema(method, url, ignoredFields, pickedFields, json)
+        this.validateByJsonSchema(validation, ignoredFields, pickedFields, json)
         return json
       }
-      if (contentType.includes('text/')) {
+      if (contentType.includes('text/') || validation?.responseType === 'text') {
         const text = await response.text()
-        this.validateByJsonSchema(method, url, ignoredFields, pickedFields, text)
+        this.validateByJsonSchema(validation, ignoredFields, pickedFields, text)
         return text
       }
     }

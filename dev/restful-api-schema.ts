@@ -66,6 +66,39 @@ declare function deleteBlog(
   cookie: MyUserIdField,
 ): Promise<{}>
 
+/**
+ * @method get
+ * @path /api/blogs/{id}/download
+ * @tags blog
+ */
+ declare function downloadBlog(
+  path: IdField,
+  query: {
+    attachmentFileName?: string,
+  },
+): Promise<File>
+
+/**
+ * @method post
+ * @path /api/blogs/upload
+ * @tags blog
+ */
+declare function uploadBlog(
+  body: {
+    file: File,
+    id: number,
+  },
+): Promise<{}>
+
+/**
+ * @method get
+ * @path /api/blogs/{id}/text
+ * @tags blog
+ */
+declare function getBlogText(
+  path: IdField,
+): Promise<string>
+
 export type BlogIgnorableField = 'posts' | 'meta'
 
 export interface Blog extends BlogSchema {

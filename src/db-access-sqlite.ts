@@ -31,9 +31,17 @@ export class SqliteAccessor<TableName extends string> {
       if (schema.uniqueFields.includes(f)) {
         parts.push('UNIQUE')
       }
-      return parts.join(' ')
+      return parts
     })
-    await this.run(`CREATE TABLE IF NOT EXISTS ${tableName}(${fields.join(', ')})`)
+    await this.run(`CREATE TABLE IF NOT EXISTS ${tableName}(${fields.map((f) => f.join(' ')).join(', ')})`)
+
+    const rows = await this.all(`PRAGMA table_info(${tableName})`, [])
+    for (const [fieldName, ...fieldTypeParts] of fields) {
+      if (rows.every((r) => r.name !== fieldName)) {
+        await this.run(`ALTER TABLE ${tableName} ADD COLUMN ${fieldName} ${fieldTypeParts.join(' ')}`)
+      }
+    }
+
     if (schema.indexFields.length > 0) {
       await this.run(`CREATE INDEX ${tableName}_${schema.indexFields.join('_')}_index ON ${tableName} (${schema.indexFields.join(', ')})`)
     }

@@ -6,7 +6,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   const getRequestApiUrlResult: string[] = []
   const references: string[] = []
   const requestJsonSchemas: Array<{ name: string, schema: string }> = []
-  const responseJsonSchemas: Array<{ name: string, url: string, method: string, schema: string, omittedReferences: string[], urlPattern?: string }> = []
+  const responseJsonSchemas: Array<{ name: string, url: string, method: string, schema: string, omittedReferences: string[], urlPattern?: string, responseType: 'json' | 'text' | 'blob' }> = []
   const bindRestfulApiHandlerTypes: string[] = []
   const apiSchemas: string[] = []
   const definitions = getAllDefinitions({ declarations: typeDeclarations, looseMode: true })
@@ -113,8 +113,20 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       let urlPattern = declaration.path
       const pathParameters = declarationParameters.filter((p) => p.in === 'path')
       pathParameters.forEach((p) => {
-        urlPattern = urlPattern.split(`{${p.name}}`).join('.+')
+        urlPattern = urlPattern.split(`{${p.name}}`).join('[^\\/]+')
       })
+
+      let responseType: 'json' | 'text' | 'blob'
+      if (declaration.type.kind === 'file') {
+        responseType = 'blob'
+      } else {
+        if (declaration.type.kind === 'string') {
+          responseType = 'text'
+        } else {
+          responseType = 'json'
+        }
+      }
+      
       const responseJsonSchema = {
         name: declaration.name,
         method: declaration.method,
@@ -128,6 +140,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
           definitions: responseMergedDefinitions
         }, null, 2),
         urlPattern: pathParameters.length > 0 ? `/^${urlPattern.split('/').join('\\/')}$/` : undefined,
+        responseType,
       }
       responseJsonSchemas.push(responseJsonSchema)
 
@@ -310,6 +323,7 @@ ${responseJsonSchemas.map((s) => `  {
     omittedReferences: [${s.omittedReferences.map((m) => `'${m}'`).join(',')}] as string[],
     validate: ajvFrontend.compile(${s.name}JsonSchema),
     urlPattern: ${s.urlPattern ? `new RegExp(${s.urlPattern})` : 'undefined'} as RegExp | undefined,
+    responseType: '${s.responseType}' as 'json' | 'text' | 'blob',
   },`).join('\n')}
 ]
 `

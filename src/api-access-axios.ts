@@ -32,25 +32,27 @@ export class ApiAccessorAxios<T extends ApiValidation> extends ApiAccessorBase<T
         headers = { 'content-type': 'application/json' }
       }
     }
+    const validation = this.getValidation(method, url)
     const result = await this.axios.request<unknown, AxiosResponse<unknown, unknown>, unknown>(
       {
         url: composedUrl,
         method,
         data: body,
         headers,
+        responseType: validation?.responseType,
       })
     const contentType = result.headers['content-type']
     if (contentType) {
       const ignoredFields = args?.query?.ignoredFields as string[] | undefined
       const pickedFields = args?.query?.pickedFields as string[] | undefined
-      if (contentType.includes('application/json')) {
+      if (contentType.includes('application/json') || validation?.responseType === 'json') {
         const json = result.data
-        this.validateByJsonSchema(method, url, ignoredFields, pickedFields, json)
+        this.validateByJsonSchema(validation, ignoredFields, pickedFields, json)
         return json
       }
-      if (contentType.includes('text/')) {
+      if (contentType.includes('text/') || validation?.responseType === 'text') {
         const text = result.data
-        this.validateByJsonSchema(method, url, ignoredFields, pickedFields, text)
+        this.validateByJsonSchema(validation, ignoredFields, pickedFields, text)
         return text
       }
     }

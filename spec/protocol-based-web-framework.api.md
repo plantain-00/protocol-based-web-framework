@@ -54,7 +54,9 @@ export class ApiAccessorBase<T extends ApiValidation> {
         body?: {} | undefined;
     } | undefined) => Promise<any>;
     // (undocumented)
-    protected validateByJsonSchema: (method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, ignoredFields: string[] | undefined, pickedFields: string[] | undefined, input: unknown) => void;
+    protected getValidation: (method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string) => T | undefined;
+    // (undocumented)
+    protected validateByJsonSchema: (validation: T | undefined, ignoredFields: string[] | undefined, pickedFields: string[] | undefined, input: unknown) => void;
 }
 
 // @public (undocumented)
@@ -84,6 +86,8 @@ export interface ApiValidation {
     method: string;
     // (undocumented)
     omittedReferences: string[];
+    // (undocumented)
+    responseType: 'json' | 'text' | 'blob';
     // (undocumented)
     schema: {
         definitions: {

@@ -15,123 +15,6 @@ A protocol and code generation based web framework.
 
 `yarn add protocol-based-web-framework types-as-schema`
 
-## features
-
-### generating swagger for restful api
-
-[dev/swagger.json](./dev/swagger.json)
-
-### type safe ignorable/pickable field in db access
-
-```ts
-const blogs1 = await selectRow('blogs', {
-  ignoredFields: ['content', 'meta'],
-})
-// sql: SELECT id FROM blogs
-// blogs1: Omit<Pick<BlogSchema, keyof BlogSchema>, "content" | "meta">[]
-// blogs1: [ { id: 2 } ]
-
-const blogs2 = await selectRow('blogs', {
-  pickedFields: ['id', 'content'],
-})
-// sql: SELECT id, content FROM blogs
-// blogs2: Omit<Pick<BlogSchema, "id" | "content">, never>[]
-// blogs2: [ { id: 2, content: 'blog 2 content' } ]
-```
-
-### type safe ignorable/pickable field in restful api backend access
-
-```ts
-const blogs1 = await getBlogs({
-  query: {
-    skip: 0,
-    take: 10,
-    sortField: 'id',
-    sortType: 'asc',
-    ignoredFields: ['posts', 'meta'],
-  },
-  cookie: {
-    myUserId: 1,
-  },
-})
-// blogs1: { result: Omit<Pick<Blog, "posts" | "id" | "content" | "meta">, "posts" | "meta">[]; count: number; }
-// blogs1: { result: [ { id: 2, content: 'blog 2 content' } ], count: 1 }
-
-const blogs2 = await getBlogs({
-  query: {
-    skip: 0,
-    take: 10,
-    sortField: 'id',
-    sortType: 'asc',
-    pickedFields: ['id', 'posts'],
-  },
-  cookie: {
-    myUserId: 1,
-  },
-})
-// blogs2: { result: Omit<Pick<Blog, "posts" | "id">, never>[]; count: number; }
-// blogs2: { result: [ { id: 2, posts: [Array] } ], count: 1 }
-```
-
-### type safe ignorable/pickable field in restful api frontend side access
-
-```ts
-const blogs1 = await requestRestfulAPI('GET', '/api/blogs', { query: { ignoredFields: ['posts', 'meta'] } })
-// blogs1: { result: Omit<Pick<Blog, "posts" | "id" | "content" | "meta">, "posts" | "meta">[]; count: number; }
-// blogs1: { result: [ { id: 2, content: 'blog 2 content' } ], count: 1 }
-
-const blogs2 = await requestRestfulAPI('GET', '/api/blogs', { query: { pickedFields: ['id', 'content'] } })
-// blogs2: { result: Omit<Pick<Blog, "id" | "content">, never>[]; count: number; }
-// blogs2: { result: [ { id: 2, content: 'blog 2 content' } ], count: 1 }
-```
-
-### type safe requestRestfulAPI
-
-```ts
-await requestRestfulAPI('GET', `/api/blogs/1`) // ✅
-await requestRestfulAPI('GET', `/api/blogs/abc`) // ❌
-await requestRestfulAPI('GET', '/api/blogs/{id}', { path: { id: 1 } }) // ✅
-await requestRestfulAPI('GET', '/api/blogs/{id}', { path: { id: 'abc' } }) // ❌
-```
-
-### optional query population
-
-### filters
-
-```ts
-await selectRow('blogs', {
-  filter: {
-    id: [1, 2],
-    content: 'www',
-  },
-  fuzzyFilter: {
-    content: 'abc',
-  },
-  rawFilter: {
-    sql: '(id = ? OR content = ?)',
-    value: [1, 'abc'],
-  },
-})
-// SELECT id, content, meta FROM blogs WHERE id IN (?, ?) AND content = ? AND content LIKE '%' || ? || '%' AND (id = ? OR content = ?)
-```
-
-### request and response validation
-
-```txt
-curl -v http://localhost:3000/api/blogs/abc
-
-HTTP/1.1 400 Bad Request
-{"message":"must be number"}
-```
-
-### request normalization(remove additional fields, fill default value, type '123' -> 123)
-
-```txt
-curl -v http://localhost:3000/api/blogs?content=abc&foo=123&skip=10
-
-{ content: 'abc', skip: 10, take: 10, sortField: 'id', sortType: 'asc' }
-```
-
 ## usage
 
 ### 1. define db schema
@@ -150,11 +33,45 @@ export interface BlogSchema {
 }
 ```
 
+`@entry` is the table name.
+
+Different db schemas can share same fields, for example:
+
+```ts
+interface BlogSchema extends Created, Updated {
+  // ...
+}
+interface PostSchema extends Created, Updated {
+  // ...
+}
+interface Created {
+  createdBy: number
+  createdAt: string
+}
+interface Updated {
+  updatedBy: number
+  updatedAt: string
+}
+```
+
++ Field name is the db table field name.
++ Non-optional field means the db table field is `NOT NULL`
++ Field type is the db table field type, for postgres, `number` means `real`, `string` means `text`, `boolean` means `boolean`, `Date` means `timestamp with time zone`, other types will stored as `jsonb`. `@type` can be used to mark more explicited db field type, for example `@type integer`.
++ `@autoincrement` marked field means the db table field is `INTEGER PRIMARY KEY`(sqlite) or `SERIAL`(postgress)
++ `@unique` marked field means the db table field is `UNIQUE`
++ `@index` marked field means the db table field is `INDEX`
+
 [dev/db-schema.ts](./dev/db-schema.ts)
 
 ### 2. generate db declaration
 
 `DB_SCHEMA_PATH=./db-schema OUTPUT_PATH=./dev/db-declaration.ts types-as-schema ./dev/db-schema.ts --config ./node_modules/protocol-based-web-framework/nodejs/generate-db-declaration.js`
+
+`OUTPUT_PATH` is output file path.
+
+`DB_SCHEMA_PATH` is db schema model entry file path(relative to output file), generated ts file will import types from it.
+
+`--config` is the generation script file path.
 
 ### 3. access db
 
@@ -186,6 +103,38 @@ await deleteRow('blogs', { filter: { id } })
 + mongodb: [dev/mongodb-service.ts](./dev/mongodb-service.ts)
 + postgres: [dev/postgres-service.ts](./dev/postgres-service.ts)
 
+`createTable` can also migrate compatible db schema changes by `CREATE TABLE IF NOT EXISTS` and `ADD COLUMN IF NOT EXISTS`.
+
+`getRow` and `selectRow` support ignorable/pickable.
+
++ It's type safe, if the fields are ignored or not picked, the return value's type will omit them.
++ Only not ignored and picked fields will be in executed sql or mongodb projection.
+
+```ts
+const blogs = await selectRow('blogs', {
+  pickedFields: ['id'],
+})
+```
+
+The accessor supports `filter`, `fuzzyFilter` and `rawFilter`, for example:
+
+```ts
+await selectRow('blogs', {
+  filter: {
+    id: [1, 2],
+    content: 'www',
+  },
+  fuzzyFilter: {
+    content: 'abc',
+  },
+  rawFilter: {
+    sql: '(id = ? OR content = ?)',
+    value: [1, 'abc'],
+  },
+})
+// SELECT id, content, meta FROM blogs WHERE id IN (?, ?) AND content = ? AND content LIKE '%' || ? || '%' AND (id = ? OR content = ?)
+```
+
 ### 4. define restful api schema
 
 ```ts
@@ -212,9 +161,43 @@ interface PaginationFields {
 
 [dev/restful-api-schema.ts](./dev/restful-api-schema.ts)
 
+`@method`, `@path`, `@tags` follow swagger specification.
+
+Function name should be unique name for api binding, and is used for generating backend types: `getBlogs` -> `GetBlogs`
+
+Function parameter name can be `query`, `path`, `body`, `cookie`, they are different parts of a restful api request.
+
+Function parameter type defines parameters(`name`, `required`, `schema`) of each restful api request part.
+
+Default value in function parameter is used to fill default value when the parameter is not passed, for example, an api request is `curl -v http://localhost:3000/api/blogs`, then in api handler, the `req` is `{ query: { skip: 0, take: 10 }}`
+
+`query` parts can have `ignoredFields` or `pickedFields`
+parameters, with these, it will support ignorable/pickable, for example:
+
+```ts
+declare function getBlogs(
+  query: PaginationFields & BlogFieldFilter,
+): Promise<{ result: BlogSchema[], count: number }>
+
+interface BlogFieldFilter {
+  ignoredFields?: (keyof BlogSchema)[]
+  pickedFields?: (keyof BlogSchema)[]
+}
+```
+
 ### 5. generate restful api declaration
 
 `RESTFUL_API_SCHEMA_PATH=./restful-api-schema BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts types-as-schema ./dev/restful-api-schema.ts ./dev/db-schema.ts --swagger ./dev/swagger.json --config ./node_modules/protocol-based-web-framework/nodejs/generate-restful-api-declaration.js`
+
+`BACKEND_OUTPUT_PATH` and `FRONTEND_OUTPUT_PATH` are backend and frontend output file path.
+
+`RESTFUL_API_SCHEMA_PATH` is restful api schema model entry file path(relative to output file), generated ts file will import types from it.
+
+`--swagger` and `--swagger-base`(optional) are used to generate swagger json file. for example, [dev/swagger.json](./dev/swagger.json).
+
+`--config` is the generation script file path.
+
+`IGNORED_FIELDS_NAME` and `PICKED_FIELDS_NAME` are custom ignored/picked fields parameter name if they are not `ignoredFields` and `pickedFields`.
 
 ### 6. backend implement restful api declaration and binded to api
 
@@ -237,7 +220,19 @@ bindRestfulApiHandler('GetBlogs', getBlogs)
 
 [dev/blog-service.ts](./dev/blog-service.ts)
 
-### 7. access restful api in backend unit test
+If `getBlogs` supports ignorable/pickable, it's type safe, if the fields are ignored or not picked, the return value's type will omit them.
+
+```ts
+const blogs = await getBlogs({
+  query: {
+    skip: 0,
+    take: 10,
+    pickedFields: ['id'],
+  },
+})
+```
+
+The `getBlogs` can also be used in unit test, so it can be tested faster than by e2e test.
 
 ```ts
 const blog = await getBlogs({
@@ -251,7 +246,7 @@ t.snapshot(blog)
 
 [spec/blog-service.ts](./spec/blog-service.ts)
 
-### 8. backend register restful api
+### 7. backend register restful api
 
 ```ts
 import express from 'express'
@@ -284,7 +279,20 @@ app.listen(3000)
 
 [dev/server.ts](./dev/server.ts)
 
-### 9. access restful api
+`getAndValidateRequestInput` can validate the request, for example:
+
+```txt
+curl -v http://localhost:3000/api/blogs/abc
+
+HTTP/1.1 400 Bad Request
+{"message":"must be number"}
+```
+
+`getAndValidateRequestInput` will remove unexpected input in request, for example, a api request is `curl -v http://localhost:3000/api/blogs?test=abc`, then in api handler, the `req` is `{ query: { skip: 0, take: 10 }}`, the `test=abc` will be ignored if not defined in api schema.
+
+`getAndValidateRequestInput` will do request input type convertion, for example, a api request is `curl -v http://localhost:3000/api/blogs?take=100`, then in api handler, the `req` is `{ query: { skip: 0, take: 100 }}` rather than `{ query: { skip: 0, take: "100" }}`.
+
+### 8. access restful api
 
 ```ts
 import { RequestRestfulAPI, validations } from "./restful-api-frontend-declaration"
@@ -299,4 +307,21 @@ console.info(blogs)
 
 + fetch: [dev/client-fetch.ts](./dev/client-fetch.ts)
 + axios: [dev/client-axios.ts](./dev/client-axios.ts)
-+ fetch: [dev/client-node-fetch.ts](./dev/client-node-fetch.ts)
++ node-fetch: [dev/client-node-fetch.ts](./dev/client-node-fetch.ts)
+
+`requestRestfulAPI` is type safe, for example:
+
+```ts
+await requestRestfulAPI('GET', `/api/blogs/1`) // ✅
+await requestRestfulAPI('GET', `/api/blogs/abc`) // ❌
+await requestRestfulAPI('GET', '/api/blogs/{id}', { path: { id: 1 } }) // ✅
+await requestRestfulAPI('GET', '/api/blogs/{id}', { path: { id: 'abc' } }) // ❌
+```
+
+`requestRestfulAPI` will validate api response, so client side can believe the `blogs` can always be `{ result: BlogSchema[], count: number }`.
+
+If the api supports ignorable/pickable, it's type safe, if the fields are ignored or not picked, the return value's type will omit them.
+
+```ts
+const blogs = await requestRestfulAPI('GET', '/api/blogs', { query: { skip: 0, take: 10, pickedFields: ['id'] } })
+```

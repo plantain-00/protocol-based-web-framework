@@ -82,8 +82,11 @@ export const tableNames = getKeys(tableSchemas)
 
 function getFieldType({ type, jsDocs }: Member): string {
   if (type.kind === 'number') {
-    const jsDoc = jsDocs?.find((d) => ['smallint', 'integer', 'bigint', 'decimal', 'numeric', 'real', 'double precision'].includes(d.name))
-    return jsDoc?.name ?? 'real'
+    const jsDoc = jsDocs?.find((d) => d.name === 'type')
+    if (jsDoc?.comment && ['smallint', 'integer', 'bigint', 'decimal', 'numeric', 'real', 'double precision'].includes(jsDoc.comment)) {
+      return jsDoc.comment
+    }
+    return 'real'
   }
   if (type.kind === 'string') {
     return 'text'
