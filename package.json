@@ -1,6 +1,6 @@
 {
   "name": "protocol-based-web-framework",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A protocol and code generation based web framework.",
   "main": "nodejs/index.js",
   "scripts": {
