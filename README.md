@@ -65,7 +65,7 @@ interface Updated {
 
 ### 2. generate db declaration
 
-`DB_SCHEMA_PATH=./db-schema OUTPUT_PATH=./dev/db-declaration.ts types-as-schema ./dev/db-schema.ts --config ./node_modules/protocol-based-web-framework/db.ts`
+`DB_SCHEMA_PATH=./db-schema OUTPUT_PATH=./dev/db-declaration.ts types-as-schema ./dev/db-schema.ts --config protocol-based-web-framework/db`
 
 `OUTPUT_PATH` is output file path.
 
@@ -187,7 +187,7 @@ interface BlogFieldFilter {
 
 ### 5. generate restful api declaration
 
-`RESTFUL_API_SCHEMA_PATH=./restful-api-schema BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts types-as-schema ./dev/restful-api-schema.ts ./dev/db-schema.ts --swagger ./dev/swagger.json --config ./node_modules/protocol-based-web-framework/restful-api.ts`
+`RESTFUL_API_SCHEMA_PATH=./restful-api-schema BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts types-as-schema ./dev/restful-api-schema.ts ./dev/db-schema.ts --swagger ./dev/swagger.json --config protocol-based-web-framework/restful-api`
 
 `BACKEND_OUTPUT_PATH` and `FRONTEND_OUTPUT_PATH` are backend and frontend output file path.
 
