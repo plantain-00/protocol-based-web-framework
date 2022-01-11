@@ -1,5 +1,6 @@
 import type { RequestInfo, RequestInit, Response, BodyInit, HeadersInit } from 'node-fetch'
 import type NodeFormData = require('form-data')
+import { ReadStream } from 'fs'
 import { composeUrl, ApiValidation, ApiAccessorBase } from './api-access-lib'
 
 /**
@@ -10,6 +11,8 @@ export class ApiAccessorNodeFetch<T extends ApiValidation> extends ApiAccessorBa
     validations: T[],
     private fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response>,
     private FormData: typeof NodeFormData,
+    private baseUrl: string,
+    public headers?: HeadersInit
   ) {
     super(validations)
   }
@@ -27,10 +30,10 @@ export class ApiAccessorNodeFetch<T extends ApiValidation> extends ApiAccessorBa
     let body: BodyInit | undefined
     let headers: HeadersInit | undefined
     if (args?.body) {
-      if (typeof args.body === 'object' && Object.values(args.body).some((b) => b instanceof Blob)) {
+      if (typeof args.body === 'object' && Object.values(args.body).some((b) => b instanceof ReadStream || b instanceof Buffer)) {
         const formData = new this.FormData()
         for (const key in args.body) {
-          formData.append(key, (args.body as { [key: string]: string | Blob })[key])
+          formData.append(key, (args.body as { [key: string]: string | Buffer | ReadStream })[key])
         }
         body = formData
       } else {
@@ -39,11 +42,14 @@ export class ApiAccessorNodeFetch<T extends ApiValidation> extends ApiAccessorBa
       }
     }
     const result = await this.fetch(
-      composedUrl,
+      this.baseUrl + composedUrl,
       {
         method,
         body,
-        headers,
+        headers: {
+          ...headers,
+          ...this.headers,
+        },
       })
     return this.getDataFromFetchResponse(result, method, url, args)
   }

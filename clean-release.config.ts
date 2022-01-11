@@ -5,13 +5,17 @@ const config: Configuration = {
     'dist/**/*.js',
     'dist/**/*.d.ts',
     'dist/index.d.ts',
+    'scripts/**/*.ts',
     'LICENSE',
     'package.json',
     'README.md'
   ],
   exclude: [
   ],
-  base: 'dist',
+  base: [
+    'dist',
+    'scripts',
+  ],
   askVersion: true,
   changesGitStaged: true,
   postScript: ({ dir, tag, version }) => [

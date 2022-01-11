@@ -24,7 +24,7 @@ document.write(`<div>
 </div>`)
 document.close()
 
-document.querySelector<HTMLInputElement>('#file')!.onchange = (e) => {
+document.querySelector<HTMLInputElement>('#file')?.addEventListener('change', (e) => {
   const input = e.target as HTMLInputElement
   if (input.files && input.files.length > 0) {
     requestRestfulAPI('POST', '/api/blogs/upload', {
@@ -34,17 +34,17 @@ document.querySelector<HTMLInputElement>('#file')!.onchange = (e) => {
       },
     })
   }
-}
-document.querySelector<HTMLButtonElement>('#download')!.onclick = () => {
+})
+document.querySelector<HTMLButtonElement>('#download')?.addEventListener('click', () => {
   window.open(getRequestApiUrl('/api/blogs/1/download', {
     query: { attachmentFileName: 'a.txt' },
   }), '_blank')
-}
-document.querySelector<HTMLButtonElement>('#downloadData')!.onclick = async () => {
+})
+document.querySelector<HTMLButtonElement>('#downloadData')?.addEventListener('click', async () => {
   console.info(await requestRestfulAPI('GET', '/api/blogs/1/download'))
-}
-document.querySelector<HTMLButtonElement>('#getRawText')!.onclick = async () => {
+})
+document.querySelector<HTMLButtonElement>('#getRawText')?.addEventListener('click', async () => {
   console.info(await requestRestfulAPI('GET', '/api/blogs/1/text'))
-}
+})
 
 start()

@@ -1276,10 +1276,10 @@ clean-css@^5.2.2:
   dependencies:
     source-map "~0.6.0"
 
-clean-release@2.15.2:
-  version "2.15.2"
-  resolved "https://registry.yarnpkg.com/clean-release/-/clean-release-2.15.2.tgz#bcdc0c33534148ef55d79e1e187ab892054f33f1"
-  integrity sha512-Gws92yEvVDRCCQuNArmPMfiCmuU0Tet0EuOhh7tLRsinigTvfXq/CjLbR+OHWn81OjGOGVXdcs3G2e+BLg669g==
+clean-release@2.16.0:
+  version "2.16.0"
+  resolved "https://registry.npmmirror.com/clean-release/download/clean-release-2.16.0.tgz#5e40a231d9e6e47dc8be54c630400a3bf8032664"
+  integrity sha512-1waB7oK2sC/sbwDLnuL2B4BHQ/QwZGZ1eFs1fwtCAXB0OmrLqsb5cEdl0wMNgEaUF2eR4ehOAbfERHkUIBFsHg==
   dependencies:
     clean-scripts "1"
     cp-file "9"

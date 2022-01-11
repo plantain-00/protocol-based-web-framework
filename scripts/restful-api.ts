@@ -5,6 +5,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   const frontendResult: string[] = []
   const getRequestApiUrlResult: string[] = []
   const references: string[] = []
+  const streamReferences = new Set<string>()
   const requestJsonSchemas: Array<{ name: string, schema: string }> = []
   const responseJsonSchemas: Array<{ name: string, url: string, method: string, schema: string, omittedReferences: string[], urlPattern?: string, responseType: 'json' | 'text' | 'blob' }> = []
   const bindRestfulApiHandlerTypes: string[] = []
@@ -24,8 +25,11 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
         if (q.name === pickedFieldsName && q.type.kind === 'array') {
           return `${pickedFieldsName}?: TPicked[]`
         }
-        if (backend && q.type.kind === 'file') {
-          return `${q.name}${q.optional ? '?' : ''}: Readable`
+        if (q.type.kind === 'file') {
+          if (backend) {
+            return `${q.name}${q.optional ? '?' : ''}: Readable`
+          }
+          return `${q.name}${q.optional ? '?' : ''}: File | Buffer | Readable`
         }
         return generateTypescriptOfFunctionParameter(q)
       }).join(', ')} }`
@@ -240,6 +244,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       if (declaration.type.kind === 'file') {
         returnType = 'Readable'
         frontendReturnType = 'Blob'
+        streamReferences.add('Readable')
       } else {
         returnType = generateTypescriptOfType(declaration.type, (child) => {
           if (child.kind === 'reference') {
@@ -304,6 +309,7 @@ ${bindRestfulApiHandlerTypes.join('\n')}
 `
   const frontendContent = `import { ${Array.from(new Set(references)).join(', ')} } from '${process.env.RESTFUL_API_SCHEMA_PATH || '../src/restful-api-schema'}'
 import { ajvFrontend } from '${process.env.FRONTEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
+import type { ${Array.from(streamReferences).join(', ') } } from 'stream'
 
 export type RequestRestfulAPI = {
 ${frontendResult.join('\n')}

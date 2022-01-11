@@ -33,7 +33,7 @@
     "@typescript-eslint/parser": "5.8.1",
     "ava": "3.15.0",
     "axios": "0.24.0",
-    "clean-release": "2.15.2",
+    "clean-release": "2.16.0",
     "clean-scripts": "1.20.2",
     "cookie-parser": "1.4.6",
     "eslint": "8.6.0",
@@ -70,6 +70,6 @@
     "registry": "https://registry.npmjs.org/"
   },
   "typeCoverage": {
-    "atLeast": 99.66
+    "atLeast": 99.52
   }
 }

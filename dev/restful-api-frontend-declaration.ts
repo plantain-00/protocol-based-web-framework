@@ -1,5 +1,6 @@
 import { Blog, BlogIgnorableField } from './restful-api-schema'
 import { ajvFrontend } from '../dist/browser'
+import type { Readable } from 'stream'
 
 export type RequestRestfulAPI = {
   <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(method: 'GET', url: `/api/blogs`, args?: { query?: { skip?: number, take?: number, ignoredFields?: TIgnored[], pickedFields?: TPicked[], sortType?: "asc" | "desc", content?: string, sortField?: "id" | "content", ids?: string[] } }): Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored>[], count: number }>
@@ -12,7 +13,7 @@ export type RequestRestfulAPI = {
   (method: 'DELETE', url: '/api/blogs/{id}', args: { path: { id: number } }): Promise<{  }>
   (method: 'GET', url: `/api/blogs/${number}/download`, args?: { query?: { attachmentFileName?: string } }): Promise<Blob>
   (method: 'GET', url: '/api/blogs/{id}/download', args: { path: { id: number }, query?: { attachmentFileName?: string } }): Promise<Blob>
-  (method: 'POST', url: `/api/blogs/upload`, args: { body: { file: File, id: number } }): Promise<{  }>
+  (method: 'POST', url: `/api/blogs/upload`, args: { body: { file: File | Buffer | Readable, id: number } }): Promise<{  }>
   (method: 'GET', url: `/api/blogs/${number}/text`): Promise<string>
   (method: 'GET', url: '/api/blogs/{id}/text', args: { path: { id: number } }): Promise<string>
 }

@@ -35,7 +35,7 @@ for (const { method, url, validate, handler } of apiSchemas) {
       if (!handler) {
         throw new HttpError('this api handler is not binded', 500)
       }
-      const input = getAndValidateRequestInput(req, validate, { myUserId: req.cookies.sid })
+      const input = getAndValidateRequestInput(req, validate, { myUserId: req.cookies.sid as number })
       if (typeof input === 'string') {
         throw new HttpError(input, 400)
       }

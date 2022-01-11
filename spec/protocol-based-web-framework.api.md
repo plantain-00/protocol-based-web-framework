@@ -14,6 +14,7 @@ import type { Database } from 'sqlite3';
 import type { Db } from 'mongodb';
 import type { Document as Document_2 } from 'mongodb';
 import type { Filter } from 'mongodb';
+import type { HeadersInit as HeadersInit_2 } from 'node-fetch';
 import NodeFormData = require('form-data');
 import { ObjectID } from 'bson';
 import { ParsedQs } from 'qs';
@@ -71,7 +72,9 @@ export class ApiAccessorFetch<T extends ApiValidation> extends ApiAccessorBase<T
 
 // @public (undocumented)
 export class ApiAccessorNodeFetch<T extends ApiValidation> extends ApiAccessorBase<T> {
-    constructor(validations: T[], fetch: (input: RequestInfo_2, init?: RequestInit_2) => Promise<Response_2>, FormData: typeof NodeFormData);
+    constructor(validations: T[], fetch: (input: RequestInfo_2, init?: RequestInit_2) => Promise<Response_2>, FormData: typeof NodeFormData, baseUrl: string, headers?: HeadersInit_2 | undefined);
+    // (undocumented)
+    headers?: HeadersInit_2 | undefined;
     // (undocumented)
     requestRestfulAPI: (method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', url: string, args?: {
         path?: Record<string, string | number> | undefined;
