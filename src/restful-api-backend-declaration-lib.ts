@@ -1,6 +1,7 @@
 import Ajv, { ValidateFunction } from 'ajv'
 import type { Request, Response } from 'express'
 import type { Readable } from 'stream'
+import { isReadable } from './utils'
 
 /**
  * @public
@@ -33,10 +34,7 @@ export function getAndValidateRequestInput(
  * @public
  */
 export function respondHandleResult(result: {} | Readable, req: Request<{}, {}, {}>, res: Response<{}>) {
-  if (result !== null &&
-    typeof result === 'object' &&
-    typeof (result as Readable).pipe === 'function'
-  ) {
+  if (isReadable(result)) {
     if (typeof req.query.attachmentFileName === 'string') {
       if (req.query.attachmentFileName) {
         res.set({
@@ -48,7 +46,7 @@ export function respondHandleResult(result: {} | Readable, req: Request<{}, {}, 
         })
       }
     }
-    (result as Readable).pipe(res)
+    result.pipe(res)
   } else if (typeof result === 'string') {
     res.set({
       'content-type': 'text/plain; charset=UTF-8',

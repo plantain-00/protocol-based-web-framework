@@ -1,7 +1,8 @@
 import type { RequestInfo, RequestInit, Response, BodyInit, HeadersInit } from 'node-fetch'
 import type NodeFormData = require('form-data')
-import { ReadStream } from 'fs'
+import type { Readable } from 'stream'
 import { composeUrl, ApiValidation, ApiAccessorBase } from './api-access-lib'
+import { isReadable } from './utils'
 
 /**
  * @public
@@ -30,10 +31,10 @@ export class ApiAccessorNodeFetch<T extends ApiValidation> extends ApiAccessorBa
     let body: BodyInit | undefined
     let headers: HeadersInit | undefined
     if (args?.body) {
-      if (typeof args.body === 'object' && Object.values(args.body).some((b) => b instanceof ReadStream || b instanceof Buffer)) {
+      if (typeof args.body === 'object' && Object.values(args.body).some((b) => isReadable(b) || b instanceof Buffer)) {
         const formData = new this.FormData()
         for (const key in args.body) {
-          formData.append(key, (args.body as { [key: string]: string | Buffer | ReadStream })[key])
+          formData.append(key, (args.body as { [key: string]: string | Buffer | Readable })[key])
         }
         body = formData
       } else {

@@ -134,6 +134,9 @@ export const getKeys: <T>(obj: T) => (keyof T)[];
 export const isArray: (arg: unknown) => arg is unknown[];
 
 // @public (undocumented)
+export function isReadable(stream: unknown): stream is Readable;
+
+// @public (undocumented)
 export class MongodbAccessor<TableName extends string> {
     constructor(db: Db, tableSchemas: Record<TableName, {
         fieldNames: string[];
