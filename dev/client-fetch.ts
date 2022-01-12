@@ -3,7 +3,7 @@ import { ApiAccessorFetch, composeUrl } from '../dist/browser'
 
 const apiAccessor = new ApiAccessorFetch(validations)
 
-const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI
+export const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI
 const getRequestApiUrl: GetRequestApiUrl = composeUrl
 
 async function start() {
@@ -20,6 +20,7 @@ document.write(`<div>
 <button id='download'>download</button>
 <button id='downloadData'>download data</button>
 <button id='getRawText'>get raw text</button>
+<div id='container'></div>
 </div>`)
 document.close()
 

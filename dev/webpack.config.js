@@ -2,7 +2,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
   mode: 'development',
-  entry: './dev/client-fetch.ts',
+  entry: './dev/react-app.tsx',
   resolve: {
     extensions: ['.ts', '.tsx', '.js']
   },

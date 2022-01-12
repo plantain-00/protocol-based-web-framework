@@ -325,3 +325,80 @@ If the api supports ignorable/pickable, it's type safe, if the fields are ignore
 ```ts
 const blogs = await requestRestfulAPI('GET', '/api/blogs', { query: { skip: 0, take: 10, pickedFields: ['id'] } })
 ```
+
+### 9. define router schema
+
+```ts
+/**
+ * @path /blogs/{id}
+ */
+declare function blogPage(path: { id: number }): string
+```
+
+[dev/router-schema.ts](./dev/router-schema.ts)
+
+`@path` follows swagger specification.
+
+Function name should be unique name for api binding, and is used for generating backend types: `blogPage` -> `BlogPage`
+
+Function parameter name can be `query` and `path`, they are different parts of a url.
+
+### 10. generate router declaration
+
+`OUTPUT_PATH=./dev/router-declaration.ts types-as-schema ./dev/router-schema.ts --config protocol-based-web-framework/router`
+
+`OUTPUT_PATH` is output file path.
+
+`--config` is the generation script file path.
+
+### 11. bind component to the route
+
+```ts
+import { bindRouterComponent } from './router-declaration'
+
+bindRouterComponent('BlogPage', BlogPage)
+```
+
+[dev/react-app.tsx](./dev/react-app.tsx)
+
+### 12. register router
+
+```tsx
+import { Route, Routes, BrowserRouter } from 'react-router-dom'
+import { routes } from './router-declaration'
+
+<BrowserRouter>
+  <Routes>
+    {routes.map(({ path, Component }) => {
+      if (Component) {
+        return <Route path={path} element={<Component />} />
+      }
+      return null
+    })}
+  </Routes>
+</BrowserRouter>
+```
+
+[dev/react-app.tsx](./dev/react-app.tsx)
+
+### 13. link to page url
+
+```tsx
+import { Link } from 'react-router-dom'
+import { composeUrl } from 'protocol-based-web-framework'
+import { GetPageUrl } from './router-declaration'
+
+const getPageUrl: GetPageUrl = composeUrl
+<Link to={getPageUrl('/blogs/{id}', { path: { id: blog.id } })}>{blog.title}</Link>
+```
+
+[dev/react-app.tsx](./dev/react-app.tsx)
+
+`getPageUrl` is type safe, for example:
+
+```ts
+getPageUrl(`/api/blogs/1`) // ✅
+getPageUrl(`/api/blogs/abc`) // ❌
+getPageUrl('/api/blogs/{id}', { path: { id: 1 } }) // ✅
+getPageUrl('/api/blogs/{id}', { path: { id: 'abc' } }) // ❌
+```
