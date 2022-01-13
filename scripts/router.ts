@@ -1,9 +1,12 @@
-import { FunctionParameter, generateTypescriptOfFunctionParameter, TypeDeclaration, getDeclarationParameters } from 'types-as-schema'
+import { FunctionParameter, generateTypescriptOfFunctionParameter, TypeDeclaration, getDeclarationParameters, getJsonSchemaProperty, Member } from 'types-as-schema'
+import { pathToRegexp, Key } from 'path-to-regexp'
 
 export default (typeDeclarations: TypeDeclaration[]): { path: string, content: string }[] => {
   const getPageUrlResult: string[] = []
+  const requestJsonSchemas: Array<{ name: string, schema: string }> = []
   const routers: string[] = []
   const bindPageComponentTypes: string[] = []
+  const props: string[] = []
 
   function getParam(type: typeof allTypes[number], parameter: FunctionParameter[]) {
     const optional = parameter.every((q) => q.optional) ? '?' : ''
@@ -26,16 +29,24 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
         }
       }
       const interfaceName = declaration.name[0].toUpperCase() + declaration.name.substring(1)
-      bindPageComponentTypes.push(`  (name: '${interfaceName}', component: () => JSX.Element): void`)
+
+      let regexp = declaration.path
+      const pathParameters = declarationParameters.filter((p) => p.in === 'path')
+      pathParameters.forEach((p) => {
+        regexp = regexp.split(`{${p.name}}`).join(`:${p.name}`)
+      })
+      const keys: Key[] = []
+      const regexpString = pathParameters.length > 0 ? pathToRegexp(regexp, keys) : undefined
+
       routers.push(`  {
     name: '${interfaceName}',
     path: '${path}',
-    Component: undefined as undefined | (() => JSX.Element),
+    regexp: ${regexpString ? regexpString : 'undefined'},
+    keys: [${keys.map((f) => `'${f.name}'`).join(', ')}],
+    validate: ${declaration.name}Validate,
   },`)
 
       // frontend types
-      const frontendParams: { optional: boolean, value: string }[] = []
-      const frontendPathParams: { optional: boolean, value: string }[] = []
       const getPageUrlParam: { optional: boolean, value: string }[] = []
       const getPageUrlPathParam: { optional: boolean, value: string }[] = []
       let frontendPath = declaration.path
@@ -47,11 +58,6 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
           } else {
             getPageUrlPathParam.push(getParam(type, parameter))
           }
-          if (type === 'query') {
-            frontendParams.push(getParam(type, parameter))
-          } else {
-            frontendPathParams.push(getParam(type, parameter))
-          }
           parameter.forEach((q) => {
             if (q.type.default !== undefined) {
               q.optional = false
@@ -62,23 +68,47 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
           })
         }
       }
-      const frontendParameters = [
-        `url: \`${frontendPath}\``,
-      ]
-      const frontendParameters2: string[] = []
-      if (frontendPathParams.length > 0) {
-        frontendParameters2.push(
-          `url: '${declaration.path}'`,
-        )
+
+      // json schema
+      const members: Member[] = []
+      for (const type of allTypes) {
+        const params = declarationParameters.filter((d) => d.in === type)
+        if (params.length > 0) {
+          members.push({
+            name: type,
+            type: {
+              kind: 'object',
+              members: params,
+              minProperties: params.filter((p) => !p.optional).length,
+              position: {
+                file: '',
+                line: 0,
+                character: 0,
+              }
+            },
+            optional: params.every((p) => p.optional),
+          })
+        }
       }
-      if (frontendParams.length > 0) {
-        const optional = frontendParams.every((q) => q.optional) ? '?' : ''
-        frontendParameters.push(`args${optional}: { ${frontendParams.map((p) => p.value).join(', ')} }`)
-      }
-      if (frontendPathParams.length > 0) {
-        const optional = frontendParams.every((q) => q.optional) && frontendPathParams.every((q) => q.optional) ? '?' : ''
-        frontendParameters2.push(`args${optional}: { ${[...frontendPathParams, ...frontendParams].map((p) => p.value).join(', ')} }`)
-      }
+      requestJsonSchemas.push({
+        name: declaration.name,
+        schema: JSON.stringify({
+          ...getJsonSchemaProperty(
+            {
+              kind: 'object',
+              members,
+              minProperties: members.filter((m) => !m.optional).length,
+              position: {
+                file: '',
+                line: 0,
+                character: 0,
+              }
+            },
+            { declarations: typeDeclarations, looseMode: true }
+          ),
+        }, null, 2)
+      })
+
       const getPageUrlParameters = [
         `url: \`${frontendPath}\``,
       ]
@@ -94,7 +124,11 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       }
       if (getPageUrlPathParam.length > 0) {
         const optional = getPageUrlParam.every((q) => q.optional) && getPageUrlPathParam.every((q) => q.optional) ? '?' : ''
-        getPageUrlParameters2.push(`args${optional}: { ${[...getPageUrlPathParam, ...getPageUrlParam].map((p) => p.value).join(', ')} }`)
+        getPageUrlParameters2.push(`args${optional}: ${interfaceName}Props`)
+        props.push(`export type ${interfaceName}Props = { ${[...getPageUrlPathParam, ...getPageUrlParam].map((p) => p.value).join(', ')} }`)
+        bindPageComponentTypes.push(`  (name: '${interfaceName}', component: (props${optional}: ${interfaceName}Props) => JSX.Element): void`)
+      } else {
+        bindPageComponentTypes.push(`  (name: '${interfaceName}', component: () => JSX.Element): void`)
       }
 
       getPageUrlResult.push(`  (${getPageUrlParameters.join(', ')}): string`)
@@ -103,18 +137,24 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       }
     }
   }
-  
-  const content = `export type GetPageUrl = {
+
+  const content = `import { ajvRouter, Route } from '${process.env.ROUTER_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
+
+${props.join('\n')}
+
+export type GetPageUrl = {
 ${getPageUrlResult.join('\n')}
 }
 
-export const routes = [
+${requestJsonSchemas.map((s) => `const ${s.name}Validate = ajvRouter.compile(${s.schema})`).join('\n')}
+
+export const routes: Route[] = [
 ${routers.join('\n')}
 ]
 
 export const bindRouterComponent: {
 ${bindPageComponentTypes.join('\n')}
-} = (name: string, component: () => JSX.Element) => {
+} = (name: string, component: (props?: any) => JSX.Element) => {
   const schema = routes.find((s) => s.name === name)
   if (schema) {
     schema.Component = component

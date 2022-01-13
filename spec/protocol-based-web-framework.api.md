@@ -6,6 +6,7 @@
 
 /// <reference types="node" />
 /// <reference types="qs" />
+/// <reference types="react" />
 
 import Ajv from 'ajv';
 import type { AxiosStatic } from 'axios';
@@ -19,6 +20,7 @@ import NodeFormData = require('form-data');
 import { ObjectID } from 'bson';
 import { ParsedQs } from 'qs';
 import type { Pool } from 'pg';
+import { default as qs_2 } from 'qs';
 import type { Readable } from 'stream';
 import type { Request as Request_2 } from 'express';
 import type { RequestInfo as RequestInfo_2 } from 'node-fetch';
@@ -33,6 +35,9 @@ export const ajvBackend: Ajv;
 
 // @public (undocumented)
 export const ajvFrontend: Ajv;
+
+// @public (undocumented)
+export const ajvRouter: Ajv;
 
 // @public (undocumented)
 export class ApiAccessorAxios<T extends ApiValidation> extends ApiAccessorBase<T> {
@@ -137,6 +142,12 @@ export const isArray: (arg: unknown) => arg is unknown[];
 export function isReadable(stream: unknown): stream is Readable;
 
 // @public (undocumented)
+export function matchRoute(location: string, route: Route): string | false | {
+    path: unknown;
+    query: qs_2.ParsedQs;
+};
+
+// @public (undocumented)
 export class MongodbAccessor<TableName extends string> {
     constructor(db: Db, tableSchemas: Record<TableName, {
         fieldNames: string[];
@@ -210,6 +221,25 @@ export class PostgresAccessor<TableName extends string> {
 
 // @public (undocumented)
 export function respondHandleResult(result: {} | Readable, req: Request_2<{}, {}, {}>, res: Response_3<{}>): void;
+
+// @public (undocumented)
+export interface Route {
+    // (undocumented)
+    Component?: (props: {
+        path?: unknown;
+        query?: unknown;
+    }) => JSX.Element;
+    // (undocumented)
+    keys: string[];
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    path: string;
+    // (undocumented)
+    regexp?: RegExp;
+    // (undocumented)
+    validate: ValidateFunction<unknown>;
+}
 
 // @public (undocumented)
 export type RowFilterOptions<T, TRaw = SqlRawFilter> = Partial<{

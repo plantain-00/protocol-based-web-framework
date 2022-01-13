@@ -1,15 +1,16 @@
 import * as ReactDOM from 'react-dom'
 import React from "react"
-import { Route, Link, useParams, Routes, BrowserRouter } from 'react-router-dom'
+import { useLocation } from "wouter"
 import { requestRestfulAPI } from './client-fetch'
 import { Blog } from './restful-api-schema'
-import { bindRouterComponent, GetPageUrl, routes } from './router-declaration'
-import { composeUrl } from '../dist/browser'
+import { bindRouterComponent, GetPageUrl, routes, BlogPageProps } from './router-declaration'
+import { composeUrl, matchRoute } from '../dist/browser'
 
 const getPageUrl: GetPageUrl = composeUrl
 
 function HomePage() {
   const [blogs, setBlogs] = React.useState<Blog[]>([])
+  const [, setLocation] = useLocation()
   React.useEffect(() => {
     requestRestfulAPI('GET', '/api/blogs').then((b) => {
       setBlogs(b.result)
@@ -20,27 +21,37 @@ function HomePage() {
     <div>
       <div>blogs</div>
       <ul>
-        {blogs.map((blog) => <li key={blog.id}><Link to={getPageUrl('/blogs/{id}', { path: { id: blog.id } })}>{blog.content}</Link></li>)}
+        {blogs.map((blog) => (
+          <li
+            key={blog.id}
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              setLocation(getPageUrl('/blogs/{id}', { path: { id: blog.id } }))
+            }}
+          >
+            {blog.content}
+          </li>
+        ))}
       </ul>
     </div>
   )
 }
 bindRouterComponent('HomePage', HomePage)
 
-function BlogPage() {
-  const params = useParams<'id'>()
+function BlogPage(props: BlogPageProps) {
   const [blog, setBlog] = React.useState<Blog>()
+  const [, setLocation] = useLocation()
   React.useEffect(() => {
-    requestRestfulAPI('GET', `/api/blogs/${+params.id!}`).then((b) => {
+    requestRestfulAPI('GET', `/api/blogs/${props.path.id}`).then((b) => {
       setBlog(b.result)
     })
   }, [])
   return (
     <div>
-      <div >
-        <Link to={getPageUrl('/')}>back to app</Link>
+      <div onClick={() => setLocation(getPageUrl('/'))}>
+        back to app
       </div>
-      <div >blog {params.id}</div>
+      <div >blog {props.path.id}</div>
       <div>{blog?.content}</div>
     </div >
   )
@@ -48,18 +59,20 @@ function BlogPage() {
 bindRouterComponent('BlogPage', BlogPage)
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        {routes.map(({ path, Component }) => {
-          if (Component) {
-            return <Route path={path} element={<Component />} />
-          }
-          return null
-        })}
-      </Routes>
-    </BrowserRouter>
-  )
+  const [location] = useLocation()
+
+  for (const route of routes) {
+    if (route.Component) {
+      const result = matchRoute(location, route)
+      if (result !== false) {
+        if (typeof result === 'string') {
+          return <>{result}</>
+        }
+        return <route.Component {...result} />
+      }
+    }
+  }
+  return null
 }
 
 ReactDOM.render(<App />, document.querySelector('#container'))

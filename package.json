@@ -51,24 +51,25 @@
     "pg": "8.7.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "react-router-dom": "6.2.1",
     "rimraf": "3.0.2",
     "sqlite3": "5.0.2",
     "ts-loader": "9.2.6",
     "ts-node-dev": "1.1.8",
     "tsconfig-plantain": "0.0.2",
     "type-coverage": "2.19.0",
-    "types-as-schema": "1.43.0",
     "typescript": "4.5.4",
     "webpack": "5.65.0",
     "webpack-cli": "4.9.1",
-    "webpack-dev-server": "4.7.2"
+    "webpack-dev-server": "4.7.2",
+    "wouter": "2.8.0-alpha.2"
   },
   "dependencies": {
     "ajv": "8",
     "immer": "9",
+    "path-to-regexp": "6",
     "qs": "6",
-    "tslib": "1 || 2"
+    "tslib": "1 || 2",
+    "types-as-schema": "1.43"
   },
   "module": "browser/index.js",
   "publishConfig": {

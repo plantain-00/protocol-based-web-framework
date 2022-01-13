@@ -13,7 +13,7 @@ A protocol and code generation based web framework.
 
 ## install
 
-`yarn add protocol-based-web-framework types-as-schema`
+`yarn add protocol-based-web-framework`
 
 ## usage
 
@@ -354,42 +354,70 @@ Function parameter name can be `query` and `path`, they are different parts of a
 ### 11. bind component to the route
 
 ```ts
-import { bindRouterComponent } from './router-declaration'
+import { bindRouterComponent, BlogPageProps } from './router-declaration'
 
+function BlogPage(props: BlogPageProps) {
+  React.useEffect(() => {
+    requestRestfulAPI('GET', `/api/blogs/${props.path.id}`).then((b) => {
+      console.info(b.result)
+    })
+  }, [])
+}
 bindRouterComponent('BlogPage', BlogPage)
 ```
 
 [dev/react-app.tsx](./dev/react-app.tsx)
 
+The `BlogPage` can also be used in unit test, so it can be tested without providing router in test.
+
+```ts
+expect(renderer.create(<BlogPage path={{ id: 123 }}>).toJSON()).toMatchSnapshot()
+```
+
 ### 12. register router
 
 ```tsx
-import { Route, Routes, BrowserRouter } from 'react-router-dom'
+import { useLocation } from "wouter"
+import { matchRoute } from 'protocol-based-web-framework'
 import { routes } from './router-declaration'
 
-<BrowserRouter>
-  <Routes>
-    {routes.map(({ path, Component }) => {
-      if (Component) {
-        return <Route path={path} element={<Component />} />
+function App() {
+  const [location] = useLocation()
+
+  for (const route of routes) {
+    if (route.Component) {
+      const result = matchRoute(location, route)
+      if (result !== false) {
+        if (typeof result === 'string') {
+          return <>{result}</>
+        }
+        return <route.Component {...result} />
       }
-      return null
-    })}
-  </Routes>
-</BrowserRouter>
+    }
+  }
+  return null
+}
 ```
 
 [dev/react-app.tsx](./dev/react-app.tsx)
 
+`matchRoute` can validate the url, for example, a page url is `http://localhost:4000/blogs/abc`, it will return `"must be number"`.
+
+`matchRoute` will remove unexpected input in page url, for example, a page url is `http://localhost:4000/blogs/123?test=abc`, then in page component, the `props` is `{ path: { id: 123 }}`, the `test=abc` will be ignored if not defined in router schema.
+
+`matchRoute` will do props type convertion, for example, a page url is `http://localhost:4000/blogs/123`, then in page component, the `props` is `{ path: { id: 123 }}` rather than `{ path: { id: "123" }}`.
+
 ### 13. link to page url
 
 ```tsx
-import { Link } from 'react-router-dom'
 import { composeUrl } from 'protocol-based-web-framework'
 import { GetPageUrl } from './router-declaration'
 
 const getPageUrl: GetPageUrl = composeUrl
-<Link to={getPageUrl('/blogs/{id}', { path: { id: blog.id } })}>{blog.title}</Link>
+
+const [, setLocation] = useLocation()
+setLocation(getPageUrl('/blogs/{id}', { path: { id: blog.id } }))
+setLocation(getPageUrl(`/blogs/${blog.id}`))
 ```
 
 [dev/react-app.tsx](./dev/react-app.tsx)
@@ -397,8 +425,8 @@ const getPageUrl: GetPageUrl = composeUrl
 `getPageUrl` is type safe, for example:
 
 ```ts
-getPageUrl(`/api/blogs/1`) // ✅
-getPageUrl(`/api/blogs/abc`) // ❌
-getPageUrl('/api/blogs/{id}', { path: { id: 1 } }) // ✅
-getPageUrl('/api/blogs/{id}', { path: { id: 'abc' } }) // ❌
+getPageUrl(`/blogs/1`) // ✅
+getPageUrl(`/blogs/abc`) // ❌
+getPageUrl('/blogs/{id}', { path: { id: 1 } }) // ✅
+getPageUrl('/blogs/{id}', { path: { id: 'abc' } }) // ❌
 ```

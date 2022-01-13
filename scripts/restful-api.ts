@@ -328,7 +328,7 @@ ${responseJsonSchemas.map((s) => `  {
     schema: ${s.name}JsonSchema,
     omittedReferences: [${s.omittedReferences.map((m) => `'${m}'`).join(',')}] as string[],
     validate: ajvFrontend.compile(${s.name}JsonSchema),
-    urlPattern: ${s.urlPattern ? `new RegExp(${s.urlPattern})` : 'undefined'} as RegExp | undefined,
+    urlPattern: ${s.urlPattern ? s.urlPattern : 'undefined'} as RegExp | undefined,
     responseType: '${s.responseType}' as 'json' | 'text' | 'blob',
   },`).join('\n')}
 ]

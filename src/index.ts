@@ -10,4 +10,5 @@ export * from './api-access-node-fetch'
 
 export * from './restful-api-backend-declaration-lib'
 export * from './restful-api-frontend-declaration-lib'
+export * from './router-declaration-lib'
 export * from './utils'

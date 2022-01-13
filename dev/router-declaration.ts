@@ -1,26 +1,59 @@
+import { ajvRouter, Route } from '../dist/browser'
+
+export type BlogPageProps = { path: { id: number } }
+
 export type GetPageUrl = {
   (url: `/`): string
   (url: `/blogs/${number}`): string
-  (url: '/blogs/{id}', args: { path: { id: number } }): string
+  (url: '/blogs/{id}', args: BlogPageProps): string
 }
 
-export const routes = [
+const homePageValidate = ajvRouter.compile({
+  "type": "object",
+  "properties": {},
+  "required": []
+})
+const blogPageValidate = ajvRouter.compile({
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    }
+  },
+  "required": [
+    "path"
+  ]
+})
+
+export const routes: Route[] = [
   {
     name: 'HomePage',
     path: '/',
-    Component: undefined as undefined | (() => JSX.Element),
+    regexp: undefined,
+    keys: [],
+    validate: homePageValidate,
   },
   {
     name: 'BlogPage',
     path: '/blogs/:id',
-    Component: undefined as undefined | (() => JSX.Element),
+    regexp: /^\/blogs(?:\/([^\/#\?]+?))[\/#\?]?$/i,
+    keys: ['id'],
+    validate: blogPageValidate,
   },
 ]
 
 export const bindRouterComponent: {
   (name: 'HomePage', component: () => JSX.Element): void
-  (name: 'BlogPage', component: () => JSX.Element): void
-} = (name: string, component: () => JSX.Element) => {
+  (name: 'BlogPage', component: (props: BlogPageProps) => JSX.Element): void
+} = (name: string, component: (props?: any) => JSX.Element) => {
   const schema = routes.find((s) => s.name === name)
   if (schema) {
     schema.Component = component
