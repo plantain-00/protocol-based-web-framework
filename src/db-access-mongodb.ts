@@ -1,4 +1,4 @@
-import type { Db, Filter, Document, Sort } from 'mongodb'
+import type { Db, Filter, Document, Sort, ObjectId } from 'mongodb'
 import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, RowSelectProjectOption, RowSelectSortOption } from './db-declaration-lib'
 import { isArray } from './utils'
 
@@ -12,7 +12,7 @@ export class MongodbAccessor<TableName extends string> {
   public insertRow = async <T extends Record<string, unknown>>(
     tableName: TableName,
     value: T,
-  ) => {
+  ): Promise<ObjectId> => {
     const values = this.getValues(tableName, value)
     const result = await this.db.collection(tableName).insertOne(values)
     return result.insertedId

@@ -1,12 +1,14 @@
 /**
  * @path /
  */
-declare function homePage(query: {
-  /**
-   * @default 1
-   */
-  page?: number
-}): string
+declare function homePage(
+  query: {
+    /**
+     * @default 1
+     */
+    page?: number
+  },
+): string
 
 /**
  * @path /blogs/{id}

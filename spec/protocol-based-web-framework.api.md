@@ -6,7 +6,6 @@
 
 /// <reference types="node" />
 /// <reference types="qs" />
-/// <reference types="react" />
 
 import Ajv from 'ajv';
 import type { AxiosStatic } from 'axios';
@@ -17,7 +16,7 @@ import type { Document as Document_2 } from 'mongodb';
 import type { Filter } from 'mongodb';
 import type { HeadersInit as HeadersInit_2 } from 'node-fetch';
 import NodeFormData = require('form-data');
-import { ObjectID } from 'bson';
+import type { ObjectId } from 'mongodb';
 import { ParsedQs } from 'qs';
 import type { Pool } from 'pg';
 import { default as qs_2 } from 'qs';
@@ -27,6 +26,9 @@ import type { RequestInfo as RequestInfo_2 } from 'node-fetch';
 import type { RequestInit as RequestInit_2 } from 'node-fetch';
 import type { Response as Response_2 } from 'node-fetch';
 import type { Response as Response_3 } from 'express';
+import type { useEffect } from 'react';
+import type { useRef } from 'react';
+import type { useState } from 'react';
 import { ValidateFunction } from 'ajv';
 import { WithId } from 'mongodb';
 
@@ -167,7 +169,7 @@ export class MongodbAccessor<TableName extends string> {
     // (undocumented)
     getRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOneOptions<T, MongodbRawFilter> | undefined) => Promise<WithId<Document_2> | undefined>;
     // (undocumented)
-    insertRow: <T extends Record<string, unknown>>(tableName: TableName, value: T) => Promise<ObjectID>;
+    insertRow: <T extends Record<string, unknown>>(tableName: TableName, value: T) => Promise<ObjectId>;
     // (undocumented)
     selectRow: <T extends Record<string, unknown>>(tableName: TableName, options?: RowSelectOptions<T, MongodbRawFilter> | undefined) => Promise<Document_2[]>;
     // (undocumented)
@@ -180,6 +182,9 @@ export class MongodbAccessor<TableName extends string> {
 
 // @public (undocumented)
 export type MongodbRawFilter = Filter<unknown>;
+
+// @public (undocumented)
+export function navigateTo(to: string, replace?: boolean): void;
 
 // @public (undocumented)
 export class PostgresAccessor<TableName extends string> {
@@ -322,6 +327,13 @@ export interface SqlRawFilter {
     // (undocumented)
     value: unknown[];
 }
+
+// @public (undocumented)
+export function useLocation(React: {
+    useEffect: typeof useEffect;
+    useRef: typeof useRef;
+    useState: typeof useState;
+}): string;
 
 // (No @packageDocumentation comment for this package)
 

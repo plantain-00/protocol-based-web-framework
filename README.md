@@ -330,6 +330,18 @@ const blogs = await requestRestfulAPI('GET', '/api/blogs', { query: { skip: 0, t
 
 ```ts
 /**
+ * @path /blogs
+ */
+declare function blogsPage(
+  query: {
+    /**
+     * @default 1
+     */
+    page?: number
+  },
+): string
+
+/**
  * @path /blogs/{id}
  */
 declare function blogPage(path: { id: number }): string
@@ -342,6 +354,8 @@ declare function blogPage(path: { id: number }): string
 Function name should be unique name for api binding, and is used for generating backend types: `blogPage` -> `BlogPage`
 
 Function parameter name can be `query` and `path`, they are different parts of a url.
+
+Default value in function parameter is used to fill default value when the parameter is not passed, for example, a page url is `http://localhost:4000/blogs`, then in page component, the `props` is `{ query: { page: 1 }}`
 
 ### 10. generate router declaration
 
@@ -377,12 +391,12 @@ expect(renderer.create(<BlogPage path={{ id: 123 }}>).toJSON()).toMatchSnapshot(
 ### 12. register router
 
 ```tsx
-import { useLocation } from "wouter"
-import { matchRoute } from 'protocol-based-web-framework'
+import React from "react"
+import { matchRoute, useLocation } from 'protocol-based-web-framework'
 import { routes } from './router-declaration'
 
 function App() {
-  const [location] = useLocation()
+  const location = useLocation(React)
 
   for (const route of routes) {
     if (route.Component) {
@@ -410,14 +424,13 @@ function App() {
 ### 13. link to page url
 
 ```tsx
-import { composeUrl } from 'protocol-based-web-framework'
+import { composeUrl, navigateTo } from 'protocol-based-web-framework'
 import { GetPageUrl } from './router-declaration'
 
 const getPageUrl: GetPageUrl = composeUrl
 
-const [, setLocation] = useLocation()
-setLocation(getPageUrl('/blogs/{id}', { path: { id: blog.id } }))
-setLocation(getPageUrl(`/blogs/${blog.id}`))
+navigateTo(getPageUrl('/blogs/{id}', { path: { id: blog.id } }))
+navigateTo(getPageUrl(`/blogs/${blog.id}`))
 ```
 
 [dev/react-app.tsx](./dev/react-app.tsx)

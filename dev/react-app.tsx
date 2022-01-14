@@ -1,16 +1,14 @@
 import * as ReactDOM from 'react-dom'
 import React from "react"
-import { useLocation } from "wouter"
 import { requestRestfulAPI } from './client-fetch'
 import { Blog } from './restful-api-schema'
 import { bindRouterComponent, GetPageUrl, routes, BlogPageProps, HomePageProps } from './router-declaration'
-import { composeUrl, matchRoute } from '../dist/browser'
+import { composeUrl, matchRoute, useLocation, navigateTo } from '../dist/browser'
 
 const getPageUrl: GetPageUrl = composeUrl
 
 function HomePage(props: HomePageProps) {
   const [blogs, setBlogs] = React.useState<Blog[]>([])
-  const [, setLocation] = useLocation()
   React.useEffect(() => {
     requestRestfulAPI('GET', '/api/blogs', { query: { skip: (props.query.page - 1) * 10 } }).then((b) => {
       setBlogs(b.result)
@@ -26,7 +24,7 @@ function HomePage(props: HomePageProps) {
             key={blog.id}
             style={{ cursor: 'pointer' }}
             onClick={() => {
-              setLocation(getPageUrl('/blogs/{id}', { path: { id: blog.id } }))
+              navigateTo(getPageUrl('/blogs/{id}', { path: { id: blog.id } }))
             }}
           >
             {blog.content}
@@ -35,7 +33,7 @@ function HomePage(props: HomePageProps) {
       </ul>
       <button
         onClick={() => {
-          setLocation(getPageUrl('/', { query: { page: props.query.page - 1 } }))
+          navigateTo(getPageUrl('/', { query: { page: props.query.page - 1 } }))
         }}
       >
         previous page
@@ -43,7 +41,7 @@ function HomePage(props: HomePageProps) {
       {props.query.page}
       <button
         onClick={() => {
-          setLocation(getPageUrl('/', { query: { page: props.query.page + 1 } }))
+          navigateTo(getPageUrl('/', { query: { page: props.query.page + 1 } }))
         }}
       >
         next page
@@ -55,7 +53,6 @@ bindRouterComponent('HomePage', HomePage)
 
 function BlogPage(props: BlogPageProps) {
   const [blog, setBlog] = React.useState<Blog>()
-  const [, setLocation] = useLocation()
   React.useEffect(() => {
     requestRestfulAPI('GET', `/api/blogs/${props.path.id}`).then((b) => {
       setBlog(b.result)
@@ -63,7 +60,7 @@ function BlogPage(props: BlogPageProps) {
   }, [])
   return (
     <div>
-      <div onClick={() => setLocation(getPageUrl('/'))}>
+      <div onClick={() => navigateTo(getPageUrl('/'))}>
         back to app
       </div>
       <div >blog {props.path.id}</div>
@@ -74,7 +71,7 @@ function BlogPage(props: BlogPageProps) {
 bindRouterComponent('BlogPage', BlogPage)
 
 function App() {
-  const [location] = useLocation()
+  const location = useLocation(React)
 
   for (const route of routes) {
     if (route.Component) {
