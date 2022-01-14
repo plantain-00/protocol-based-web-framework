@@ -351,7 +351,7 @@ declare function blogPage(path: { id: number }): string
 
 `@path` follows swagger specification.
 
-Function name should be unique name for api binding, and is used for generating backend types: `blogPage` -> `BlogPage`
+Function name should be unique name for api binding, and is used for generating page component props types: `blogPage` -> `BlogPageProps`
 
 Function parameter name can be `query` and `path`, they are different parts of a url.
 
@@ -421,7 +421,7 @@ function App() {
 
 `matchRoute` will do props type convertion, for example, a page url is `http://localhost:4000/blogs/123`, then in page component, the `props` is `{ path: { id: 123 }}` rather than `{ path: { id: "123" }}`.
 
-### 13. link to page url
+### 13. navigate to page url
 
 ```tsx
 import { composeUrl, navigateTo } from 'protocol-based-web-framework'
