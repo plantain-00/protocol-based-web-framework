@@ -47,6 +47,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   },`)
 
       // frontend types
+      const propsParams: { optional: boolean, value: string }[] = []
       const getPageUrlParam: { optional: boolean, value: string }[] = []
       const getPageUrlPathParam: { optional: boolean, value: string }[] = []
       let frontendPath = declaration.path
@@ -66,6 +67,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
               frontendPath = frontendPath.split(`{${q.name}}`).join(`\${${q.type.kind}}`)
             }
           })
+          propsParams.push(getParam(type, parameter))
         }
       }
 
@@ -122,13 +124,18 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
         const optional = getPageUrlParam.every((q) => q.optional) ? '?' : ''
         getPageUrlParameters.push(`args${optional}: { ${getPageUrlParam.map((p) => p.value).join(', ')} }`)
       }
-      if (getPageUrlPathParam.length > 0) {
+      if (getPageUrlPathParam.length) {
         const optional = getPageUrlParam.every((q) => q.optional) && getPageUrlPathParam.every((q) => q.optional) ? '?' : ''
-        getPageUrlParameters2.push(`args${optional}: ${interfaceName}Props`)
-        props.push(`export type ${interfaceName}Props = { ${[...getPageUrlPathParam, ...getPageUrlParam].map((p) => p.value).join(', ')} }`)
-        bindPageComponentTypes.push(`  (name: '${interfaceName}', component: (props${optional}: ${interfaceName}Props) => JSX.Element): void`)
+        getPageUrlParameters2.push(`args${optional}: { ${[...getPageUrlPathParam, ...getPageUrlParam].map((p) => p.value).join(', ')} }`)
+      }
+      if (getPageUrlPathParam.length + getPageUrlParam.length > 0) {
+        bindPageComponentTypes.push(`  (name: '${interfaceName}', component: (props: ${interfaceName}Props) => JSX.Element): void`)
       } else {
         bindPageComponentTypes.push(`  (name: '${interfaceName}', component: () => JSX.Element): void`)
+      }
+
+      if (propsParams.length > 0) {
+        props.push(`export type ${interfaceName}Props = { ${propsParams.map((p) => p.value).join(', ')} }`)
       }
 
       getPageUrlResult.push(`  (${getPageUrlParameters.join(', ')}): string`)
@@ -154,7 +161,7 @@ ${routers.join('\n')}
 
 export const bindRouterComponent: {
 ${bindPageComponentTypes.join('\n')}
-} = (name: string, component: (props?: any) => JSX.Element) => {
+} = (name: string, component: (props: any) => JSX.Element) => {
   const schema = routes.find((s) => s.name === name)
   if (schema) {
     schema.Component = component

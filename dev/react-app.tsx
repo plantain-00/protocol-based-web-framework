@@ -3,19 +3,19 @@ import React from "react"
 import { useLocation } from "wouter"
 import { requestRestfulAPI } from './client-fetch'
 import { Blog } from './restful-api-schema'
-import { bindRouterComponent, GetPageUrl, routes, BlogPageProps } from './router-declaration'
+import { bindRouterComponent, GetPageUrl, routes, BlogPageProps, HomePageProps } from './router-declaration'
 import { composeUrl, matchRoute } from '../dist/browser'
 
 const getPageUrl: GetPageUrl = composeUrl
 
-function HomePage() {
+function HomePage(props: HomePageProps) {
   const [blogs, setBlogs] = React.useState<Blog[]>([])
   const [, setLocation] = useLocation()
   React.useEffect(() => {
-    requestRestfulAPI('GET', '/api/blogs').then((b) => {
+    requestRestfulAPI('GET', '/api/blogs', { query: { skip: (props.query.page - 1) * 10 } }).then((b) => {
       setBlogs(b.result)
     })
-  }, [])
+  }, [props.query.page])
 
   return (
     <div>
@@ -33,6 +33,21 @@ function HomePage() {
           </li>
         ))}
       </ul>
+      <button
+        onClick={() => {
+          setLocation(getPageUrl('/', { query: { page: props.query.page - 1 } }))
+        }}
+      >
+        previous page
+      </button>
+      {props.query.page}
+      <button
+        onClick={() => {
+          setLocation(getPageUrl('/', { query: { page: props.query.page + 1 } }))
+        }}
+      >
+        next page
+      </button>
     </div>
   )
 }
