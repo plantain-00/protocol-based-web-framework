@@ -53,10 +53,16 @@ bindRouterComponent('HomePage', HomePage)
 
 function BlogPage(props: BlogPageProps) {
   const [blog, setBlog] = React.useState<Blog>()
+  const confirmMessage = React.useContext(ConfirmMessageContext)
   React.useEffect(() => {
+    // eslint-disable-next-line plantain/promise-not-await
     requestRestfulAPI('GET', `/api/blogs/${props.path.id}`).then((b) => {
       setBlog(b.result)
     })
+    confirmMessage.current = `exit ${props.path.id}?`
+    return () => {
+      confirmMessage.current = ''
+    }
   }, [])
   return (
     <div>
@@ -70,8 +76,23 @@ function BlogPage(props: BlogPageProps) {
 }
 bindRouterComponent('BlogPage', BlogPage)
 
+const ConfirmMessageContext = React.createContext<React.MutableRefObject<string>>({ current: '' })
+
 function App() {
-  const location = useLocation(React)
+  const confirmMessage = React.useRef('')
+  const location = useLocation(React, {
+    confirm: () => confirmMessage.current ? confirm(confirmMessage.current) : true,
+  })
+  React.useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (confirmMessage.current) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    addEventListener('beforeunload', handleBeforeUnload)
+    return () => removeEventListener('beforeunload', handleBeforeUnload)
+  }, [])
 
   for (const route of routes) {
     if (route.Component) {
@@ -80,7 +101,11 @@ function App() {
         if (typeof result === 'string') {
           return <>{result}</>
         }
-        return <route.Component {...result} />
+        return (
+          <ConfirmMessageContext.Provider value={confirmMessage}>
+            <route.Component {...result} />
+          </ConfirmMessageContext.Provider>
+        )
       }
     }
   }

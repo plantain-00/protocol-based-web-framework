@@ -56,38 +56,83 @@ function getAndValidateComponentProps(
   return validate(props) ? props : (validate.errors?.[0]?.message ?? props)
 }
 
+const positionLastShownKey = 'positionLastShown'
+const positionMaxKey = 'positionMax'
+
 /**
  * @public
  */
 export function navigateTo(to: string, replace?: boolean) {
   const method = replace ? 'replaceState' : 'pushState'
-  history[method](null, '', to)
+  const position = Number(sessionStorage.getItem(positionMaxKey)) + 1
+  sessionStorage.setItem(positionMaxKey, String(position))
+  sessionStorage.setItem(positionLastShownKey, String(position))
+  history[method](position, '', to)
   dispatchEvent(new Event(method))
+}
+
+function undoPopStateChange() {
+  const positionLastShown = Number(sessionStorage.getItem(positionLastShownKey))
+  if (history.state > positionLastShown) {
+    history.back()
+  } else if (history.state < positionLastShown) {
+    history.forward()
+  }
+}
+
+function getLocation() {
+  return {
+    path: location.pathname || '/',
+    search: location.search,
+  }
 }
 
 /**
  * @public
  */
-export function useLocation(React: { useEffect: typeof useEffect, useRef: typeof useRef, useState: typeof useState }) {
-  const [{ path, search }, update] = React.useState(() => ({
-    path: location.pathname || '/',
-    search: location.search,
-  }))
+export function useLocation(
+  React: { useEffect: typeof useEffect, useRef: typeof useRef, useState: typeof useState },
+  options?: Partial<{
+    confirm: () => boolean | Promise<boolean>
+  }>
+) {
+  const [{ path, search }, update] = React.useState(() => getLocation())
   const prevHash = React.useRef(path + search)
   React.useEffect(() => {
-    const checkForUpdates = () => {
-      const path = location.pathname || '/'
-      const search = location.search
-      const hash = path + search
+    const handlePushOrReplaceState = () => {
+      const newLocation = getLocation()
+      const hash = newLocation.path + newLocation.search
       if (prevHash.current !== hash) {
-        prevHash.current = hash;
-        update({ path, search })
+        prevHash.current = hash
+        update(newLocation)
       }
-    };
-    const events = ['popstate', 'replaceState', 'pushState']
-    events.forEach((e) => addEventListener(e, checkForUpdates))
-    checkForUpdates()
-    return () => events.forEach((e) => removeEventListener(e, checkForUpdates))
+    }
+    const handlePopState = async () => {
+      const newLocation = getLocation()
+      const hash = newLocation.path + newLocation.search
+      if (prevHash.current !== hash) {
+        let confirmed = true
+        if (options?.confirm) {
+          confirmed = await options.confirm()
+        }
+        if (confirmed) {
+          sessionStorage.setItem(positionLastShownKey, String(history.state))
+          prevHash.current = hash
+          update(newLocation)
+        } else {
+          undoPopStateChange()
+        }
+      }
+    }
+    addEventListener('popstate', handlePopState)
+    addEventListener('replaceState', handlePushOrReplaceState)
+    addEventListener('pushState', handlePushOrReplaceState)
+    handlePushOrReplaceState()
+    return () => {
+      removeEventListener('popstate', handlePopState)
+      removeEventListener('replaceState', handlePushOrReplaceState)
+      removeEventListener('pushState', handlePushOrReplaceState)
+    }
   }, [])
   return path
 }
