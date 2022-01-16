@@ -311,11 +311,11 @@ ${bindRestfulApiHandlerTypes.join('\n')}
 import { ajvFrontend } from '${process.env.FRONTEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
 import type { ${Array.from(streamReferences).join(', ') } } from 'stream'
 
-export type RequestRestfulAPI = {
+export interface RequestRestfulAPI {
 ${frontendResult.join('\n')}
 }
 
-export type GetRequestApiUrl = {
+export interface GetRequestApiUrl {
 ${getRequestApiUrlResult.join('\n')}
 }
 

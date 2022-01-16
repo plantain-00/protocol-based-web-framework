@@ -2,7 +2,7 @@ import { Blog, BlogIgnorableField } from './restful-api-schema'
 import { ajvFrontend } from '../dist/browser'
 import type { Readable } from 'stream'
 
-export type RequestRestfulAPI = {
+export interface RequestRestfulAPI {
   <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(method: 'GET', url: `/api/blogs`, args?: { query?: { skip?: number, take?: number, ignoredFields?: TIgnored[], pickedFields?: TPicked[], sortType?: "asc" | "desc", content?: string, sortField?: "id" | "content", ids?: string[] } }): Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored>[], count: number }>
   <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(method: 'GET', url: `/api/blogs/${number}`, args?: { query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] } }): Promise<{ result?: Omit<Pick<Blog, TPicked>, TIgnored> }>
   <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(method: 'GET', url: '/api/blogs/{id}', args: { path: { id: number }, query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] } }): Promise<{ result?: Omit<Pick<Blog, TPicked>, TIgnored> }>
@@ -18,7 +18,7 @@ export type RequestRestfulAPI = {
   (method: 'GET', url: '/api/blogs/{id}/text', args: { path: { id: number } }): Promise<string>
 }
 
-export type GetRequestApiUrl = {
+export interface GetRequestApiUrl {
   <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(url: `/api/blogs`, args?: { query?: { skip?: number, take?: number, ignoredFields?: TIgnored[], pickedFields?: TPicked[], sortType?: "asc" | "desc", content?: string, sortField?: "id" | "content", ids?: string[] } }): string
   <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(url: `/api/blogs/${number}`, args?: { query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] } }): string
   <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(url: '/api/blogs/{id}', args: { path: { id: number }, query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] } }): string

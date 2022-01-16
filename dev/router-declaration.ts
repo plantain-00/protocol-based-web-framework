@@ -3,7 +3,7 @@ import { ajvRouter, Route } from '../dist/browser'
 export type HomePageProps = { query: { page: number } }
 export type BlogPageProps = { path: { id: number } }
 
-export type GetPageUrl = {
+export interface GetPageUrl {
   (url: `/`, args?: { query?: { page?: number } }): string
   (url: `/blogs/${number}`): string
   (url: '/blogs/{id}', args: { path: { id: number } }): string

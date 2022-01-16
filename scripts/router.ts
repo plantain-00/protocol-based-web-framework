@@ -149,7 +149,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
 
 ${props.join('\n')}
 
-export type GetPageUrl = {
+export interface GetPageUrl {
 ${getPageUrlResult.join('\n')}
 }
 

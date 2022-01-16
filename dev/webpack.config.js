@@ -6,6 +6,9 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.tsx', '.js']
   },
+  output: {
+    publicPath: '/',
+  },
   module: {
     rules: [
       { test: /\.tsx?$/, loader: 'ts-loader' }
@@ -15,7 +18,7 @@ module.exports = {
     new HtmlWebpackPlugin()
   ],
   devServer: {
-    static: './dev',
+    historyApiFallback: true,
     proxy: {
       '/api': 'http://localhost:3000',
     },

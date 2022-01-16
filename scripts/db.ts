@@ -30,15 +30,15 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   const content = `import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, getKeys, SqlRawFilter } from "${process.env.DB_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}"
 import { ${schemas.map((s) => s.typeName).join(', ')} } from "${process.env.DB_SCHEMA_PATH || './db-schema'}"
 
-export type GetRow<T = SqlRawFilter> = {
+export interface GetRow<T = SqlRawFilter> {
 ${schemas.map((s) => `  <TIgnored extends keyof ${s.typeName} = never, TPicked extends keyof ${s.typeName} = keyof ${s.typeName}>(tableName: '${s.tableName}', options?: RowSelectOneOptions<${s.typeName}, T> & { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }): Promise<Omit<Pick<${s.typeName}, TPicked>, TIgnored> | undefined>`).join('\n')}
 }
 
-export type SelectRow<T = SqlRawFilter> = {
+export interface SelectRow<T = SqlRawFilter> {
 ${schemas.map((s) => `  <TIgnored extends keyof ${s.typeName} = never, TPicked extends keyof ${s.typeName} = keyof ${s.typeName}>(tableName: '${s.tableName}', options?: RowSelectOptions<${s.typeName}, T> & { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }): Promise<Omit<Pick<${s.typeName}, TPicked>, TIgnored>[]>`).join('\n')}
 }
 
-export type InsertRow<T = number> = {
+export interface InsertRow<T = number> {
 ${schemas.map((s) => {
     const optionalRowIdField = s.autoIncrementField ?? (s.fields.some((f) => f.name === '_id') ? '_id' : undefined)
     const type = optionalRowIdField ? `Pick<Partial<${s.typeName}>, '${optionalRowIdField}'> & Omit<${s.typeName}, '${optionalRowIdField}'>` : s.typeName
@@ -46,15 +46,15 @@ ${schemas.map((s) => {
   }).join('\n')}
 }
 
-export type UpdateRow<T = SqlRawFilter> = {
+export interface UpdateRow<T = SqlRawFilter> {
 ${schemas.map((s) => `  (tableName: '${s.tableName}', value?: Partial<${s.typeName}>, options?: RowFilterOptions<${s.typeName}, T>): Promise<number>`).join('\n')}
 }
 
-export type DeleteRow<T = SqlRawFilter> = {
+export interface DeleteRow<T = SqlRawFilter> {
 ${schemas.map((s) => `  (tableName: '${s.tableName}', options?: RowFilterOptions<${s.typeName}, T>): Promise<void>`).join('\n')}
 }
 
-export type CountRow<T = SqlRawFilter> = {
+export interface CountRow<T = SqlRawFilter> {
 ${schemas.map((s) => `  (tableName: '${s.tableName}', options?: RowFilterOptions<${s.typeName}, T>): Promise<number>`).join('\n')}
 }
 
