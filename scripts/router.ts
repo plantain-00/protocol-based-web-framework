@@ -19,7 +19,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   }
 
   for (const declaration of typeDeclarations) {
-    if (declaration.kind === 'function' && declaration.path) {
+    if (declaration.kind === 'function' && declaration.path && !declaration.method) {
       // register
       let path = declaration.path
       const declarationParameters = getDeclarationParameters(declaration, typeDeclarations)

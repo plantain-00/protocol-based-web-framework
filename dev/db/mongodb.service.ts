@@ -1,6 +1,6 @@
 import { MongoClient, ObjectId } from 'mongodb'
-import { MongodbAccessor, MongodbRawFilter } from '../dist/nodejs'
-import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableSchemas, UpdateRow } from './db-declaration'
+import { MongodbAccessor, MongodbRawFilter } from '../../dist/nodejs'
+import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableSchemas, UpdateRow } from '../db-declaration'
 
 export async function initializeDatabase() {
   const client = new MongoClient('mongodb://localhost:27017')

@@ -1,6 +1,6 @@
 import Axios from 'axios'
-import { GetRequestApiUrl, RequestRestfulAPI, validations } from "./restful-api-frontend-declaration"
-import { ApiAccessorAxios, composeUrl } from '../dist/browser'
+import { GetRequestApiUrl, RequestRestfulAPI, validations } from "../restful-api-frontend-declaration"
+import { ApiAccessorAxios, composeUrl } from '../../dist/browser'
 
 const apiAccessor = new ApiAccessorAxios(validations, Axios)
 const getRequestApiUrl: GetRequestApiUrl = composeUrl

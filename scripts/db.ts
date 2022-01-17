@@ -1,6 +1,10 @@
 import { Member, TypeDeclaration } from 'types-as-schema'
+import { collectReference, getReferencesImports } from './util'
+
+const outPath = process.env.OUTPUT_PATH || './src/db-declaration.ts'
 
 export default (typeDeclarations: TypeDeclaration[]): { path: string, content: string }[] => {
+  const references = new Map<string, string[]>()
   const schemas: {
     tableName: string
     typeName: string
@@ -14,6 +18,8 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   for (const declaration of typeDeclarations) {
     if (declaration.kind === 'object' && declaration.entry) {
       const autoIncrementMember = declaration.members.find((m) => m.jsDocs?.some((d) => d.name === 'autoincrement'))
+      collectReference(declaration.name, outPath, declaration.position.file, references)
+      
       schemas.push({
         tableName: declaration.entry,
         typeName: declaration.name,
@@ -28,7 +34,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   }
 
   const content = `import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, getKeys, SqlRawFilter } from "${process.env.DB_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}"
-import { ${schemas.map((s) => s.typeName).join(', ')} } from "${process.env.DB_SCHEMA_PATH || './db-schema'}"
+${getReferencesImports(references).join('\n')}
 
 export interface GetRow<T = SqlRawFilter> {
 ${schemas.map((s) => `  <TIgnored extends keyof ${s.typeName} = never, TPicked extends keyof ${s.typeName} = keyof ${s.typeName}>(tableName: '${s.tableName}', options?: RowSelectOneOptions<${s.typeName}, T> & { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }): Promise<Omit<Pick<${s.typeName}, TPicked>, TIgnored> | undefined>`).join('\n')}
@@ -74,7 +80,7 @@ export const tableNames = getKeys(tableSchemas)
 `
   return [
     {
-      path: process.env.OUTPUT_PATH || './src/db-declaration.ts',
+      path: outPath,
       content: content,
     },
   ]

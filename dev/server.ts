@@ -5,8 +5,8 @@ import stream from 'stream'
 import multer from 'multer'
 import { getAndValidateRequestInput, respondHandleResult } from '../dist/nodejs'
 import { apiSchemas } from './restful-api-backend-declaration'
-import { initializeDatabase } from './sqlite-service'
-import { HttpError } from './blog-service'
+import { initializeDatabase } from './db/sqlite.service'
+import { HttpError } from './blog/blog.service'
 
 const app = express()
 app.use(bodyParser.json())

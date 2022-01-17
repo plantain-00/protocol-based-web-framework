@@ -1,6 +1,6 @@
-import { Blog, BlogIgnorableField } from './restful-api-schema'
 import { ajvFrontend } from '../dist/browser'
 import type { Readable } from 'stream'
+import { Blog, BlogIgnorableField } from "./blog/blog.schema"
 
 export interface RequestRestfulAPI {
   <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(method: 'GET', url: `/api/blogs`, args?: { query?: { skip?: number, take?: number, ignoredFields?: TIgnored[], pickedFields?: TPicked[], sortType?: "asc" | "desc", content?: string, sortField?: "id" | "content", ids?: string[] } }): Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored>[], count: number }>

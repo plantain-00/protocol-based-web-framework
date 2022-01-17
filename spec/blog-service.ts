@@ -1,6 +1,6 @@
 import test from 'ava'
-import { initializeDatabase } from '../dev/sqlite-service'
-import { getBlogs } from '../dev/blog-service'
+import { initializeDatabase } from '../dev/db/sqlite.service'
+import { getBlogs } from '../dev/blog/blog.service'
 
 test('create blog', async (t) => {
   await initializeDatabase()

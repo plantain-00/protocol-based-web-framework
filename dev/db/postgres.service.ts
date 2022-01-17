@@ -1,18 +1,20 @@
-import * as sqlite from 'sqlite3'
-import { SqliteAccessor } from '../dist/nodejs'
-import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from './db-declaration'
-
-const sqliteAccessor = new SqliteAccessor(new sqlite.Database(':memory:'), tableSchemas)
-export const insertRow: InsertRow = sqliteAccessor.insertRow
-export const updateRow: UpdateRow = sqliteAccessor.updateRow
-export const getRow: GetRow = sqliteAccessor.getRow
-export const selectRow: SelectRow = sqliteAccessor.selectRow
-export const deleteRow: DeleteRow = sqliteAccessor.deleteRow
-export const countRow: CountRow = sqliteAccessor.countRow
+import { Client } from 'pg'
+import { PostgresAccessor } from '../../dist/nodejs'
+import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from '../db-declaration'
 
 export async function initializeDatabase() {
+  const client = new Client()
+  await client.connect()
+  const postgresAccessor = new PostgresAccessor(client, tableSchemas)
+  const insertRow: InsertRow = postgresAccessor.insertRow
+  const updateRow: UpdateRow = postgresAccessor.updateRow
+  const getRow: GetRow = postgresAccessor.getRow
+  const selectRow: SelectRow = postgresAccessor.selectRow
+  const deleteRow: DeleteRow = postgresAccessor.deleteRow
+  const countRow: CountRow = postgresAccessor.countRow
+
   for (const tableName of tableNames) {
-    await sqliteAccessor.createTable(tableName)
+    await postgresAccessor.createTable(tableName)
   }
 
   await insertRow('blogs', { id: 1, content: 'blog 1 content', meta: { foo: 'bar' } })

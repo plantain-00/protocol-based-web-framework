@@ -1,4 +1,17 @@
-import { BlogSchema, PostSchema } from "./db-schema"
+import { PostSchema } from "../post/post.schema";
+import { IdField, MyUserIdField, PaginationFields, SortTypeField } from "../shared/shared.schema";
+
+/**
+ * @entry blogs
+ */
+export interface BlogSchema {
+  /**
+   * @autoincrement
+   */
+  id: number
+  content: string
+  meta: unknown
+}
 
 /**
  * @method get
@@ -71,7 +84,7 @@ declare function deleteBlog(
  * @path /api/blogs/{id}/download
  * @tags blog
  */
- declare function downloadBlog(
+declare function downloadBlog(
   path: IdField,
   query: {
     attachmentFileName?: string,
@@ -105,33 +118,12 @@ export interface Blog extends BlogSchema {
   posts: PostSchema[]
 }
 
-interface PaginationFields {
-  /**
-   * @default 0
-   */
-  skip?: number
-  /**
-   * @default 10
-   */
-  take?: number
-}
-
-interface SortTypeField {
-  /**
-   * @default asc
-   */
-  sortType?: 'asc' | 'desc'
-}
-
-interface IdField {
-  id: number
-}
-
 interface BlogFieldFilter {
   ignoredFields?: BlogIgnorableField[]
   pickedFields?: (keyof Blog)[]
 }
 
-interface MyUserIdField {
-  myUserId: number
-}
+/**
+ * @path /blogs/{id}
+ */
+declare function blogPage(path: { id: number }): string

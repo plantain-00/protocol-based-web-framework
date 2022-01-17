@@ -1,5 +1,5 @@
-import { GetRequestApiUrl, RequestRestfulAPI, validations } from "./restful-api-frontend-declaration"
-import { ApiAccessorFetch, composeUrl } from '../dist/browser'
+import { GetRequestApiUrl, RequestRestfulAPI, validations } from "../restful-api-frontend-declaration"
+import { ApiAccessorFetch, composeUrl } from '../../dist/browser'
 
 const apiAccessor = new ApiAccessorFetch(validations)
 

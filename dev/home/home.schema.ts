@@ -9,8 +9,3 @@ declare function homePage(
     page?: number
   },
 ): string
-
-/**
- * @path /blogs/{id}
- */
-declare function blogPage(path: { id: number }): string

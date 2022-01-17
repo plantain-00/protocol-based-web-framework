@@ -1,14 +1,33 @@
 import { ajvRouter, Route } from '../dist/browser'
 
-export type HomePageProps = { query: { page: number } }
 export type BlogPageProps = { path: { id: number } }
+export type HomePageProps = { query: { page: number } }
 
 export interface GetPageUrl {
-  (url: `/`, args?: { query?: { page?: number } }): string
   (url: `/blogs/${number}`): string
   (url: '/blogs/{id}', args: { path: { id: number } }): string
+  (url: `/`, args?: { query?: { page?: number } }): string
 }
 
+const blogPageValidate = ajvRouter.compile({
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    }
+  },
+  "required": [
+    "path"
+  ]
+})
 const homePageValidate = ajvRouter.compile({
   "type": "object",
   "properties": {
@@ -29,34 +48,8 @@ const homePageValidate = ajvRouter.compile({
     "query"
   ]
 })
-const blogPageValidate = ajvRouter.compile({
-  "type": "object",
-  "properties": {
-    "path": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "number"
-        }
-      },
-      "required": [
-        "id"
-      ]
-    }
-  },
-  "required": [
-    "path"
-  ]
-})
 
 export const routes: Route[] = [
-  {
-    name: 'HomePage',
-    path: '/',
-    regexp: undefined,
-    keys: [],
-    validate: homePageValidate,
-  },
   {
     name: 'BlogPage',
     path: '/blogs/:id',
@@ -64,11 +57,18 @@ export const routes: Route[] = [
     keys: ['id'],
     validate: blogPageValidate,
   },
+  {
+    name: 'HomePage',
+    path: '/',
+    regexp: undefined,
+    keys: [],
+    validate: homePageValidate,
+  },
 ]
 
 export const bindRouterComponent: {
-  (name: 'HomePage', component: (props: HomePageProps) => JSX.Element): void
   (name: 'BlogPage', component: (props: BlogPageProps) => JSX.Element): void
+  (name: 'HomePage', component: (props: HomePageProps) => JSX.Element): void
 } = (name: string, component: (props: any) => JSX.Element) => {
   const schema = routes.find((s) => s.name === name)
   if (schema) {

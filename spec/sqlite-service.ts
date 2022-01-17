@@ -1,5 +1,5 @@
 import test from 'ava'
-import { initializeDatabase, selectRow } from '../dev/sqlite-service'
+import { initializeDatabase, selectRow } from '../dev/db/sqlite.service'
 
 test('select rows', async (t) => {
   await initializeDatabase()

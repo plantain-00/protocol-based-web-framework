@@ -1,5 +1,6 @@
 import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, getKeys, SqlRawFilter } from "../dist/nodejs"
-import { BlogSchema, PostSchema } from "./db-schema"
+import { BlogSchema } from "./blog/blog.schema"
+import { PostSchema } from "./post/post.schema"
 
 export interface GetRow<T = SqlRawFilter> {
   <TIgnored extends keyof BlogSchema = never, TPicked extends keyof BlogSchema = keyof BlogSchema>(tableName: 'blogs', options?: RowSelectOneOptions<BlogSchema, T> & { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }): Promise<Omit<Pick<BlogSchema, TPicked>, TIgnored> | undefined>

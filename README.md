@@ -61,15 +61,13 @@ interface Updated {
 + `@unique` marked field means the db table field is `UNIQUE`
 + `@index` marked field means the db table field is `INDEX`
 
-[dev/db-schema.ts](./dev/db-schema.ts)
+[dev/blog/blog.schema.ts](./dev/blog/blog.schema.ts)
 
 ### 2. generate db declaration
 
-`DB_SCHEMA_PATH=./db-schema OUTPUT_PATH=./dev/db-declaration.ts types-as-schema ./dev/db-schema.ts --config protocol-based-web-framework/db`
+`OUTPUT_PATH=./dev/db-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/db`
 
 `OUTPUT_PATH` is output file path.
-
-`DB_SCHEMA_PATH` is db schema model entry file path(relative to output file), generated ts file will import types from it.
 
 `--config` is the generation script file path.
 
@@ -99,9 +97,9 @@ console.info(rows)
 await deleteRow('blogs', { filter: { id } })
 ```
 
-+ sqlite: [dev/sqlite-service.ts](./dev/sqlite-service.ts)
-+ mongodb: [dev/mongodb-service.ts](./dev/mongodb-service.ts)
-+ postgres: [dev/postgres-service.ts](./dev/postgres-service.ts)
++ sqlite: [dev/db/sqlite.service.ts](./dev/db/sqlite.service.ts)
++ mongodb: [dev/db/mongodb.service.ts](./dev/db/mongodb.service.ts)
++ postgres: [dev/db/postgres.service.ts](./dev/db/postgres.service.ts)
 
 `createTable` can also migrate compatible db schema changes by `CREATE TABLE IF NOT EXISTS` and `ADD COLUMN IF NOT EXISTS`.
 
@@ -159,7 +157,7 @@ interface PaginationFields {
 }
 ```
 
-[dev/restful-api-schema.ts](./dev/restful-api-schema.ts)
+[dev/blog/blog.schema.ts](./dev/blog/blog.schema.ts)
 
 `@method`, `@path`, `@tags` follow swagger specification.
 
@@ -187,11 +185,9 @@ interface BlogFieldFilter {
 
 ### 5. generate restful api declaration
 
-`RESTFUL_API_SCHEMA_PATH=./restful-api-schema BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts types-as-schema ./dev/restful-api-schema.ts ./dev/db-schema.ts --swagger ./dev/swagger.json --config protocol-based-web-framework/restful-api`
+`BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts types-as-schema ./dev/**/*.schema.ts --swagger ./dev/swagger.json --config protocol-based-web-framework/restful-api`
 
 `BACKEND_OUTPUT_PATH` and `FRONTEND_OUTPUT_PATH` are backend and frontend output file path.
-
-`RESTFUL_API_SCHEMA_PATH` is restful api schema model entry file path(relative to output file), generated ts file will import types from it.
 
 `--swagger` and `--swagger-base`(optional) are used to generate swagger json file. for example, [dev/swagger.json](./dev/swagger.json).
 
@@ -218,7 +214,7 @@ export const getBlogs: GetBlogs = async ({ query: { skip, take } }) => {
 bindRestfulApiHandler('GetBlogs', getBlogs)
 ```
 
-[dev/blog-service.ts](./dev/blog-service.ts)
+[dev/blog/blog.service.ts](./dev/blog/blog.service.ts)
 
 If `getBlogs` supports ignorable/pickable, it's type safe, if the fields are ignored or not picked, the return value's type will omit them.
 
@@ -244,7 +240,7 @@ const blog = await getBlogs({
 t.snapshot(blog)
 ```
 
-[spec/blog-service.ts](./spec/blog-service.ts)
+[dev/blog/blog.service.ts](./dev/blog/blog.service.ts)
 
 ### 7. backend register restful api
 
@@ -305,9 +301,9 @@ const blogs = await requestRestfulAPI('GET', '/api/blogs', { query: { skip: 0, t
 console.info(blogs)
 ```
 
-+ fetch: [dev/client-fetch.ts](./dev/client-fetch.ts)
-+ axios: [dev/client-axios.ts](./dev/client-axios.ts)
-+ node-fetch: [dev/client-node-fetch.ts](./dev/client-node-fetch.ts)
++ fetch: [dev/api/fetch.service.ts](./dev/api/fetch.service.ts)
++ axios: [dev/api/axios.service.ts](./dev/api/axios.service.ts)
++ node-fetch: [dev/api/node-fetch.service.ts](./dev/api/node-fetch.service.ts)
 
 `requestRestfulAPI` is type safe, for example:
 
@@ -347,7 +343,7 @@ declare function blogsPage(
 declare function blogPage(path: { id: number }): string
 ```
 
-[dev/router-schema.ts](./dev/router-schema.ts)
+[dev/blog/blog.schema.ts](./dev/blog/blog.schema.ts)
 
 `@path` follows swagger specification.
 
@@ -359,7 +355,7 @@ Default value in function parameter is used to fill default value when the param
 
 ### 10. generate router declaration
 
-`OUTPUT_PATH=./dev/router-declaration.ts types-as-schema ./dev/router-schema.ts --config protocol-based-web-framework/router`
+`OUTPUT_PATH=./dev/router-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/router`
 
 `OUTPUT_PATH` is output file path.
 

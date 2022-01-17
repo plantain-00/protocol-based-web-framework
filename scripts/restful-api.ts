@@ -1,10 +1,15 @@
 import { Definition, FunctionParameter, generateTypescriptOfFunctionParameter, generateTypescriptOfType, getAllDefinitions, getJsonSchemaProperty, getReferencedDefinitions, getReferencesInType, Member, TypeDeclaration, getDeclarationParameters } from 'types-as-schema'
+import { collectReference, getReferencesImports } from './util'
+
+const backendOutputPath = process.env.BACKEND_OUTPUT_PATH || './src/restful-api-declaration.ts'
+const frontendOutputPath = process.env.FRONTEND_OUTPUT_PATH || './static/restful-api-declaration.ts'
 
 export default (typeDeclarations: TypeDeclaration[]): { path: string, content: string }[] => {
   const backendResult: string[] = []
   const frontendResult: string[] = []
   const getRequestApiUrlResult: string[] = []
-  const references: string[] = []
+  const backendReferences = new Map<string, string[]>()
+  const frontendReferences = new Map<string, string[]>()
   const streamReferences = new Set<string>()
   const requestJsonSchemas: Array<{ name: string, schema: string }> = []
   const responseJsonSchemas: Array<{ name: string, url: string, method: string, schema: string, omittedReferences: string[], urlPattern?: string, responseType: 'json' | 'text' | 'blob' }> = []
@@ -149,9 +154,15 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       responseJsonSchemas.push(responseJsonSchema)
 
       // import reference
-      references.push(...getReferencesInType(declaration.type).map((r) => r.name))
+      getReferencesInType(declaration.type).forEach((r) => {
+        collectReference(r.name, backendOutputPath, r.position.file, backendReferences)
+        collectReference(r.name, frontendOutputPath, r.position.file, frontendReferences)
+      })
       for (const parameter of declarationParameters) {
-        references.push(...getReferencesInType(parameter.type).map((r) => r.name))
+        getReferencesInType(parameter.type).forEach((r) => {
+          collectReference(r.name, backendOutputPath, r.position.file, backendReferences)
+          collectReference(r.name, frontendOutputPath, r.position.file, frontendReferences)
+        })
       }
 
       // backend / frontend types
@@ -288,7 +299,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
 
 import type { Readable } from 'stream'
 import { ajvBackend } from '${process.env.BACKEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
-import { ${Array.from(new Set(references)).join(', ')} } from './restful-api-schema'
+${getReferencesImports(backendReferences).join('\n')}
 
 ${backendResult.join('\n')}
 
@@ -307,9 +318,9 @@ ${bindRestfulApiHandlerTypes.join('\n')}
   }
 }
 `
-  const frontendContent = `import { ${Array.from(new Set(references)).join(', ')} } from '${process.env.RESTFUL_API_SCHEMA_PATH || '../src/restful-api-schema'}'
-import { ajvFrontend } from '${process.env.FRONTEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
+  const frontendContent = `import { ajvFrontend } from '${process.env.FRONTEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
 import type { ${Array.from(streamReferences).join(', ') } } from 'stream'
+${getReferencesImports(frontendReferences).join('\n')}
 
 export interface RequestRestfulAPI {
 ${frontendResult.join('\n')}
@@ -335,11 +346,11 @@ ${responseJsonSchemas.map((s) => `  {
 `
   return [
     {
-      path: process.env.BACKEND_OUTPUT_PATH || './src/restful-api-declaration.ts',
+      path: backendOutputPath,
       content: backendContent,
     },
     {
-      path: process.env.FRONTEND_OUTPUT_PATH || './static/restful-api-declaration.ts',
+      path: frontendOutputPath,
       content: frontendContent,
     },
   ]

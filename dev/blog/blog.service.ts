@@ -1,11 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { RowFilterOptions } from '../dist/nodejs'
-import { tableSchemas } from './db-declaration'
-import { bindRestfulApiHandler, CreateBlog, DeleteBlog, DownloadBlog, GetBlogById, GetBlogs, GetBlogText, PatchBlog, UploadBlog } from './restful-api-backend-declaration'
-import { Blog, BlogIgnorableField } from './restful-api-schema'
-import { BlogSchema } from './db-schema'
-import { countRow, deleteRow, getRow, insertRow, selectRow, updateRow } from './sqlite-service'
+import { RowFilterOptions } from '../../dist/nodejs'
+import { tableSchemas } from '../db-declaration'
+import { bindRestfulApiHandler, CreateBlog, DeleteBlog, DownloadBlog, GetBlogById, GetBlogs, GetBlogText, PatchBlog, UploadBlog } from '../restful-api-backend-declaration'
+import { Blog, BlogIgnorableField, BlogSchema } from './blog.schema'
+import { countRow, deleteRow, getRow, insertRow, selectRow, updateRow } from '../db/sqlite.service'
 
 export const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip, take, ignoredFields, pickedFields } }) => {
   const filter: RowFilterOptions<BlogSchema> = {
