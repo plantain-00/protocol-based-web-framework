@@ -5,6 +5,7 @@ import { tableSchemas } from '../db-declaration'
 import { bindRestfulApiHandler, CreateBlog, DeleteBlog, DownloadBlog, GetBlogById, GetBlogs, GetBlogText, PatchBlog, UploadBlog } from '../restful-api-backend-declaration'
 import { Blog, BlogIgnorableField, BlogSchema } from './blog.schema'
 import { countRow, deleteRow, getRow, insertRow, selectRow, updateRow } from '../db/sqlite.service'
+import { HttpError } from '../shared/http-error'
 
 export const getBlogs: GetBlogs = async ({ query: { sortField, sortType, content, skip, take, ignoredFields, pickedFields } }) => {
   const filter: RowFilterOptions<BlogSchema> = {
@@ -97,12 +98,6 @@ const getBlogText: GetBlogText = async ({ path: { id } }) => {
   return fs.readFileSync(path.resolve(process.cwd(), 'README.md')).toString()
 }
 bindRestfulApiHandler('GetBlogText', getBlogText)
-
-export class HttpError extends Error {
-  constructor(message: string, public statusCode = 500) {
-    super(message)
-  }
-}
 
 function extractBlogDbFilteredFields(filter?: Partial<{ ignoredFields?: string[], pickedFields?: string[] }>) {
   return {

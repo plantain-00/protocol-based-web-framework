@@ -6,7 +6,8 @@ import multer from 'multer'
 import { getAndValidateRequestInput, respondHandleResult } from '../dist/nodejs'
 import { apiSchemas } from './restful-api-backend-declaration'
 import { initializeDatabase } from './db/sqlite.service'
-import { HttpError } from './blog/blog.service'
+import { HttpError } from './shared/http-error'
+import './blog/blog.service'
 
 const app = express()
 app.use(bodyParser.json())

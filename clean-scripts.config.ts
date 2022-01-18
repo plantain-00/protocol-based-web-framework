@@ -1,5 +1,14 @@
 const tsFiles = `"src/**/*.ts" "spec/**/*.ts"`
 
+const environments = [
+  'DB_OUTPUT_PATH=./dev/db-declaration.ts',
+  'ROUTER_OUTPUT_PATH=./dev/router-declaration.ts',
+  'BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts',
+  'FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts',
+  'BACKEND_DECLARATION_LIB_PATH=../dist/nodejs',
+  'FRONTEND_DECLARATION_LIB_PATH=../dist/browser',
+]
+
 export default {
   build: [
     'rimraf dist/',
@@ -13,9 +22,7 @@ export default {
       ],
       script: 'tsc -p scripts'
     },
-    'OUTPUT_PATH=./dev/db-declaration.ts DB_DECLARATION_LIB_PATH=../dist/nodejs types-as-schema ./dev/**/*.schema.ts --config ./dist/db',
-    'BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts BACKEND_DECLARATION_LIB_PATH=../dist/nodejs FRONTEND_DECLARATION_LIB_PATH=../dist/browser types-as-schema ./dev/**/*.schema.ts --swagger ./dev/swagger.json --config ./dist/restful-api',
-    'OUTPUT_PATH=./dev/router-declaration.ts ROUTER_DECLARATION_LIB_PATH=../dist/browser types-as-schema ./dev/**/*.schema.ts --config ./dist/router',
+    `${environments.join(' ')} types-as-schema ./dev/**/*.schema.ts --swagger ./dev/swagger.json --config ./dist/db --config ./dist/restful-api --config ./dist/router`,
   ],
   dev: {
     server: 'ts-node-dev ./dev/server.ts',

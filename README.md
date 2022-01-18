@@ -65,9 +65,9 @@ interface Updated {
 
 ### 2. generate db declaration
 
-`OUTPUT_PATH=./dev/db-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/db`
+`DB_OUTPUT_PATH=./dev/db-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/db`
 
-`OUTPUT_PATH` is output file path.
+`DB_OUTPUT_PATH` is output file path.
 
 `--config` is the generation script file path.
 
@@ -355,9 +355,9 @@ Default value in function parameter is used to fill default value when the param
 
 ### 10. generate router declaration
 
-`OUTPUT_PATH=./dev/router-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/router`
+`ROUTER_OUTPUT_PATH=./dev/router-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/router`
 
-`OUTPUT_PATH` is output file path.
+`ROUTER_OUTPUT_PATH` is output file path.
 
 `--config` is the generation script file path.
 

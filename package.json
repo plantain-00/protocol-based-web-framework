@@ -68,13 +68,13 @@
     "path-to-regexp": "6",
     "qs": "6",
     "tslib": "1 || 2",
-    "types-as-schema": "1.43"
+    "types-as-schema": "1.44"
   },
   "module": "browser/index.js",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
   "typeCoverage": {
-    "atLeast": 99.44
+    "atLeast": 99.42
   }
 }

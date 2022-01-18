@@ -145,7 +145,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
     }
   }
 
-  const content = `import { ajvRouter, Route } from '${process.env.ROUTER_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
+  const content = `import { ajvRouter, Route } from '${process.env.FRONTEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
 
 ${props.join('\n')}
 
@@ -170,7 +170,7 @@ ${bindPageComponentTypes.join('\n')}
 `
   return [
     {
-      path: process.env.OUTPUT_PATH || './static/router-declaration.ts',
+      path: process.env.ROUTER_OUTPUT_PATH || process.env.OUTPUT_PATH || './static/router-declaration.ts',
       content,
     },
   ]

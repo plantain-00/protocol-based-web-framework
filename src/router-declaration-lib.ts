@@ -67,8 +67,18 @@ export function navigateTo(to: string, replace?: boolean) {
   const position = Number(sessionStorage.getItem(positionMaxKey)) + 1
   sessionStorage.setItem(positionMaxKey, String(position))
   sessionStorage.setItem(positionLastShownKey, String(position))
+  const previousLocation: CustomEventDetail = {
+    ...getLocation(),
+    state: history.state,
+  }
   history[method](position, '', to)
-  dispatchEvent(new Event(method))
+  dispatchEvent(new CustomEvent(method, { detail: previousLocation }))
+}
+
+interface CustomEventDetail {
+  state: number
+  path: string
+  search: string
 }
 
 function undoPopStateChange() {
@@ -93,18 +103,51 @@ function getLocation() {
 export function useLocation(
   React: { useEffect: typeof useEffect, useRef: typeof useRef, useState: typeof useState },
   options?: Partial<{
-    confirm: () => boolean | Promise<boolean>
+    confirm: (kind: 'pop' | 'push' | 'replace') => boolean | Promise<boolean>
   }>
 ) {
   const [{ path, search }, update] = React.useState(() => getLocation())
   const prevHash = React.useRef(path + search)
   React.useEffect(() => {
-    const handlePushOrReplaceState = () => {
+    const updateState = () => {
       const newLocation = getLocation()
       const hash = newLocation.path + newLocation.search
       if (prevHash.current !== hash) {
         prevHash.current = hash
         update(newLocation)
+      }
+    }
+    const handleReplaceState = async (e: Event) => {
+      const newLocation = getLocation()
+      const hash = newLocation.path + newLocation.search
+      if (prevHash.current !== hash) {
+        let confirmed = true
+        if (options?.confirm) {
+          confirmed = await options.confirm('replace')
+        }
+        if (confirmed) {
+          prevHash.current = hash
+          update(newLocation)
+        } else {
+          const detail = (e as unknown as { detail: CustomEventDetail }).detail
+          history.replaceState(detail.state, '', detail.path + detail.search)
+        }
+      }
+    }
+    const handlePushState = async () => {
+      const newLocation = getLocation()
+      const hash = newLocation.path + newLocation.search
+      if (prevHash.current !== hash) {
+        let confirmed = true
+        if (options?.confirm) {
+          confirmed = await options.confirm('push')
+        }
+        if (confirmed) {
+          prevHash.current = hash
+          update(newLocation)
+        } else {
+          history.back()
+        }
       }
     }
     const handlePopState = async () => {
@@ -113,7 +156,7 @@ export function useLocation(
       if (prevHash.current !== hash) {
         let confirmed = true
         if (options?.confirm) {
-          confirmed = await options.confirm()
+          confirmed = await options.confirm('pop')
         }
         if (confirmed) {
           sessionStorage.setItem(positionLastShownKey, String(history.state))
@@ -125,13 +168,13 @@ export function useLocation(
       }
     }
     addEventListener('popstate', handlePopState)
-    addEventListener('replaceState', handlePushOrReplaceState)
-    addEventListener('pushState', handlePushOrReplaceState)
-    handlePushOrReplaceState()
+    addEventListener('replaceState', handleReplaceState)
+    addEventListener('pushState', handlePushState)
+    updateState()
     return () => {
       removeEventListener('popstate', handlePopState)
-      removeEventListener('replaceState', handlePushOrReplaceState)
-      removeEventListener('pushState', handlePushOrReplaceState)
+      removeEventListener('replaceState', handleReplaceState)
+      removeEventListener('pushState', handlePushState)
     }
   }, [])
   return path

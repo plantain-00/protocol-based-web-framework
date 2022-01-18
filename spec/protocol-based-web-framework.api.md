@@ -334,7 +334,7 @@ export function useLocation(React: {
     useRef: typeof useRef;
     useState: typeof useState;
 }, options?: Partial<{
-    confirm: () => boolean | Promise<boolean>;
+    confirm: (kind: 'pop' | 'push' | 'replace') => boolean | Promise<boolean>;
 }>): string;
 
 // (No @packageDocumentation comment for this package)
