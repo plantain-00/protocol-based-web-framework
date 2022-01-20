@@ -1,13 +1,13 @@
 import express from 'express'
-import * as bodyParser from 'body-parser'
+import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import stream from 'stream'
 import multer from 'multer'
-import { getAndValidateRequestInput, respondHandleResult } from '../dist/nodejs'
-import { apiSchemas } from './restful-api-backend-declaration'
-import { initializeDatabase } from './db/sqlite.service'
-import { HttpError } from './shared/http-error'
-import './blog/blog.service'
+import framework from '../dist/nodejs/index.js'
+const { getAndValidateRequestInput, respondHandleResult } = framework
+import { apiSchemas } from './generated/restful-api-backend-declaration.js'
+import { HttpError } from './shared/http-error.js'
+import './blog/blog.service.js'
 
 const app = express()
 app.use(bodyParser.json())
@@ -50,5 +50,3 @@ for (const { method, url, validate, handler } of apiSchemas) {
   })
 }
 app.listen(3000)
-
-initializeDatabase()

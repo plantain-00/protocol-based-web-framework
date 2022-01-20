@@ -1,8 +1,9 @@
 /* eslint-disable */
 
 import type { Readable } from 'stream'
-import { ajvBackend } from '../dist/nodejs'
-import { Blog, BlogIgnorableField } from "./blog/blog.schema"
+import framework from '../../dist/nodejs/index.js'
+const { ajvBackend } = framework
+import { Blog, BlogIgnorableField } from "../blog/blog.schema"
 
 export type GetBlogs = <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(req: { query: { skip: number, take: number, ignoredFields?: TIgnored[], pickedFields?: TPicked[], sortType: "asc" | "desc", content?: string, sortField: "id" | "content", ids?: string[] }, cookie: { myUserId: number } }) => Promise<{ result: Omit<Pick<Blog, TPicked>, TIgnored>[], count: number }>
 export type GetBlogById = <TIgnored extends BlogIgnorableField = never, TPicked extends "posts" | "id" | "content" | "meta" = "posts" | "id" | "content" | "meta">(req: { path: { id: number }, query?: { ignoredFields?: TIgnored[], pickedFields?: TPicked[] }, cookie: { myUserId: number } }) => Promise<{ result?: Omit<Pick<Blog, TPicked>, TIgnored> }>

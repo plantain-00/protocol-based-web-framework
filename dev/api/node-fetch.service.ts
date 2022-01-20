@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
-import FormData = require('form-data')
+import FormData from 'form-data'
 import * as fs from 'fs'
-import { RequestRestfulAPI, validations } from "../restful-api-frontend-declaration"
+import { RequestRestfulAPI, validations } from "../generated/restful-api-frontend-declaration"
 import { ApiAccessorNodeFetch } from '../../dist/nodejs'
 
 const apiAccessor = new ApiAccessorNodeFetch(validations, fetch, FormData, 'http://localhost:3000', {

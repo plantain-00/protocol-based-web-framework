@@ -1,12 +1,12 @@
-const tsFiles = `"src/**/*.ts" "spec/**/*.ts"`
+const tsFiles = `"src/**/*.ts"`
 
 const environments = [
-  'DB_OUTPUT_PATH=./dev/db-declaration.ts',
-  'ROUTER_OUTPUT_PATH=./dev/router-declaration.ts',
-  'BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts',
-  'FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts',
-  'BACKEND_DECLARATION_LIB_PATH=../dist/nodejs',
-  'FRONTEND_DECLARATION_LIB_PATH=../dist/browser',
+  'DB_OUTPUT_PATH=./dev/generated/db-declaration.ts',
+  'ROUTER_OUTPUT_PATH=./dev/generated/router-declaration.ts',
+  'BACKEND_OUTPUT_PATH=./dev/generated/restful-api-backend-declaration.ts',
+  'FRONTEND_OUTPUT_PATH=./dev/generated/restful-api-frontend-declaration.ts',
+  'BACKEND_DECLARATION_LIB_PATH=../../dist/nodejs/index.js',
+  'FRONTEND_DECLARATION_LIB_PATH=../../dist/browser',
 ]
 
 export default {
@@ -22,11 +22,11 @@ export default {
       ],
       script: 'tsc -p scripts'
     },
-    `${environments.join(' ')} types-as-schema ./dev/**/*.schema.ts --swagger ./dev/swagger.json --config ./dist/db --config ./dist/restful-api --config ./dist/router`,
+    `${environments.join(' ')} types-as-schema ./dev/**/*.schema.ts --swagger ./dev/generated/swagger.json --config ./dist/db --config ./dist/restful-api --config ./dist/router`,
   ],
   dev: {
-    server: 'ts-node-dev ./dev/server.ts',
-    client: 'webpack serve --config ./dev/webpack.config.js'
+    server: 'TS_NODE_PROJECT="./dev/tsconfig.json" node --loader ts-node/esm ./dev/server.ts',
+    client: 'webpack serve --config ./dev/webpack.config.cjs'
   },
   lint: {
     ts: `eslint --ext .js,.ts ${tsFiles}`,
@@ -36,6 +36,6 @@ export default {
     typeCoverageDev: 'type-coverage -p dev --strict --ignore-files "dist/**/*.d.ts"',
     typeCoverageScripts: 'type-coverage -p scripts --strict'
   },
-  test: 'ava',
+  test: 'TS_NODE_PROJECT="./dev/tsconfig.json" ava',
   fix: `eslint --ext .js,.ts ${tsFiles} --fix`
 }

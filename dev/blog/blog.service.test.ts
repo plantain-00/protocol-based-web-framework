@@ -1,10 +1,7 @@
 import test from 'ava'
-import { initializeDatabase } from '../dev/db/sqlite.service'
-import { getBlogs } from '../dev/blog/blog.service'
+import { getBlogs } from './blog.service.js'
 
 test('create blog', async (t) => {
-  await initializeDatabase()
-
   const blog = await getBlogs({
     query: {
       skip: 0,

@@ -298,7 +298,8 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   const backendContent = `/* eslint-disable */
 
 import type { Readable } from 'stream'
-import { ajvBackend } from '${process.env.BACKEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
+import framework from '${process.env.BACKEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
+const { ajvBackend } = framework
 ${getReferencesImports(backendReferences).join('\n')}
 
 ${backendResult.join('\n')}

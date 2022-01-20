@@ -1,9 +1,7 @@
 import test from 'ava'
-import { initializeDatabase, selectRow } from '../dev/db/sqlite.service'
+import { selectRow } from './sqlite.service.js'
 
 test('select rows', async (t) => {
-  await initializeDatabase()
-
   const blog = await selectRow('blogs', {
   })
   t.snapshot(blog)

@@ -2,6 +2,7 @@ import { Member, TypeDeclaration } from 'types-as-schema'
 import { collectReference, getReferencesImports } from './util'
 
 const outPath = process.env.DB_OUTPUT_PATH || process.env.OUTPUT_PATH || './src/db-declaration.ts'
+const backendDeclarationLibPath = process.env.BACKEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'
 
 export default (typeDeclarations: TypeDeclaration[]): { path: string, content: string }[] => {
   const references = new Map<string, string[]>()
@@ -33,7 +34,8 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
     }
   }
 
-  const content = `import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, getKeys, SqlRawFilter } from "${process.env.BACKEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}"
+  const content = `import framework, { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, SqlRawFilter } from "${backendDeclarationLibPath}"
+const { getKeys } = framework
 ${getReferencesImports(references).join('\n')}
 
 export interface GetRow<T = SqlRawFilter> {

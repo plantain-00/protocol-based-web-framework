@@ -1,9 +1,10 @@
 import React from "react"
 import { requestRestfulAPI } from '../api/fetch.service'
 import { Blog } from '../blog/blog.schema'
-import { bindRouterComponent, BlogPageProps } from '../router-declaration'
+import { bindRouterComponent, BlogPageProps } from '../generated/router-declaration'
 import { navigateTo } from '../../dist/browser'
-import { ConfirmMessageContext, getPageUrl } from '../router.service'
+import { ConfirmMessageContext } from '../shared/contexts'
+import { getPageUrl } from '../shared/page-url'
 
 function BlogPage(props: BlogPageProps) {
   const [blog, setBlog] = React.useState<Blog>()

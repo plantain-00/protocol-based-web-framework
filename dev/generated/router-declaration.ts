@@ -1,4 +1,4 @@
-import { ajvRouter, Route } from '../dist/browser'
+import { ajvRouter, Route } from '../../dist/browser'
 
 export type BlogPageProps = { path: { id: number } }
 export type HomePageProps = { query: { page: number } }

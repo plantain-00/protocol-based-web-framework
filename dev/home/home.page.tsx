@@ -1,9 +1,9 @@
 import React from "react"
 import { requestRestfulAPI } from '../api/fetch.service'
 import { Blog } from '../blog/blog.schema'
-import { bindRouterComponent, HomePageProps } from '../router-declaration'
+import { bindRouterComponent, HomePageProps } from '../generated/router-declaration'
 import { navigateTo } from '../../dist/browser'
-import { getPageUrl } from '../router.service'
+import { getPageUrl } from '../shared/page-url'
 
 function HomePage(props: HomePageProps) {
   const [blogs, setBlogs] = React.useState<Blog[]>([])

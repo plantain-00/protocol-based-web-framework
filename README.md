@@ -17,6 +17,45 @@ A protocol and code generation based web framework.
 
 ## usage
 
+### 2. project structure
+
+```txt
+src
+├─ api
+│  ├─ axios.service.ts
+│  ├─ fetch.service.ts
+│  └─ node-fetch.service.ts
+├─ blog
+│  ├─ blog.page.tsx
+│  ├─ blog.schema.ts
+│  ├─ blog.service.test.ts
+│  └─ blog.service.ts
+├─ db
+│  ├─ mongodb.service.ts
+│  ├─ postgres.service.ts
+│  ├─ sqlite.service.test.ts
+│  └─ sqlite.service.ts
+├─ generated
+│  ├─ db-declaration.ts
+│  ├─ restful-api-backend-declaration.ts
+│  ├─ restful-api-frontend-declaration.ts
+│  ├─ router-declaration.ts
+│  └─ swagger.json
+├─ home
+│  ├─ home.page.tsx
+│  └─ home.schema.ts
+├─ post
+│  └─ post.schema.ts
+├─ react-app.tsx
+├─ server.ts
+├─ shared
+│  ├─ contexts.ts
+│  ├─ http-error.ts
+│  ├─ page-url.ts
+│  └─ shared.schema.ts
+└─ webpack.config.js
+```
+
 ### 1. define db schema
 
 ```ts
@@ -65,7 +104,7 @@ interface Updated {
 
 ### 2. generate db declaration
 
-`DB_OUTPUT_PATH=./dev/db-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/db`
+`DB_OUTPUT_PATH=./dev/generated/db-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/db`
 
 `DB_OUTPUT_PATH` is output file path.
 
@@ -76,7 +115,7 @@ interface Updated {
 ```ts
 import * as sqlite from 'sqlite3'
 import { SqliteAccessor } from 'protocol-based-web-framework'
-import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from './db-declaration'
+import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from './generated/db-declaration'
 
 const sqliteAccessor = new SqliteAccessor(new sqlite.Database(':memory:'), tableSchemas)
 export const insertRow: InsertRow = sqliteAccessor.insertRow
@@ -185,11 +224,11 @@ interface BlogFieldFilter {
 
 ### 5. generate restful api declaration
 
-`BACKEND_OUTPUT_PATH=./dev/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/restful-api-frontend-declaration.ts types-as-schema ./dev/**/*.schema.ts --swagger ./dev/swagger.json --config protocol-based-web-framework/restful-api`
+`BACKEND_OUTPUT_PATH=./dev/generated/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/generated/restful-api-frontend-declaration.ts types-as-schema ./dev/**/*.schema.ts --swagger ./dev/generated/swagger.json --config protocol-based-web-framework/restful-api`
 
 `BACKEND_OUTPUT_PATH` and `FRONTEND_OUTPUT_PATH` are backend and frontend output file path.
 
-`--swagger` and `--swagger-base`(optional) are used to generate swagger json file. for example, [dev/swagger.json](./dev/swagger.json).
+`--swagger` and `--swagger-base`(optional) are used to generate swagger json file. for example, [dev/generated/swagger.json](./dev/generated/swagger.json).
 
 `--config` is the generation script file path.
 
@@ -198,7 +237,7 @@ interface BlogFieldFilter {
 ### 6. backend implement restful api declaration and binded to api
 
 ```ts
-import { bindRestfulApiHandler, GetBlogs } from './restful-api-backend-declaration'
+import { bindRestfulApiHandler, GetBlogs } from './generated/restful-api-backend-declaration'
 
 export const getBlogs: GetBlogs = async ({ query: { skip, take } }) => {
   return {
@@ -240,7 +279,7 @@ const blog = await getBlogs({
 t.snapshot(blog)
 ```
 
-[dev/blog/blog.service.ts](./dev/blog/blog.service.ts)
+[dev/blog/blog.service.test.ts](./dev/blog/blog.service.test.ts)
 
 ### 7. backend register restful api
 
@@ -248,7 +287,7 @@ t.snapshot(blog)
 import express from 'express'
 import * as bodyParser from 'body-parser'
 import { getAndValidateRequestInput, respondHandleResult } from 'protocol-based-web-framework'
-import { apiSchemas } from './restful-api-backend-declaration'
+import { apiSchemas } from './generated/restful-api-backend-declaration'
 
 const app = express()
 app.use(bodyParser.json())
@@ -291,7 +330,7 @@ HTTP/1.1 400 Bad Request
 ### 8. access restful api
 
 ```ts
-import { RequestRestfulAPI, validations } from "./restful-api-frontend-declaration"
+import { RequestRestfulAPI, validations } from "./generated/restful-api-frontend-declaration"
 import { ApiAccessorFetch } from 'protocol-based-web-framework'
 
 const apiAccessor = new ApiAccessorFetch(validations)
@@ -355,7 +394,7 @@ Default value in function parameter is used to fill default value when the param
 
 ### 10. generate router declaration
 
-`ROUTER_OUTPUT_PATH=./dev/router-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/router`
+`ROUTER_OUTPUT_PATH=./dev/generated/router-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/router`
 
 `ROUTER_OUTPUT_PATH` is output file path.
 
@@ -364,7 +403,7 @@ Default value in function parameter is used to fill default value when the param
 ### 11. bind component to the route
 
 ```ts
-import { bindRouterComponent, BlogPageProps } from './router-declaration'
+import { bindRouterComponent, BlogPageProps } from './generated/router-declaration'
 
 function BlogPage(props: BlogPageProps) {
   React.useEffect(() => {
@@ -389,7 +428,7 @@ expect(renderer.create(<BlogPage path={{ id: 123 }}>).toJSON()).toMatchSnapshot(
 ```tsx
 import React from "react"
 import { matchRoute, useLocation } from 'protocol-based-web-framework'
-import { routes } from './router-declaration'
+import { routes } from './generated/router-declaration'
 
 function App() {
   const location = useLocation(React)
@@ -421,7 +460,7 @@ function App() {
 
 ```tsx
 import { composeUrl, navigateTo } from 'protocol-based-web-framework'
-import { GetPageUrl } from './router-declaration'
+import { GetPageUrl } from './generated/router-declaration'
 
 const getPageUrl: GetPageUrl = composeUrl
 
