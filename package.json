@@ -68,7 +68,7 @@
     "path-to-regexp": "6",
     "qs": "6",
     "tslib": "1 || 2",
-    "types-as-schema": "1.44"
+    "types-as-schema": "1.45"
   },
   "module": "browser/index.js",
   "publishConfig": {

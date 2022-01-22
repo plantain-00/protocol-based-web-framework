@@ -1,12 +1,22 @@
-const tsFiles = `"src/**/*.ts"`
+const tsFiles = `"src/**/*.ts" "scripts/**/*.ts"`
 
 const environments = [
   'DB_OUTPUT_PATH=./dev/generated/db-declaration.ts',
   'ROUTER_OUTPUT_PATH=./dev/generated/router-declaration.ts',
   'BACKEND_OUTPUT_PATH=./dev/generated/restful-api-backend-declaration.ts',
   'FRONTEND_OUTPUT_PATH=./dev/generated/restful-api-frontend-declaration.ts',
+  'IMPORT_PAGE_OUTPUT_PATH=./dev/generated/import-pages.ts',
+  'IMPORT_CONTROLLER_OUTPUT_PATH=./dev/generated/import-controllers.ts',
   'BACKEND_DECLARATION_LIB_PATH=../../dist/nodejs/index.js',
   'FRONTEND_DECLARATION_LIB_PATH=../../dist/browser',
+]
+
+const configs = [
+  './dist/db',
+  './dist/restful-api',
+  './dist/router',
+  './dist/import-pages',
+  './dist/import-controllers',
 ]
 
 export default {
@@ -22,7 +32,7 @@ export default {
       ],
       script: 'tsc -p scripts'
     },
-    `${environments.join(' ')} types-as-schema ./dev/**/*.schema.ts --swagger ./dev/generated/swagger.json --config ./dist/db --config ./dist/restful-api --config ./dist/router`,
+    `${environments.join(' ')} types-as-schema ./dev/**/*.schema.ts ./dev/**/*.page.tsx ./dev/**/*.controller.ts --swagger ./dev/generated/swagger.json ${configs.map((c) => '--config ' + c).join(' ')}`,
   ],
   dev: {
     server: 'TS_NODE_PROJECT="./dev/tsconfig.json" node --loader ts-node/esm ./dev/server.ts',

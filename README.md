@@ -28,8 +28,8 @@ src
 ├─ blog
 │  ├─ blog.page.tsx
 │  ├─ blog.schema.ts
-│  ├─ blog.service.test.ts
-│  └─ blog.service.ts
+│  ├─ blog.controller.test.ts
+│  └─ blog.controller.ts
 ├─ db
 │  ├─ mongodb.service.ts
 │  ├─ postgres.service.ts
@@ -37,6 +37,8 @@ src
 │  └─ sqlite.service.ts
 ├─ generated
 │  ├─ db-declaration.ts
+│  ├─ import-controllers.ts
+│  ├─ import-pages
 │  ├─ restful-api-backend-declaration.ts
 │  ├─ restful-api-frontend-declaration.ts
 │  ├─ router-declaration.ts
@@ -253,7 +255,7 @@ export const getBlogs: GetBlogs = async ({ query: { skip, take } }) => {
 bindRestfulApiHandler('GetBlogs', getBlogs)
 ```
 
-[dev/blog/blog.service.ts](./dev/blog/blog.service.ts)
+[dev/blog/blog.controller.ts](./dev/blog/blog.controller.ts)
 
 If `getBlogs` supports ignorable/pickable, it's type safe, if the fields are ignored or not picked, the return value's type will omit them.
 
@@ -279,7 +281,7 @@ const blog = await getBlogs({
 t.snapshot(blog)
 ```
 
-[dev/blog/blog.service.test.ts](./dev/blog/blog.service.test.ts)
+[dev/blog/blog.controller.test.ts](./dev/blog/blog.controller.test.ts)
 
 ### 7. backend register restful api
 

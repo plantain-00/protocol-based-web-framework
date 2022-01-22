@@ -3,8 +3,7 @@ import React from "react"
 import { routes } from './generated/router-declaration'
 import { matchRoute, useLocation } from '../dist/browser'
 import { ConfirmMessageContext } from './shared/contexts'
-import './home/home.page'
-import './blog/blog.page'
+import './generated/import-pages'
 
 function App() {
   const confirmMessage = React.useRef('')

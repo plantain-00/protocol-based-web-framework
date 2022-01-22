@@ -1,5 +1,5 @@
 import test from 'ava'
-import { getBlogs } from './blog.service.js'
+import { getBlogs } from './blog.controller.js'
 
 test('create blog', async (t) => {
   const blog = await getBlogs({

@@ -23,7 +23,19 @@ export function collectReference(
 export function getReferencesImports(references: Map<string, string[]>) {
   const imports: string[] = []
   for (const [key, value] of references.entries()) {
-    imports.push(`import { ${value.join(', ')} } from "${key.substring(0, key.length - path.extname(key).length)}"`)
+    imports.push(`import { ${value.join(', ')} } from "${getImportPath(key)}"`)
   }
   return imports
+}
+
+export function getImports(references: Map<string, string[]>, withDotJs?: boolean) {
+  const imports: string[] = []
+  for (const key of references.keys()) {
+    imports.push(`import "${getImportPath(key, withDotJs)}"`)
+  }
+  return imports
+}
+
+function getImportPath(key: string, withDotJs?: boolean) {
+  return key.substring(0, key.length - path.extname(key).length) + (withDotJs ? '.js' : '')
 }

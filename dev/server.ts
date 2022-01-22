@@ -7,7 +7,7 @@ import framework from '../dist/nodejs/index.js'
 const { getAndValidateRequestInput, respondHandleResult } = framework
 import { apiSchemas } from './generated/restful-api-backend-declaration.js'
 import { HttpError } from './shared/http-error.js'
-import './blog/blog.service.js'
+import './generated/import-controllers.js'
 
 const app = express()
 app.use(bodyParser.json())
