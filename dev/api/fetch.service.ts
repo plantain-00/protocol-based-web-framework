@@ -14,16 +14,6 @@ async function start() {
   await requestRestfulAPI('DELETE', '/api/blogs/2')
 }
 
-document.open()
-document.write(`<div>
-<input id='file' type="file" />
-<button id='download'>download</button>
-<button id='downloadData'>download data</button>
-<button id='getRawText'>get raw text</button>
-<div id='container'></div>
-</div>`)
-document.close()
-
 document.querySelector<HTMLInputElement>('#file')?.addEventListener('change', (e) => {
   const input = e.target as HTMLInputElement
   if (input.files && input.files.length > 0) {

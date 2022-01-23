@@ -27,6 +27,7 @@ src
 │  └─ node-fetch.service.ts
 ├─ blog
 │  ├─ blog.page.tsx
+│  ├─ blog.page.story.tsx
 │  ├─ blog.schema.ts
 │  ├─ blog.controller.test.ts
 │  └─ blog.controller.ts
@@ -38,7 +39,8 @@ src
 ├─ generated
 │  ├─ db-declaration.ts
 │  ├─ import-controllers.ts
-│  ├─ import-pages
+│  ├─ import-pages.ts
+│  ├─ import-stories.ts
 │  ├─ restful-api-backend-declaration.ts
 │  ├─ restful-api-frontend-declaration.ts
 │  ├─ router-declaration.ts
@@ -55,6 +57,7 @@ src
 │  ├─ http-error.ts
 │  ├─ page-url.ts
 │  └─ shared.schema.ts
+├─ story-app.tsx
 └─ webpack.config.js
 ```
 

@@ -6,7 +6,7 @@ import { navigateTo } from '../../dist/browser'
 import { ConfirmMessageContext } from '../shared/contexts'
 import { getPageUrl } from '../shared/page-url'
 
-function BlogPage(props: BlogPageProps) {
+export function BlogPage(props: BlogPageProps) {
   const [blog, setBlog] = React.useState<Blog>()
   const confirmMessage = React.useContext(ConfirmMessageContext)
   React.useEffect(() => {

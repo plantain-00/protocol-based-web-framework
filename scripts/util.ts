@@ -6,10 +6,7 @@ export function collectReference(
   file: string,
   references: Map<string, string[]>,
 ) {
-  let relativePath = path.relative(path.dirname(outPath), file)
-  if (!relativePath.startsWith('.')) {
-    relativePath = './' + relativePath
-  }
+  const relativePath = getRelativePath(outPath, file)
   let types = references.get(relativePath)
   if (!types) {
     types = []
@@ -18,6 +15,14 @@ export function collectReference(
   if (!types.includes(typeName)) {
     types.push(typeName)
   }
+}
+
+export function getRelativePath(outPath: string, file: string) {
+  let relativePath = path.relative(path.dirname(outPath), file)
+  if (!relativePath.startsWith('.')) {
+    relativePath = './' + relativePath
+  }
+  return relativePath
 }
 
 export function getReferencesImports(references: Map<string, string[]>) {
@@ -36,6 +41,6 @@ export function getImports(references: Map<string, string[]>, withDotJs?: boolea
   return imports
 }
 
-function getImportPath(key: string, withDotJs?: boolean) {
+export function getImportPath(key: string, withDotJs?: boolean) {
   return key.substring(0, key.length - path.extname(key).length) + (withDotJs ? '.js' : '')
 }
