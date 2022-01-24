@@ -5,6 +5,7 @@ import { bindRouterComponent, BlogPageProps } from '../generated/router-declarat
 import { navigateTo } from '../../dist/browser'
 import { ConfirmMessageContext } from '../shared/contexts'
 import { getPageUrl } from '../shared/page-url'
+import { DownloadBlog } from "./download-blog.component"
 
 export function BlogPage(props: BlogPageProps) {
   const [blog, setBlog] = React.useState<Blog>()
@@ -21,6 +22,7 @@ export function BlogPage(props: BlogPageProps) {
   }, [])
   return (
     <div>
+      <DownloadBlog id={props.path.id} />
       <div onClick={() => navigateTo(getPageUrl('/'))}>
         back to app
       </div>

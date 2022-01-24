@@ -113,8 +113,6 @@ interface Updated {
 
 `DB_OUTPUT_PATH` is output file path.
 
-`--config` is the generation script file path.
-
 ### 3. access db
 
 ```ts
@@ -133,17 +131,21 @@ export const countRow: CountRow = sqliteAccessor.countRow
 for (const tableName of tableNames) {
   await sqliteAccessor.createTable(tableName)
 }
+```
 
++ sqlite: [dev/db/sqlite.service.ts](./dev/db/sqlite.service.ts)
++ mongodb: [dev/db/mongodb.service.ts](./dev/db/mongodb.service.ts)
++ postgres: [dev/db/postgres.service.ts](./dev/db/postgres.service.ts)
+
+Db service can be used like:
+
+```ts
 const id = await insertRow('blogs', { title: 'a', content: 'content a' })
 await updateRow('blogs', { content: 'new content' }, { filter: { id } })
 const rows = await selectRow('blogs')
 console.info(rows)
 await deleteRow('blogs', { filter: { id } })
 ```
-
-+ sqlite: [dev/db/sqlite.service.ts](./dev/db/sqlite.service.ts)
-+ mongodb: [dev/db/mongodb.service.ts](./dev/db/mongodb.service.ts)
-+ postgres: [dev/db/postgres.service.ts](./dev/db/postgres.service.ts)
 
 `createTable` can also migrate compatible db schema changes by `CREATE TABLE IF NOT EXISTS` and `ADD COLUMN IF NOT EXISTS`.
 
@@ -234,8 +236,6 @@ interface BlogFieldFilter {
 `BACKEND_OUTPUT_PATH` and `FRONTEND_OUTPUT_PATH` are backend and frontend output file path.
 
 `--swagger` and `--swagger-base`(optional) are used to generate swagger json file. for example, [dev/generated/swagger.json](./dev/generated/swagger.json).
-
-`--config` is the generation script file path.
 
 `IGNORED_FIELDS_NAME` and `PICKED_FIELDS_NAME` are custom ignored/picked fields parameter name if they are not `ignoredFields` and `pickedFields`.
 
@@ -338,16 +338,20 @@ HTTP/1.1 400 Bad Request
 import { RequestRestfulAPI, validations } from "./generated/restful-api-frontend-declaration"
 import { ApiAccessorFetch } from 'protocol-based-web-framework'
 
-const apiAccessor = new ApiAccessorFetch(validations)
-const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI
-
-const blogs = await requestRestfulAPI('GET', '/api/blogs', { query: { skip: 0, take: 10 } })
-console.info(blogs)
+export const apiAccessor = new ApiAccessorFetch(validations)
+export const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI
 ```
 
 + fetch: [dev/api/fetch.service.ts](./dev/api/fetch.service.ts)
 + axios: [dev/api/axios.service.ts](./dev/api/axios.service.ts)
 + node-fetch: [dev/api/node-fetch.service.ts](./dev/api/node-fetch.service.ts)
+
+It can be used like:
+
+```ts
+const blogs = await requestRestfulAPI('GET', '/api/blogs', { query: { skip: 0, take: 10 } })
+console.info(blogs)
+```
 
 `requestRestfulAPI` is type safe, for example:
 
@@ -403,8 +407,6 @@ Default value in function parameter is used to fill default value when the param
 
 `ROUTER_OUTPUT_PATH` is output file path.
 
-`--config` is the generation script file path.
-
 ### 11. bind component to the route
 
 ```ts
@@ -416,11 +418,26 @@ function BlogPage(props: BlogPageProps) {
       console.info(b.result)
     })
   }, [])
+  return <></>
 }
 bindRouterComponent('BlogPage', BlogPage)
 ```
 
-[dev/react-app.tsx](./dev/react-app.tsx)
+[dev/blog/blog.page.tsx](./dev/blog/blog.page.tsx)
+
+The `BlogPage` can be used in storybook, so it can be easy to build components in isolation, outside of whole app.
+
+```ts
+import { BlogPage } from "./blog.page"
+
+export default () => {
+  return (
+    <BlogPage path={{ id: 123 }} />
+  )
+}
+```
+
+[dev/blog/blog.page.story.tsx](./dev/blog/blog.page.story.tsx)
 
 The `BlogPage` can also be used in unit test, so it can be tested without providing router in test.
 
@@ -473,7 +490,7 @@ navigateTo(getPageUrl('/blogs/{id}', { path: { id: blog.id } }))
 navigateTo(getPageUrl(`/blogs/${blog.id}`))
 ```
 
-[dev/react-app.tsx](./dev/react-app.tsx)
+[dev/blog/blog.page.tsx](./dev/blog/blog.page.tsx)
 
 `getPageUrl` is type safe, for example:
 

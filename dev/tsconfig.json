@@ -1,6 +1,7 @@
 {
   "extends": "tsconfig-plantain",
   "compilerOptions": {
+    "jsx": "react-jsx",
     "noUncheckedIndexedAccess": false
   }
 }

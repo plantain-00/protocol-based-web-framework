@@ -16,13 +16,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      templateContent: `<div>
-<input id='file' type="file" />
-<button id='download'>download</button>
-<button id='downloadData'>download data</button>
-<button id='getRawText'>get raw text</button>
-<div id='container'></div>
-</div>`,
+      templateContent: `<div id='container'></div>`,
     })
   ],
   devServer: {
