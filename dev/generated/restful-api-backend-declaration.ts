@@ -32,7 +32,8 @@ const getBlogsValidate = ajvBackend.compile({
           "type": "array",
           "items": {
             "$ref": "#/definitions/BlogIgnorableField"
-          }
+          },
+          "description": "ignored fields will not in response"
         },
         "pickedFields": {
           "type": "array",
@@ -44,7 +45,8 @@ const getBlogsValidate = ajvBackend.compile({
               "content",
               "meta"
             ]
-          }
+          },
+          "description": "only picked fields will be in response"
         },
         "sortType": {
           "type": "string",
@@ -120,7 +122,8 @@ const getBlogByIdValidate = ajvBackend.compile({
           "type": "array",
           "items": {
             "$ref": "#/definitions/BlogIgnorableField"
-          }
+          },
+          "description": "ignored fields will not in response"
         },
         "pickedFields": {
           "type": "array",
@@ -132,7 +135,8 @@ const getBlogByIdValidate = ajvBackend.compile({
               "content",
               "meta"
             ]
-          }
+          },
+          "description": "only picked fields will be in response"
         }
       },
       "required": []
@@ -173,7 +177,8 @@ const createBlogValidate = ajvBackend.compile({
           "type": "array",
           "items": {
             "$ref": "#/definitions/BlogIgnorableField"
-          }
+          },
+          "description": "ignored fields will not in response"
         },
         "pickedFields": {
           "type": "array",
@@ -185,7 +190,8 @@ const createBlogValidate = ajvBackend.compile({
               "content",
               "meta"
             ]
-          }
+          },
+          "description": "only picked fields will be in response"
         }
       },
       "required": []
@@ -248,7 +254,8 @@ const patchBlogValidate = ajvBackend.compile({
           "type": "array",
           "items": {
             "$ref": "#/definitions/BlogIgnorableField"
-          }
+          },
+          "description": "ignored fields will not in response"
         },
         "pickedFields": {
           "type": "array",
@@ -260,7 +267,8 @@ const patchBlogValidate = ajvBackend.compile({
               "content",
               "meta"
             ]
-          }
+          },
+          "description": "only picked fields will be in response"
         }
       },
       "required": []

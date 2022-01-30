@@ -41,7 +41,7 @@ export default {
       ],
       script: 'tsc -p scripts'
     },
-    `${environments.join(' ')} types-as-schema ${files.join(' ')} --swagger ./dev/generated/swagger.json ${configs.map((c) => '--config ' + c).join(' ')}`,
+    `${environments.join(' ')} types-as-schema ${files.map((f) => `"${f}"`).join(' ')} --swagger ./dev/generated/swagger.json --swagger-base ./dev/swagger.base.json ${configs.map((c) => '--config ' + c).join(' ')}`,
   ],
   dev: {
     server: 'TS_NODE_PROJECT="./dev/tsconfig.json" node --loader ts-node/esm ./dev/server.ts',

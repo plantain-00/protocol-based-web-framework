@@ -119,7 +119,13 @@ export interface Blog extends BlogSchema {
 }
 
 interface BlogFieldFilter {
+  /**
+   * @description ignored fields will not in response
+   */
   ignoredFields?: BlogIgnorableField[]
+  /**
+   * @description only picked fields will be in response
+   */
   pickedFields?: (keyof Blog)[]
 }
 

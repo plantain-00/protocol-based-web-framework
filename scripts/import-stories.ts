@@ -13,19 +13,21 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       while (path.startsWith('.') || path.startsWith('/')) {
         path = path.substring(1)
       }
-      const componentName = path.split(/\.|\//).map((f) => f[0].toUpperCase() + f.substring(1)).join('')
-      references.push(`import ${componentName} from '${importPath}'`)
+      const defaultComponentName = path.split(/\.|\/|-/).map((f) => f[0].toUpperCase() + f.substring(1)).join('')
+      references.push(`import ${declaration.name ? `{ ${declaration.name} }` : defaultComponentName} from '${importPath}'`)
       stories.push(`  {
     path: '${path}',
-    Component: ${componentName},
-    code: \`() => ${declaration.body}\`,`)
+    name: '${declaration.name}',
+    Component: ${declaration.name || defaultComponentName},
+    code: \`() => ${declaration.body}\`,
+  },`)
+    
     }
   }
   const content = `${references.join('\n')}
 
 export const stories = [
 ${stories.join('\n')}
-  },
 ]
 `
   return [

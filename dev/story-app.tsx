@@ -1,6 +1,7 @@
 import * as ReactDOM from 'react-dom'
 import React from "react"
-import Prism from 'prismjs'
+import './vender/prism'
+import './vender/prism.css'
 
 import { navigateTo, useLocation } from '../dist/browser'
 import { stories } from './generated/import-stories'
@@ -10,7 +11,7 @@ function StoryApp() {
   if (location === '/') {
     return (
       <ul>
-        {stories.map((s) => <li key={s.path} onClick={() => navigateTo('/' + s.path)}>{s.path}</li>)}
+        {stories.map((s) => <li key={s.path} onClick={() => navigateTo('/' + s.path)}>{s.name} {s.path}</li>)}
       </ul>
     )
   }
@@ -37,7 +38,7 @@ function HighlightCode(props: { code: string }) {
   }, [props.code, ref.current])
   return (
     <pre>
-      <code ref={ref} className="language-javascript">
+      <code ref={ref} className="language-typescript">
         {props.code}
       </code>
     </pre>
@@ -45,3 +46,9 @@ function HighlightCode(props: { code: string }) {
 }
 
 ReactDOM.render(<StoryApp />, document.querySelector('#container'))
+
+declare global {
+  const Prism: {
+    highlightElement(element: HTMLElement): void
+  }
+} 

@@ -117,3 +117,5 @@ service-worker.js
 #index.html
 *.data
 temp
+!**/vender/*.js
+!**/vender/*.css

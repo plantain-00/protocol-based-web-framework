@@ -28,7 +28,6 @@
     "@types/multer": "1.4.7",
     "@types/node-fetch": "2.5.12",
     "@types/pg": "8.6.4",
-    "@types/prismjs": "1.26.0",
     "@types/react": "17.0.38",
     "@types/react-dom": "17.0.11",
     "@types/sqlite3": "3.1.8",
@@ -39,6 +38,7 @@
     "clean-release": "2.16.0",
     "clean-scripts": "1.20.2",
     "cookie-parser": "1.4.6",
+    "css-loader": "6.5.1",
     "eslint": "8.8.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-plantain": "2.0.0",
@@ -50,11 +50,11 @@
     "no-unused-export": "1.14.2",
     "node-fetch": "2.6.6",
     "pg": "8.7.1",
-    "prismjs": "1.26.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "rimraf": "3.0.2",
     "sqlite3": "5.0.2",
+    "style-loader": "3.3.1",
     "ts-loader": "9.2.6",
     "ts-node": "10.4.0",
     "tsconfig-plantain": "0.0.2",
@@ -70,7 +70,7 @@
     "path-to-regexp": "6",
     "qs": "6",
     "tslib": "1 || 2",
-    "types-as-schema": "1.46"
+    "types-as-schema": "1.47"
   },
   "module": "browser/index.js",
   "publishConfig": {

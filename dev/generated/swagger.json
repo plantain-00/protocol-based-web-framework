@@ -1,4 +1,5 @@
 {
+  "info": {},
   "swagger": "2.0",
   "paths": {
     "/api/blogs": {
@@ -31,8 +32,10 @@
               "type": "array",
               "items": {
                 "$ref": "#/definitions/BlogIgnorableField"
-              }
-            }
+              },
+              "description": "ignored fields will not in response"
+            },
+            "description": "ignored fields will not in response"
           },
           {
             "name": "pickedFields",
@@ -48,8 +51,10 @@
                   "content",
                   "meta"
                 ]
-              }
-            }
+              },
+              "description": "only picked fields will be in response"
+            },
+            "description": "only picked fields will be in response"
           },
           {
             "name": "sortType",
@@ -143,8 +148,10 @@
               "type": "array",
               "items": {
                 "$ref": "#/definitions/BlogIgnorableField"
-              }
-            }
+              },
+              "description": "ignored fields will not in response"
+            },
+            "description": "ignored fields will not in response"
           },
           {
             "name": "pickedFields",
@@ -160,8 +167,10 @@
                   "content",
                   "meta"
                 ]
-              }
-            }
+              },
+              "description": "only picked fields will be in response"
+            },
+            "description": "only picked fields will be in response"
           },
           {
             "name": "content",
@@ -213,8 +222,10 @@
               "type": "array",
               "items": {
                 "$ref": "#/definitions/BlogIgnorableField"
-              }
-            }
+              },
+              "description": "ignored fields will not in response"
+            },
+            "description": "ignored fields will not in response"
           },
           {
             "name": "pickedFields",
@@ -230,8 +241,10 @@
                   "content",
                   "meta"
                 ]
-              }
-            }
+              },
+              "description": "only picked fields will be in response"
+            },
+            "description": "only picked fields will be in response"
           },
           {
             "name": "id",
@@ -279,8 +292,10 @@
               "type": "array",
               "items": {
                 "$ref": "#/definitions/BlogIgnorableField"
-              }
-            }
+              },
+              "description": "ignored fields will not in response"
+            },
+            "description": "ignored fields will not in response"
           },
           {
             "name": "pickedFields",
@@ -296,8 +311,10 @@
                   "content",
                   "meta"
                 ]
-              }
-            }
+              },
+              "description": "only picked fields will be in response"
+            },
+            "description": "only picked fields will be in response"
           },
           {
             "name": "id",

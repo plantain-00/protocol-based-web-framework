@@ -231,7 +231,7 @@ interface BlogFieldFilter {
 
 ### 5. generate restful api declaration
 
-`BACKEND_OUTPUT_PATH=./dev/generated/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/generated/restful-api-frontend-declaration.ts types-as-schema ./dev/**/*.schema.ts --swagger ./dev/generated/swagger.json --config protocol-based-web-framework/restful-api`
+`BACKEND_OUTPUT_PATH=./dev/generated/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/generated/restful-api-frontend-declaration.ts types-as-schema ./dev/**/*.schema.ts --swagger ./dev/generated/swagger.json --swagger-base ./dev/swagger.base.json --config protocol-based-web-framework/restful-api`
 
 `BACKEND_OUTPUT_PATH` and `FRONTEND_OUTPUT_PATH` are backend and frontend output file path.
 
