@@ -1,12 +1,11 @@
 import Ajv, { ValidateFunction } from 'ajv'
 import type { Request, Response } from 'express'
 import type { Readable } from 'stream'
-import { isReadable } from './utils'
 
 /**
  * @public
  */
-export const ajvBackend = new Ajv({
+export const ajv = new Ajv({
   removeAdditional: true,
   useDefaults: true,
   coerceTypes: true,
@@ -55,4 +54,10 @@ export function respondHandleResult(result: {} | Readable, req: Request<{}, {}, 
   } else {
     res.json(result)
   }
+}
+
+function isReadable(stream: unknown): stream is Readable {
+  return stream !== null &&
+    typeof stream === 'object' &&
+    typeof (stream as Readable).pipe === 'function'
 }

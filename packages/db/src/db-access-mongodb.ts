@@ -1,6 +1,6 @@
 import type { Db, Filter, Document, Sort, ObjectId } from 'mongodb'
-import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, RowSelectProjectOption, RowSelectSortOption } from './db-declaration-lib'
-import { isArray } from './utils'
+import type { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, RowSelectProjectOption, RowSelectSortOption } from './db-declaration-lib.js'
+import { isArray } from './utils.js'
 
 /**
  * @public

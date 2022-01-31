@@ -13,7 +13,9 @@ A protocol and code generation based web framework.
 
 ## install
 
-`yarn add protocol-based-web-framework`
+`yarn add protocol-based-web-framework @protocol-based-web-framework/restful-api-consumer @protocol-based-web-framework/router -D`
+
+`yarn add @protocol-based-web-framework/db @protocol-based-web-framework/restful-api-provider -S`
 
 ## usage
 
@@ -117,7 +119,7 @@ interface Updated {
 
 ```ts
 import * as sqlite from 'sqlite3'
-import { SqliteAccessor } from 'protocol-based-web-framework'
+import { SqliteAccessor } from '@protocol-based-web-framework/db'
 import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from './generated/db-declaration'
 
 const sqliteAccessor = new SqliteAccessor(new sqlite.Database(':memory:'), tableSchemas)
@@ -291,7 +293,7 @@ t.snapshot(blog)
 ```ts
 import express from 'express'
 import * as bodyParser from 'body-parser'
-import { getAndValidateRequestInput, respondHandleResult } from 'protocol-based-web-framework'
+import { getAndValidateRequestInput, respondHandleResult } from '@protocol-based-web-framework/restful-api-provider'
 import { apiSchemas } from './generated/restful-api-backend-declaration'
 
 const app = express()
@@ -336,7 +338,7 @@ HTTP/1.1 400 Bad Request
 
 ```ts
 import { RequestRestfulAPI, validations } from "./generated/restful-api-frontend-declaration"
-import { ApiAccessorFetch } from 'protocol-based-web-framework'
+import { ApiAccessorFetch } from '@protocol-based-web-framework/restful-api-consumer'
 
 export const apiAccessor = new ApiAccessorFetch(validations)
 export const requestRestfulAPI: RequestRestfulAPI = apiAccessor.requestRestfulAPI
@@ -449,11 +451,11 @@ expect(renderer.create(<BlogPage path={{ id: 123 }}>).toJSON()).toMatchSnapshot(
 
 ```tsx
 import React from "react"
-import { matchRoute, useLocation } from 'protocol-based-web-framework'
+import { matchRoute, useLocation } from '@protocol-based-web-framework/router'
 import { routes } from './generated/router-declaration'
 
 function App() {
-  const location = useLocation(React)
+  const [location] = useLocation(React)
 
   for (const route of routes) {
     if (route.Component) {
@@ -481,7 +483,8 @@ function App() {
 ### 13. navigate to page url
 
 ```tsx
-import { composeUrl, navigateTo } from 'protocol-based-web-framework'
+import { composeUrl } from '@protocol-based-web-framework/restful-api-consumer'
+import { navigateTo } from '@protocol-based-web-framework/router'
 import { GetPageUrl } from './generated/router-declaration'
 
 const getPageUrl: GetPageUrl = composeUrl

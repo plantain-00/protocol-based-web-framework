@@ -2,7 +2,12 @@ import produce from 'immer'
 import qs from 'qs'
 import type { ValidateFunction } from 'ajv'
 import type { Response as NodeFetchResponse } from 'node-fetch'
-import { ajvFrontend } from './restful-api-frontend-declaration-lib'
+import Ajv from 'ajv'
+
+/**
+ * @public
+ */
+export const ajv = new Ajv()
 
 export function composeUrl(
   url: string,
@@ -83,9 +88,9 @@ export class ApiAccessorBase<T extends ApiValidation> {
             }
           }
         )
-        ajvFrontend.validate(schemaWithoutIgnoredFields, input)
-        if (ajvFrontend.errors?.[0]?.message) {
-          throw new Error(ajvFrontend.errors[0].message)
+        ajv.validate(schemaWithoutIgnoredFields, input)
+        if (ajv.errors?.[0]?.message) {
+          throw new Error(ajv.errors[0].message)
         }
       } else {
         validation.validate(input)

@@ -298,13 +298,12 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   const backendContent = `/* eslint-disable */
 
 import type { Readable } from 'stream'
-import framework from '${process.env.BACKEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
-const { ajvBackend } = framework
+import { ajv } from '@protocol-based-web-framework/restful-api-provider'
 ${getReferencesImports(backendReferences).join('\n')}
 
 ${backendResult.join('\n')}
 
-${requestJsonSchemas.map((s) => `const ${s.name}Validate = ajvBackend.compile(${s.schema})`).join('\n')}
+${requestJsonSchemas.map((s) => `const ${s.name}Validate = ajv.compile(${s.schema})`).join('\n')}
 
 export const apiSchemas = [
 ${apiSchemas.join('\n')}
@@ -319,7 +318,7 @@ ${bindRestfulApiHandlerTypes.join('\n')}
   }
 }
 `
-  const frontendContent = `import { ajvFrontend } from '${process.env.FRONTEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
+  const frontendContent = `import { ajv } from '@protocol-based-web-framework/restful-api-consumer'
 import type { ${Array.from(streamReferences).join(', ') } } from 'stream'
 ${getReferencesImports(frontendReferences).join('\n')}
 
@@ -339,7 +338,7 @@ ${responseJsonSchemas.map((s) => `  {
     method: '${s.method.toUpperCase()}',
     schema: ${s.name}JsonSchema,
     omittedReferences: [${s.omittedReferences.map((m) => `'${m}'`).join(',')}] as string[],
-    validate: ajvFrontend.compile(${s.name}JsonSchema),
+    validate: ajv.compile(${s.name}JsonSchema),
     urlPattern: ${s.urlPattern ? s.urlPattern : 'undefined'} as RegExp | undefined,
     responseType: '${s.responseType}' as 'json' | 'text' | 'blob',
   },`).join('\n')}

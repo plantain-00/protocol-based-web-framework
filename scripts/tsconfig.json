@@ -1,8 +1,0 @@
-{
-  "extends": "tsconfig-plantain",
-  "compilerOptions": {
-    "outDir": "../dist",
-    "noUncheckedIndexedAccess": false,
-    "module": "commonjs"
-  }
-}

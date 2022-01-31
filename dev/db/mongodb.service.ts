@@ -1,5 +1,5 @@
 import { MongoClient, ObjectId } from 'mongodb'
-import { MongodbAccessor, MongodbRawFilter } from '../../dist/nodejs'
+import { MongodbAccessor, MongodbRawFilter } from '@protocol-based-web-framework/db'
 import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableSchemas, UpdateRow } from '../generated/db-declaration'
 import { seed } from './seed'
 

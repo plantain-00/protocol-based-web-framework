@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { RowFilterOptions } from '../../dist/nodejs/index.js'
+import { RowFilterOptions } from '@protocol-based-web-framework/db'
 import { tableSchemas } from '../generated/db-declaration.js'
 import { bindRestfulApiHandler, CreateBlog, DeleteBlog, DownloadBlog, GetBlogById, GetBlogs, GetBlogText, PatchBlog, UploadBlog } from '../generated/restful-api-backend-declaration.js'
 import { Blog, BlogIgnorableField, BlogSchema } from './blog.schema.js'

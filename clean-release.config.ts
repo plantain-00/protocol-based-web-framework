@@ -2,21 +2,22 @@ import { Configuration } from 'clean-release'
 
 const config: Configuration = {
   include: [
-    'dist/**/*.js',
-    'dist/**/*.d.ts',
-    'dist/index.d.ts',
-    'LICENSE',
-    'package.json',
-    'README.md'
+    'packages/*/dist/*',
+    'packages/*/bin/*',
+    'packages/*/package.json',
+    'packages/*/README.md',
   ],
   exclude: [
   ],
-  base: 'dist',
+  base: (p) => p.startsWith('packages/script/dist') ? 'packages/script' + p.substring('packages/script/dist'.length) : p,
   askVersion: true,
   changesGitStaged: true,
-  postScript: ({ dir, tag, version }) => [
-    tag ? `npm publish "${dir}" --access public --tag ${tag}` : `npm publish "${dir}" --access public`,
-    'git add package.json',
+  postScript: ({ dir, tag, version, effectedWorkspacePaths = [] }) => [
+    ...effectedWorkspacePaths.map((w) => w.map((e) => {
+      return tag
+        ? `npm publish "${dir}/${e}" --access public --tag ${tag}`
+        : `npm publish "${dir}/${e}" --access public`
+    })),
     `git commit -m "${version}"`,
     `git tag -a v${version} -m 'v${version}'`,
     'git push',

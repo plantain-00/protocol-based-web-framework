@@ -1,4 +1,8 @@
-const tsFiles = `"src/**/*.ts" "scripts/**/*.ts"`
+import { Tasks, readWorkspaceDependencies } from 'clean-scripts'
+
+const tsFiles = `"packages/**/src/**/*.ts"`
+
+const workspaces = readWorkspaceDependencies()
 
 const environments = [
   'DB_OUTPUT_PATH=./dev/generated/db-declaration.ts',
@@ -8,17 +12,15 @@ const environments = [
   'IMPORT_PAGE_OUTPUT_PATH=./dev/generated/import-pages.ts',
   'IMPORT_CONTROLLER_OUTPUT_PATH=./dev/generated/import-controllers.ts',
   'IMPORT_STORY_OUTPUT_PATH=./dev/generated/import-stories.ts',
-  'BACKEND_DECLARATION_LIB_PATH=../../dist/nodejs/index.js',
-  'FRONTEND_DECLARATION_LIB_PATH=../../dist/browser',
 ]
 
 const configs = [
-  './dist/db',
-  './dist/restful-api',
-  './dist/router',
-  './dist/import-pages',
-  './dist/import-controllers',
-  './dist/import-stories',
+  'protocol-based-web-framework/dist/db',
+  'protocol-based-web-framework/dist/restful-api',
+  'protocol-based-web-framework/dist/router',
+  'protocol-based-web-framework/dist/import-pages',
+  'protocol-based-web-framework/dist/import-controllers',
+  'protocol-based-web-framework/dist/import-stories',
 ]
 
 const files = [
@@ -30,17 +32,14 @@ const files = [
 
 export default {
   build: [
-    'rimraf dist/',
-    {
-      back: [
-        'tsc -p src/tsconfig.nodejs.json',
-        'api-extractor run --local'
+    new Tasks(workspaces.map((d) => ({
+      name: d.name,
+      script: [
+        `rimraf ${d.path}/dist/`,
+        `tsc -p ${d.path}`,
       ],
-      front: [
-        'tsc -p src/tsconfig.browser.json'
-      ],
-      script: 'tsc -p scripts'
-    },
+      dependencies: d.dependencies
+    }))),
     `${environments.join(' ')} types-as-schema ${files.map((f) => `"${f}"`).join(' ')} --swagger ./dev/generated/swagger.json --swagger-base ./dev/swagger.base.json ${configs.map((c) => '--config ' + c).join(' ')}`,
   ],
   dev: {
@@ -52,9 +51,8 @@ export default {
     ts: `eslint --ext .js,.ts ${tsFiles}`,
     export: `no-unused-export "src/**/*.ts" --strict --need-module tslib --need-module path-to-regexp --need-module types-as-schema --ignore-module sqlite3 --ignore-module types-as-schema --ignore-module express --ignore-module mongodb --ignore-module pg --ignore-module axios --ignore-module node-fetch --ignore-module form-data --ignore-module react`,
     markdown: `markdownlint README.md`,
-    typeCoverageSrc: 'type-coverage -p src/tsconfig.nodejs.json --strict',
-    typeCoverageDev: 'type-coverage -p dev --strict --ignore-files "dist/**/*.d.ts"',
-    typeCoverageScripts: 'type-coverage -p scripts --strict'
+    typeCoverageSrc: workspaces.map((d) => `type-coverage -p ${d.path} --strict`),
+    typeCoverageDev: 'type-coverage -p dev --strict --ignore-files "packages/**/*.d.ts"',
   },
   test: 'TS_NODE_PROJECT="./dev/tsconfig.json" ava',
   fix: `eslint --ext .js,.ts ${tsFiles} --fix`

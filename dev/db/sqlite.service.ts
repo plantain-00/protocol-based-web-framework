@@ -1,6 +1,5 @@
 import sqlite from 'sqlite3'
-import framework from '../../dist/nodejs/index.js'
-const { SqliteAccessor } = framework
+import { SqliteAccessor } from '@protocol-based-web-framework/db'
 import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from '../generated/db-declaration.js'
 import { seed } from './seed.js'
 

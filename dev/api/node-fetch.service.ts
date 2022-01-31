@@ -2,7 +2,7 @@ import fetch from 'node-fetch'
 import FormData from 'form-data'
 import * as fs from 'fs'
 import { RequestRestfulAPI, validations } from "../generated/restful-api-frontend-declaration.js"
-import { ApiAccessorNodeFetch } from '../../dist/nodejs/index.js'
+import { ApiAccessorNodeFetch } from '@protocol-based-web-framework/restful-api-consumer'
 
 const apiAccessor = new ApiAccessorNodeFetch(validations, fetch, FormData, 'http://localhost:3000', {
   cookie: 'sid=123',

@@ -1,0 +1,12 @@
+{
+  "extends": "tsconfig-plantain",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "esModuleInterop": false,
+    "noUncheckedIndexedAccess": false,
+    "declaration": true
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

@@ -145,7 +145,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
     }
   }
 
-  const content = `import { ajvRouter, Route } from '${process.env.FRONTEND_DECLARATION_LIB_PATH || 'protocol-based-web-framework'}'
+  const content = `import { ajv, Route } from '@protocol-based-web-framework/router'
 
 ${props.join('\n')}
 
@@ -153,7 +153,7 @@ export interface GetPageUrl {
 ${getPageUrlResult.join('\n')}
 }
 
-${requestJsonSchemas.map((s) => `const ${s.name}Validate = ajvRouter.compile(${s.schema})`).join('\n')}
+${requestJsonSchemas.map((s) => `const ${s.name}Validate = ajv.compile(${s.schema})`).join('\n')}
 
 export const routes: Route[] = [
 ${routers.join('\n')}

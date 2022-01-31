@@ -2,7 +2,6 @@ import type { RequestInfo, RequestInit, Response, BodyInit, HeadersInit } from '
 import type NodeFormData = require('form-data')
 import type { Readable } from 'stream'
 import { composeUrl, ApiValidation, ApiAccessorBase } from './api-access-lib'
-import { isReadable } from './utils'
 
 /**
  * @public
@@ -54,4 +53,10 @@ export class ApiAccessorNodeFetch<T extends ApiValidation> extends ApiAccessorBa
       })
     return this.getDataFromFetchResponse(result, method, url, args)
   }
+}
+
+function isReadable(stream: unknown): stream is Readable {
+  return stream !== null &&
+    typeof stream === 'object' &&
+    typeof (stream as Readable).pipe === 'function'
 }

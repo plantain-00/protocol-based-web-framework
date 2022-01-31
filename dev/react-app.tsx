@@ -1,13 +1,13 @@
 import * as ReactDOM from 'react-dom'
 import React from "react"
 import { routes } from './generated/router-declaration'
-import { matchRoute, useLocation } from '../dist/browser'
+import { matchRoute, useLocation } from '@protocol-based-web-framework/router'
 import { ConfirmMessageContext } from './shared/contexts'
 import './generated/import-pages'
 
 function App() {
   const confirmMessage = React.useRef('')
-  const location = useLocation(React, {
+  const [location] = useLocation(React, {
     confirm: () => confirmMessage.current ? confirm(confirmMessage.current) : true,
   })
   React.useEffect(() => {

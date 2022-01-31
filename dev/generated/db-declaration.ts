@@ -1,5 +1,4 @@
-import framework, { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, SqlRawFilter } from "../../dist/nodejs/index.js"
-const { getKeys } = framework
+import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, SqlRawFilter, getKeys } from "@protocol-based-web-framework/db"
 import { BlogSchema } from "../blog/blog.schema"
 import { PostSchema } from "../post/post.schema"
 

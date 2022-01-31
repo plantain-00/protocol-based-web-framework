@@ -1,5 +1,5 @@
 import { Client } from 'pg'
-import { PostgresAccessor } from '../../dist/nodejs/index.js'
+import { PostgresAccessor } from '@protocol-based-web-framework/db'
 import { CountRow, DeleteRow, GetRow, InsertRow, SelectRow, tableNames, tableSchemas, UpdateRow } from '../generated/db-declaration.js'
 import { seed } from './seed.js'
 

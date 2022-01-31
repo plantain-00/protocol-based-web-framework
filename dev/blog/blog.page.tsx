@@ -2,7 +2,7 @@ import React from "react"
 import { requestRestfulAPI } from '../api/fetch.service'
 import { Blog } from '../blog/blog.schema'
 import { bindRouterComponent, BlogPageProps } from '../generated/router-declaration'
-import { navigateTo } from '../../dist/browser'
+import { navigateTo } from '@protocol-based-web-framework/router'
 import { ConfirmMessageContext } from '../shared/contexts'
 import { getPageUrl } from '../shared/page-url'
 import { DownloadBlog } from "./download-blog.component"

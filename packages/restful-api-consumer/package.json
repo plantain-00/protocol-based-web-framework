@@ -1,0 +1,26 @@
+{
+  "name": "@protocol-based-web-framework/restful-api-consumer",
+  "version": "3.7.1",
+  "description": "A protocol and code generation based web framework.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plantain-00/protocol-based-web-framework.git"
+  },
+  "author": "York Yao",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/plantain-00/protocol-based-web-framework/issues"
+  },
+  "homepage": "https://github.com/plantain-00/protocol-based-web-framework#readme",
+  "dependencies": {
+    "ajv": "8",
+    "immer": "9",
+    "qs": "6",
+    "tslib": "1 || 2"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
+}

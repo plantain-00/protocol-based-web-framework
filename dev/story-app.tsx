@@ -3,19 +3,19 @@ import React from "react"
 import './vender/prism'
 import './vender/prism.css'
 
-import { navigateTo, useLocation } from '../dist/browser'
+import { navigateTo, useLocation } from '@protocol-based-web-framework/router'
 import { stories } from './generated/import-stories'
 
 function StoryApp() {
-  const location = useLocation(React)
-  if (location === '/') {
+  const [, search] = useLocation(React)
+  if (!search) {
     return (
       <ul>
-        {stories.map((s) => <li key={s.path} onClick={() => navigateTo('/' + s.path)}>{s.name} {s.path}</li>)}
+        {stories.map((s) => <li key={s.path} onClick={() => navigateTo('/?p=' + s.path)}>{s.name} {s.path}</li>)}
       </ul>
     )
   }
-  const path = location.substring(1)
+  const path = search.substring('?p='.length)
   for (const story of stories) {
     if (path === story.path) {
       return (

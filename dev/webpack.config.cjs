@@ -1,4 +1,5 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const { ProvidePlugin } = require('webpack')
 
 module.exports = {
   mode: 'development',
@@ -11,13 +12,22 @@ module.exports = {
   },
   module: {
     rules: [
-      { test: /\.tsx?$/, loader: 'ts-loader' }
+      {
+        test: /\.tsx?$/,
+        loader: 'esbuild-loader',
+        options: {
+          loader: 'tsx',
+        },
+      }
     ]
   },
   plugins: [
     new HtmlWebpackPlugin({
       templateContent: `<div id='container'></div>`,
-    })
+    }),
+    new ProvidePlugin({
+      React: 'react',
+    }),
   ],
   devServer: {
     historyApiFallback: true,

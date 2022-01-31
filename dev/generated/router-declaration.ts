@@ -1,4 +1,4 @@
-import { ajvRouter, Route } from '../../dist/browser'
+import { ajv, Route } from '@protocol-based-web-framework/router'
 
 export type BlogPageProps = { path: { id: number } }
 export type HomePageProps = { query: { page: number } }
@@ -9,7 +9,7 @@ export interface GetPageUrl {
   (url: `/`, args?: { query?: { page?: number } }): string
 }
 
-const blogPageValidate = ajvRouter.compile({
+const blogPageValidate = ajv.compile({
   "type": "object",
   "properties": {
     "path": {
@@ -28,7 +28,7 @@ const blogPageValidate = ajvRouter.compile({
     "path"
   ]
 })
-const homePageValidate = ajvRouter.compile({
+const homePageValidate = ajv.compile({
   "type": "object",
   "properties": {
     "query": {

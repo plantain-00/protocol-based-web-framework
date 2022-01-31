@@ -7,7 +7,9 @@ export const stories = [
     name: '博客页',
     Component: 博客页,
     code: `() => {
-    return (<BlogPage path={{ id: 123 }}/>);
+  return (
+    <BlogPage path={{ id: 123 }} />
+  )
 }`,
   },
   {
@@ -15,7 +17,9 @@ export const stories = [
     name: '',
     Component: BlogDownloadBlogComponentStory,
     code: `() => {
-    return (<DownloadBlog id={1}/>);
+  return (
+    <DownloadBlog id={1} />
+  )
 }`,
   },
 ]

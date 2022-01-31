@@ -1,6 +1,6 @@
 import type { Client, Pool, QueryResultRow } from 'pg'
-import { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, SqlRawFilter } from './db-declaration-lib'
-import { isArray } from './utils'
+import type { RowFilterOptions, RowSelectOneOptions, RowSelectOptions, SqlRawFilter } from './db-declaration-lib.js'
+import { isArray } from './utils.js'
 
 /**
  * @public
