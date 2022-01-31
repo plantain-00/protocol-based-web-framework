@@ -1,6 +1,6 @@
 {
   "name": "@protocol-based-web-framework/db",
-  "version": "3.7.1",
+  "version": "4.0.0",
   "description": "A protocol and code generation based web framework.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
