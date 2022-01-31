@@ -5,6 +5,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./cjs/index.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/plantain-00/protocol-based-web-framework.git"

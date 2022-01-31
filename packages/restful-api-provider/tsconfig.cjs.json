@@ -1,0 +1,12 @@
+{
+  "extends": "tsconfig-plantain",
+  "compilerOptions": {
+    "outDir": "./cjs",
+    "esModuleInterop": false,
+    "noUncheckedIndexedAccess": false,
+    "module": "CommonJS"
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

@@ -30,6 +30,11 @@ const files = [
   './dev/**/*.story.tsx',
 ]
 
+const nodejsPackages = [
+  '@protocol-based-web-framework/restful-api-provider',
+  '@protocol-based-web-framework/db',
+]
+
 export default {
   build: [
     new Tasks(workspaces.map((d) => ({
@@ -37,6 +42,10 @@ export default {
       script: [
         `rimraf ${d.path}/dist/`,
         `tsc -p ${d.path}`,
+        ...(nodejsPackages.includes(d.name)? [
+          `rimraf ${d.path}/cjs/`,
+          `tsc -p ${d.path}/tsconfig.cjs.json`,
+        ] : []),
       ],
       dependencies: d.dependencies
     }))),

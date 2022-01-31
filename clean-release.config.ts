@@ -3,6 +3,7 @@ import { Configuration } from 'clean-release'
 const config: Configuration = {
   include: [
     'packages/*/dist/*',
+    'packages/*/cjs/*',
     'packages/*/bin/*',
     'packages/*/package.json',
     'packages/*/README.md',
