@@ -6,20 +6,12 @@ export const stories = [
     path: 'blog/blog.page.story',
     name: '博客页',
     Component: 博客页,
-    code: `() => {
-  return (
-    <BlogPage path={{ id: 123 }} />
-  )
-}`,
+    code: '() => ' + "{\n  return (\n    <BlogPage path={{ id: 123 }} />\n  )\n}",
   },
   {
     path: 'blog/download-blog.component.story',
     name: '',
     Component: BlogDownloadBlogComponentStory,
-    code: `() => {
-  return (
-    <DownloadBlog id={1} />
-  )
-}`,
+    code: '() => ' + "{\n  return (\n    <DownloadBlog id={1} />\n  )\n}",
   },
 ]

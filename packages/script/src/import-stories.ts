@@ -19,7 +19,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
     path: '${path}',
     name: '${declaration.name}',
     Component: ${declaration.name || defaultComponentName},
-    code: \`() => ${declaration.body?.split('`').join('\\`')}\`,
+    code: '() => ' + ${JSON.stringify(declaration.body)},
   },`)
     
     }
