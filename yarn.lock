@@ -5162,10 +5162,10 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-types-as-schema@1.47:
-  version "1.47.3"
-  resolved "https://registry.yarnpkg.com/types-as-schema/-/types-as-schema-1.47.3.tgz#8a6a2ec818f9bf6e3ed77e58ec6aae09aa3347a2"
-  integrity sha512-Ipne0Kbm9SX1zIcQ2EcL6WWxG/6I++zkeHN8muxgrMQ3NftJxvPCEu8APoVpGwO6+F7wqUje8nAKgL2bIE032Q==
+types-as-schema@1.48:
+  version "1.48.1"
+  resolved "https://registry.yarnpkg.com/types-as-schema/-/types-as-schema-1.48.1.tgz#0fe5702631b363663290e1759201c5ae11b89207"
+  integrity sha512-nKqH2/mMoAJA8dNz9eLvBW/qb9/BDpQ4bD61cJgTrlCy65L4/d52stY+ka5cNmHRKoDYp56ePx8IxV1pZXFsUA==
   dependencies:
     ajv "7 || 8"
     chokidar "3"

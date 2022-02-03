@@ -6,3 +6,8 @@ export interface PostSchema {
   content: string
   blogId: number
 }
+
+/**
+ * @localStorage post-key
+ */
+type post = PostSchema

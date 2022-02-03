@@ -4,6 +4,7 @@ import { routes } from './generated/router-declaration'
 import { matchRoute, useLocation } from '@protocol-based-web-framework/router'
 import { ConfirmMessageContext } from './shared/contexts'
 import './generated/import-pages'
+import './shared/local-storage'
 
 function App() {
   const confirmMessage = React.useRef('')

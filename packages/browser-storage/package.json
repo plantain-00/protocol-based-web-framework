@@ -1,7 +1,9 @@
 {
-  "name": "protocol-based-web-framework",
-  "version": "4.1.2",
+  "name": "@protocol-based-web-framework/browser-storage",
+  "version": "4.1.0",
   "description": "A protocol and code generation based web framework.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/plantain-00/protocol-based-web-framework.git"
@@ -13,9 +15,8 @@
   },
   "homepage": "https://github.com/plantain-00/protocol-based-web-framework#readme",
   "dependencies": {
-    "path-to-regexp": "6",
-    "tslib": "1 || 2",
-    "types-as-schema": "1.48"
+    "ajv": "8",
+    "tslib": "1 || 2"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"

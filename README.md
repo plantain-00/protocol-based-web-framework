@@ -189,9 +189,9 @@ await selectRow('blogs', {
  * @path /api/blogs
  * @tags blog
  */
-declare function getBlogs(
+type getBlogs = (
   query: PaginationFields,
-): Promise<{ result: BlogSchema[], count: number }>
+) => Promise<{ result: BlogSchema[], count: number }>
 
 interface PaginationFields {
   /**
@@ -221,9 +221,9 @@ Default value in function parameter is used to fill default value when the param
 parameters, with these, it will support ignorable/pickable, for example:
 
 ```ts
-declare function getBlogs(
+type getBlogs = (
   query: PaginationFields & BlogFieldFilter,
-): Promise<{ result: BlogSchema[], count: number }>
+) => Promise<{ result: BlogSchema[], count: number }>
 
 interface BlogFieldFilter {
   ignoredFields?: (keyof BlogSchema)[]
@@ -378,19 +378,19 @@ const blogs = await requestRestfulAPI('GET', '/api/blogs', { query: { skip: 0, t
 /**
  * @path /blogs
  */
-declare function blogsPage(
+type blogsPage = (
   query: {
     /**
      * @default 1
      */
     page?: number
   },
-): string
+) => string
 
 /**
  * @path /blogs/{id}
  */
-declare function blogPage(path: { id: number }): string
+type blogPage = (path: { id: number }) => string
 ```
 
 [dev/blog/blog.schema.ts](./dev/blog/blog.schema.ts)
@@ -502,4 +502,39 @@ getPageUrl(`/blogs/1`) // ✅
 getPageUrl(`/blogs/abc`) // ❌
 getPageUrl('/blogs/{id}', { path: { id: 1 } }) // ✅
 getPageUrl('/blogs/{id}', { path: { id: 'abc' } }) // ❌
+```
+
+### 14. local storage
+
+`yarn add @protocol-based-web-framework/browser-storage -D`
+
+```ts
+/**
+ * @localStorage
+ */
+type blogs = Blog
+
+/**
+ * @localStorage post-key
+ */
+type post = PostSchema
+```
+
+`LOCAL_STORAGE_OUTPUT_PATH=./dev/generated/local-storage-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/local-storage`
+
+```ts
+import { StorageAccessor } from '@protocol-based-web-framework/browser-storage'
+import { GetItem, RemoveItem, SetItem, validations } from '../generated/local-storage-declaration'
+
+const storageAccessor = new StorageAccessor(localStorage, validations)
+export const getItem: GetItem = storageAccessor.getItem
+export const setItem: SetItem = storageAccessor.setItem
+export const removeItem: RemoveItem = storageAccessor.removeItem
+
+setItem('post-key', {
+  id: 1,
+  blogId: 2,
+  content: '',
+})
+console.info(getItem('post-key'))
 ```

@@ -18,7 +18,7 @@ export interface BlogSchema {
  * @path /api/blogs
  * @tags blog
  */
-declare function getBlogs(
+type getBlogs = (
   query: PaginationFields & BlogFieldFilter & SortTypeField & {
     content?: string
     /**
@@ -28,38 +28,38 @@ declare function getBlogs(
     ids?: string[]
   },
   cookie: MyUserIdField,
-): Promise<{ result: Blog[], count: number }>
+) => Promise<{ result: Blog[], count: number }>
 
 /**
  * @method get
  * @path /api/blogs/{id}
  * @tags blog
  */
-declare function getBlogById(
+type getBlogById = (
   query: BlogFieldFilter,
   path: IdField,
   cookie: MyUserIdField,
-): Promise<{ result?: Blog }>
+) => Promise<{ result?: Blog }>
 
 /**
  * @method post
  * @path /api/blogs
  * @tags blog
  */
-declare function createBlog(
+type createBlog = (
   query: BlogFieldFilter,
   body: {
     content: string
   },
   cookie: MyUserIdField,
-): Promise<{ result: Blog }>
+) => Promise<{ result: Blog }>
 
 /**
  * @method patch
  * @path /api/blogs/{id}
  * @tags blog
  */
-declare function patchBlog(
+type patchBlog = (
   query: BlogFieldFilter,
   path: IdField,
   body: {
@@ -67,50 +67,50 @@ declare function patchBlog(
     meta?: unknown
   },
   cookie: MyUserIdField,
-): Promise<{ result: Blog }>
+) => Promise<{ result: Blog }>
 
 /**
  * @method delete
  * @path /api/blogs/{id}
  * @tags blog
  */
-declare function deleteBlog(
+type deleteBlog = (
   path: IdField,
   cookie: MyUserIdField,
-): Promise<{}>
+) => Promise<{}>
 
 /**
  * @method get
  * @path /api/blogs/{id}/download
  * @tags blog
  */
-declare function downloadBlog(
+type downloadBlog = (
   path: IdField,
   query: {
     attachmentFileName?: string,
   },
-): Promise<File>
+) => Promise<File>
 
 /**
  * @method post
  * @path /api/blogs/upload
  * @tags blog
  */
-declare function uploadBlog(
+type uploadBlog = (
   body: {
     file: File,
     id: number,
   },
-): Promise<{}>
+) => Promise<{}>
 
 /**
  * @method get
  * @path /api/blogs/{id}/text
  * @tags blog
  */
-declare function getBlogText(
+type getBlogText = (
   path: IdField,
-): Promise<string>
+) => Promise<string>
 
 export type BlogIgnorableField = 'posts' | 'meta'
 
@@ -132,4 +132,9 @@ interface BlogFieldFilter {
 /**
  * @path /blogs/{id}
  */
-declare function blogPage(path: { id: number }): string
+type blogPage = (path: { id: number }) => string
+
+/**
+ * @localStorage
+ */
+type blogs = Blog
