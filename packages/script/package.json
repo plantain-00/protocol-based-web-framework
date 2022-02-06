@@ -1,6 +1,6 @@
 {
   "name": "protocol-based-web-framework",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "description": "A protocol and code generation based web framework.",
   "repository": {
     "type": "git",
