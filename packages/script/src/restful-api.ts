@@ -48,8 +48,14 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       const declarationParameters = getDeclarationParameters(declaration, typeDeclarations)
       for (const parameter of declarationParameters) {
         if (parameter.in === 'path') {
+          if (!path.includes(`{${parameter.name}}`)) {
+            throw new Error(`path parameter(${parameter.name}) is not in the path declaration(${declaration.path})`)
+          }
           path = path.split(`{${parameter.name}}`).join(`:${parameter.name}`)
         }
+      }
+      if (path.includes('{') && path.includes('}')) {
+        throw new Error(`(${path.substring(path.indexOf('{') + 1, path.indexOf('}'))}) is not declared in the path parameter declaration(${declaration.path})`)
       }
       const interfaceName = declaration.name[0].toUpperCase() + declaration.name.substring(1)
       bindRestfulApiHandlerTypes.push(`  (name: '${interfaceName}', req: ${interfaceName}): void`)
