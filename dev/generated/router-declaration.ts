@@ -1,7 +1,6 @@
 import { ajv, Route } from '@protocol-based-web-framework/router'
-
-export type BlogPageProps = { path: { id: number } }
-export type HomePageProps = { query: { page: number } }
+import { BlogPageProps } from "../blog/blog.schema"
+import { HomePageProps } from "../home/home.schema"
 
 export interface GetPageUrl {
   (url: `/blogs/${number}`): string
@@ -9,7 +8,13 @@ export interface GetPageUrl {
   (url: `/`, args?: { query?: { page?: number } }): string
 }
 
-const blogPageValidate = ajv.compile({
+export const routes: Route[] = [
+  {
+    name: '',
+    path: '/blogs/:id',
+    regexp: /^\/blogs(?:\/([^\/#\?]+?))[\/#\?]?$/i,
+    keys: ['id'],
+    validate: ajv.compile({
   "type": "object",
   "properties": {
     "path": {
@@ -27,8 +32,14 @@ const blogPageValidate = ajv.compile({
   "required": [
     "path"
   ]
-})
-const homePageValidate = ajv.compile({
+}),
+  },
+  {
+    name: '',
+    path: '/',
+    regexp: undefined,
+    keys: [],
+    validate: ajv.compile({
   "type": "object",
   "properties": {
     "query": {
@@ -39,38 +50,19 @@ const homePageValidate = ajv.compile({
           "default": 1
         }
       },
-      "required": [
-        "page"
-      ]
+      "required": []
     }
   },
-  "required": [
-    "query"
-  ]
-})
-
-export const routes: Route[] = [
-  {
-    name: 'BlogPage',
-    path: '/blogs/:id',
-    regexp: /^\/blogs(?:\/([^\/#\?]+?))[\/#\?]?$/i,
-    keys: ['id'],
-    validate: blogPageValidate,
-  },
-  {
-    name: 'HomePage',
-    path: '/',
-    regexp: undefined,
-    keys: [],
-    validate: homePageValidate,
+  "required": []
+}),
   },
 ]
 
 export const bindRouterComponent: {
-  (name: 'BlogPage', component: (props: BlogPageProps) => JSX.Element): void
-  (name: 'HomePage', component: (props: HomePageProps) => JSX.Element): void
-} = (name: string, component: (props: any) => JSX.Element) => {
-  const schema = routes.find((s) => s.name === name)
+  (path: '/blogs/:id', component: (props: BlogPageProps) => JSX.Element): void
+  (path: '/', component: (props: HomePageProps) => JSX.Element): void
+} = (path: string, component: (props: any) => JSX.Element) => {
+  const schema = routes.find((s) => s.path === path || s.name === path)
   if (schema) {
     schema.Component = component
   }

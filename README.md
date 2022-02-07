@@ -191,7 +191,7 @@ await selectRow('blogs', {
  */
 type getBlogs = (
   query: PaginationFields,
-) => Promise<{ result: BlogSchema[], count: number }>
+) => { result: BlogSchema[], count: number }
 
 interface PaginationFields {
   /**
@@ -223,7 +223,7 @@ parameters, with these, it will support ignorable/pickable, for example:
 ```ts
 type getBlogs = (
   query: PaginationFields & BlogFieldFilter,
-) => Promise<{ result: BlogSchema[], count: number }>
+) => { result: BlogSchema[], count: number }
 
 interface BlogFieldFilter {
   ignoredFields?: (keyof BlogSchema)[]
@@ -376,32 +376,37 @@ const blogs = await requestRestfulAPI('GET', '/api/blogs', { query: { skip: 0, t
 
 ```ts
 /**
- * @path /blogs
+ * @route /blogs
  */
-type blogsPage = (
+export interface BlogsPageProps {
   query: {
     /**
      * @default 1
      */
-    page?: number
+    page: number
   },
-) => string
+}
+
 
 /**
- * @path /blogs/{id}
+ * @route /blogs/{id}
  */
-type blogPage = (path: { id: number }) => string
+export interface BlogPageProps {
+  path: {
+    id: number
+  }
+}
 ```
 
 [dev/blog/blog.schema.ts](./dev/blog/blog.schema.ts)
 
-`@path` follows swagger specification.
+`@route` follows swagger `path` specification.
 
-Function name should be unique name for api binding, and is used for generating page component props types: `blogPage` -> `BlogPageProps`
+type name should be unique name, and is used for page component props types.
 
-Function parameter name can be `query` and `path`, they are different parts of a url.
+type field name can be `query` and `path`, they are different parts of a url.
 
-Default value in function parameter is used to fill default value when the parameter is not passed, for example, a page url is `http://localhost:4000/blogs`, then in page component, the `props` is `{ query: { page: 1 }}`
+Default value in type field is used to fill default value when the parameter is not passed, for example, a page url is `http://localhost:4000/blogs`, then in page component, the `props` is `{ query: { page: 1 }}`
 
 ### 10. generate router declaration
 
@@ -412,7 +417,7 @@ Default value in function parameter is used to fill default value when the param
 ### 11. bind component to the route
 
 ```ts
-import { bindRouterComponent, BlogPageProps } from './generated/router-declaration'
+import { bindRouterComponent } from './generated/router-declaration'
 
 function BlogPage(props: BlogPageProps) {
   React.useEffect(() => {
@@ -422,7 +427,7 @@ function BlogPage(props: BlogPageProps) {
   }, [])
   return <></>
 }
-bindRouterComponent('BlogPage', BlogPage)
+bindRouterComponent('/blogs/:id', BlogPage)
 ```
 
 [dev/blog/blog.page.tsx](./dev/blog/blog.page.tsx)
@@ -512,12 +517,16 @@ getPageUrl('/blogs/{id}', { path: { id: 'abc' } }) // ❌
 /**
  * @localStorage
  */
-type blogs = Blog
+export interface Blog {
+  // ...
+}
 
 /**
  * @localStorage post-key
  */
-type post = PostSchema
+export interface PostSchema {
+  // ...
+}
 ```
 
 `LOCAL_STORAGE_OUTPUT_PATH=./dev/generated/local-storage-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/local-storage`

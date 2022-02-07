@@ -7,7 +7,12 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
   const references: string[] = []
   const stories: string[] = []
   for (const declaration of typeDeclarations) {
-    if (declaration.kind === 'function' && declaration.position.file.endsWith('.story.tsx')) {
+    if (
+      declaration.kind === 'function' &&
+      (declaration.position.file.endsWith('.story.tsx') || declaration.position.file.endsWith('.stories.tsx')) &&
+      declaration.parameters.length === 0 &&
+      (declaration.name === '' || declaration.modifiers?.some((m) => m === 'export'))
+    ) {
       const importPath = getImportPath(getRelativePath(outPath, declaration.position.file))
       let path = importPath
       while (path.startsWith('.') || path.startsWith('/')) {

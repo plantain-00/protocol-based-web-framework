@@ -57,7 +57,6 @@ export function getBrowserStorageScript(outPath: string, marker: string) {
       }
       const jsDoc = declaration.jsDocs?.find((s) => s.name === marker)
       if (jsDoc) {
-        collectReference(declaration.name, outPath, declaration.position.file, references)
         const type: Type = declaration.kind === 'enum' ? { ...declaration, enums: declaration.members.map((m) => m.value) } : declaration
 
         // json schema
@@ -65,6 +64,10 @@ export function getBrowserStorageScript(outPath: string, marker: string) {
         for (const referenceName of getReferencesInType(type).map((r) => r.name)) {
           const referencedName = getReferencedDefinitions(referenceName, definitions, [])
           Object.assign(mergedDefinitions, referencedName)
+          const declaration = typeDeclarations.find((d) => d.name === referenceName)
+          if (declaration) {
+            collectReference(referenceName, outPath, declaration.position.file, references)
+          }
         }
 
         schemas.push({

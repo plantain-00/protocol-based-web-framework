@@ -1,11 +1,11 @@
 /**
- * @path /
+ * @route /
  */
-type homePage = (
+export interface HomePageProps {
   query: {
     /**
      * @default 1
      */
-    page?: number
+    page: number
   },
-) => string
+}

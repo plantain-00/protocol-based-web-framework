@@ -28,7 +28,7 @@ type getBlogs = (
     ids?: string[]
   },
   cookie: MyUserIdField,
-) => Promise<{ result: Blog[], count: number }>
+) => { result: Blog[], count: number }
 
 /**
  * @method get
@@ -39,7 +39,7 @@ type getBlogById = (
   query: BlogFieldFilter,
   path: IdField,
   cookie: MyUserIdField,
-) => Promise<{ result?: Blog }>
+) => { result?: Blog }
 
 /**
  * @method post
@@ -52,7 +52,7 @@ type createBlog = (
     content: string
   },
   cookie: MyUserIdField,
-) => Promise<{ result: Blog }>
+) => { result: Blog }
 
 /**
  * @method patch
@@ -67,7 +67,7 @@ type patchBlog = (
     meta?: unknown
   },
   cookie: MyUserIdField,
-) => Promise<{ result: Blog }>
+) => { result: Blog }
 
 /**
  * @method delete
@@ -77,7 +77,7 @@ type patchBlog = (
 type deleteBlog = (
   path: IdField,
   cookie: MyUserIdField,
-) => Promise<{}>
+) => {}
 
 /**
  * @method get
@@ -89,7 +89,7 @@ type downloadBlog = (
   query: {
     attachmentFileName?: string,
   },
-) => Promise<File>
+) => File
 
 /**
  * @method post
@@ -101,7 +101,7 @@ type uploadBlog = (
     file: File,
     id: number,
   },
-) => Promise<{}>
+) => {}
 
 /**
  * @method get
@@ -110,10 +110,13 @@ type uploadBlog = (
  */
 type getBlogText = (
   path: IdField,
-) => Promise<string>
+) => string
 
 export type BlogIgnorableField = 'posts' | 'meta'
 
+/**
+ * @localStorage
+ */
 export interface Blog extends BlogSchema {
   posts: PostSchema[]
 }
@@ -130,11 +133,10 @@ interface BlogFieldFilter {
 }
 
 /**
- * @path /blogs/{id}
+ * @route /blogs/{id}
  */
-type blogPage = (path: { id: number }) => string
-
-/**
- * @localStorage
- */
-type blogs = Blog
+export interface BlogPageProps {
+  path: {
+    id: number
+  }
+}

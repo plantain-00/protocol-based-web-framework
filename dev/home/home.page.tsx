@@ -1,9 +1,10 @@
 import React from "react"
 import { requestRestfulAPI } from '../api/fetch.service'
 import { Blog } from '../blog/blog.schema'
-import { bindRouterComponent, HomePageProps } from '../generated/router-declaration'
+import { bindRouterComponent } from '../generated/router-declaration'
 import { navigateTo } from '@protocol-based-web-framework/router'
 import { getPageUrl } from '../shared/page-url'
+import { HomePageProps } from "./home.schema"
 
 function HomePage(props: HomePageProps) {
   const [blogs, setBlogs] = React.useState<Blog[]>([])
@@ -47,4 +48,4 @@ function HomePage(props: HomePageProps) {
     </div>
   )
 }
-bindRouterComponent('HomePage', HomePage)
+bindRouterComponent('/', HomePage)

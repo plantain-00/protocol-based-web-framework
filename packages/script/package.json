@@ -15,7 +15,7 @@
   "dependencies": {
     "path-to-regexp": "6",
     "tslib": "1 || 2",
-    "types-as-schema": "1.48"
+    "types-as-schema": "1.50"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
