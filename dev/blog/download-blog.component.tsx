@@ -1,6 +1,11 @@
 import { getRequestApiUrl, requestRestfulAPI } from "../api/fetch.service"
 
-export function DownloadBlog(props: { id: number }) {
+export function DownloadBlog(props: {
+  /**
+   * blog id
+   */
+  id: number
+}) {
   return (
     <>
       <input

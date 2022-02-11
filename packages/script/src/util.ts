@@ -56,7 +56,7 @@ export function getBrowserStorageScript(outPath: string, marker: string) {
         continue
       }
       const jsDoc = declaration.jsDocs?.find((s) => s.name === marker)
-      if (jsDoc) {
+      if (jsDoc && declaration.kind !== 'unknown') {
         const type: Type = declaration.kind === 'enum' ? { ...declaration, enums: declaration.members.map((m) => m.value) } : declaration
 
         // json schema

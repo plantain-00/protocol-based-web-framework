@@ -3508,18 +3508,17 @@ no-case@^3.0.4:
     lower-case "^2.0.2"
     tslib "^2.0.3"
 
-no-unused-export@1.14.2:
-  version "1.14.2"
-  resolved "https://registry.yarnpkg.com/no-unused-export/-/no-unused-export-1.14.2.tgz#ddd5ff96a4f0d82e5c3efd4ef42638b32c70ab52"
-  integrity sha512-HlStbLMgbhw3wYTmsEj+6RYPQEFYdESsgF34w3YO5UgUDSG6DRD9klkkZmriy2YE5wTKF5XW9eSJoWLhT4R6nQ==
+no-unused-export@1.15.0:
+  version "1.15.0"
+  resolved "https://registry.yarnpkg.com/no-unused-export/-/no-unused-export-1.15.0.tgz#85e119f1fe07af05353769742923f25ea4d0f9f6"
+  integrity sha512-6nALEKlwmVXLQphKij0i4pIz+U1ynDaOzJ7FwXfx/KlYPTcrZrBaYWzNn5prfr+P+RaV+dfgwz8DqjqEm7NZKA==
   dependencies:
     glob "7"
     minimist "1"
     parse5 "6"
     postcss "8"
-    postcss-less "3 || 4 || 5"
+    postcss-less "3 || 4 || 5 || 6"
     postcss-scss "2 || 3 || 4"
-    ts-lib-utils "2"
     tslib "1 || 2"
     typescript "3 || 4"
 
@@ -4061,10 +4060,10 @@ portfinder@^1.0.28:
     debug "^3.1.1"
     mkdirp "^0.5.5"
 
-"postcss-less@3 || 4 || 5":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/postcss-less/-/postcss-less-5.0.0.tgz#3fa361ed8e52a9c3e6e4fdb9bb95fd9032f3c62b"
-  integrity sha512-djK6NlApALJeBnNx7CzLatq64eMF3BCyzBH+faYPxrvNHHM/YCimJ6XQkgWgtim2G89EzdQG4Ed0lGNCXPfD7A==
+"postcss-less@3 || 4 || 5 || 6":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/postcss-less/-/postcss-less-6.0.0.tgz#463b34c60f53b648c237f569aeb2e09149d85af4"
+  integrity sha512-FPX16mQLyEjLzEuuJtxA8X3ejDLNGGEG503d2YGZR5Ask1SpDN8KmZUMpzCvyalWRywAn1n1VOA5dcqfCLo5rg==
 
 postcss-modules-extract-imports@^3.0.0:
   version "3.0.0"
@@ -5042,13 +5041,6 @@ tr46@~0.0.3:
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha1-gYT9NH2snNwYWZLzpmIuFLnZq2o=
 
-ts-lib-utils@2:
-  version "2.18.0"
-  resolved "https://registry.yarnpkg.com/ts-lib-utils/-/ts-lib-utils-2.18.0.tgz#817311cff8fa1fa34134ac9d31726e36e866feef"
-  integrity sha512-car+ahT2YJNvQQzoAgjiBxO2IRV0pAKyyaixtUyHlwXstwxZm52iJhesNyFOUwu1/yfQICNy3btKm8NJBWa7cg==
-  dependencies:
-    tslib "1 || 2"
-
 ts-node@10.4.0:
   version "10.4.0"
   resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-10.4.0.tgz#680f88945885f4e6cf450e7f0d6223dd404895f7"
@@ -5162,10 +5154,10 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-types-as-schema@1.50:
-  version "1.50.1"
-  resolved "https://registry.yarnpkg.com/types-as-schema/-/types-as-schema-1.50.1.tgz#e413f6f660876094c93fce6b924e87d6ccbe83a3"
-  integrity sha512-MOrWzEf1E7JFvhfTBmSSDh1VlvryFgwPjOuouM399kEatomwMpoMaT4pJSzJ/eWZpQoTAm9HwPiFQp24IZn/IA==
+types-as-schema@1.51:
+  version "1.51.0"
+  resolved "https://registry.yarnpkg.com/types-as-schema/-/types-as-schema-1.51.0.tgz#daf10ce3691ba152038ce413fce91fd15191311e"
+  integrity sha512-lckACDuLdp/0tIuu8OFsQP0Qd2IeMRdfC/wOzeQm2gV2TylJaXuFwyD7PXfGHtOA7nQ56An5lq0CAiMr0XF+mQ==
   dependencies:
     ajv "7 || 8"
     chokidar "3"
@@ -5174,7 +5166,6 @@ types-as-schema@1.50:
     lodash "4"
     minimist "1"
     protobufjs "6"
-    ts-lib-utils "2"
     tslib "2"
     typescript "3 || 4"
 

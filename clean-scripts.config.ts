@@ -30,6 +30,7 @@ const files = [
   './dev/**/*.page.tsx',
   './dev/**/*.controller.ts',
   './dev/**/*.story.tsx',
+  './dev/**/*.component.tsx',
 ]
 
 const nodejsPackages = [
