@@ -63,8 +63,8 @@ export default {
     ts: `eslint --ext .js,.ts ${tsFiles}`,
     export: `no-unused-export "src/**/*.ts" --strict --need-module tslib --need-module path-to-regexp --need-module types-as-schema --ignore-module sqlite3 --ignore-module types-as-schema --ignore-module express --ignore-module mongodb --ignore-module pg --ignore-module axios --ignore-module node-fetch --ignore-module form-data --ignore-module react`,
     markdown: `markdownlint README.md`,
-    typeCoverageSrc: workspaces.map((d) => `type-coverage -p ${d.path} --strict`),
-    typeCoverageDev: 'type-coverage -p dev --strict --ignore-files "packages/**/*.d.ts"',
+    typeCoverageSrc: workspaces.map((d) => `type-coverage -p ${d.path} --ignore-nested --ignore-empty-type --strict`),
+    typeCoverageDev: 'type-coverage -p dev --strict --ignore-nested --ignore-empty-type --ignore-files "packages/**/*.d.ts"',
   },
   test: 'TS_NODE_PROJECT="./dev/tsconfig.json" ava',
   fix: `eslint --ext .js,.ts ${tsFiles} --fix`
