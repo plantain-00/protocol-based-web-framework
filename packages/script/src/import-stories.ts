@@ -23,7 +23,11 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
         let propsType: Type | undefined
         let typeParameters: TypeParameter[] | undefined
         if (component?.kind === 'function' && component.parameters.length > 0) {
-          propsType = component.parameters[0].type
+          if (component.name.startsWith('use')) {
+            propsType = component
+          } else {
+            propsType = component.parameters[0].type
+          }
           componentBody = component.body
           if (propsType.kind === undefined && component.typeArguments && component.typeArguments?.length > 0) {
             propsType = component.typeArguments[0]
@@ -94,7 +98,7 @@ ${stories.join('\n')}
   ]
 }
 
-function getPropsMembers(type: Type, typeDeclarations: TypeDeclaration[]): Member[] {
+function getPropsMembers(type: Type, typeDeclarations: TypeDeclaration[]): Pick<Member, 'name' | 'type' | 'optional' | 'jsDocs'>[] {
   if (type.kind === 'object') {
     return type.members
   }
@@ -106,6 +110,9 @@ function getPropsMembers(type: Type, typeDeclarations: TypeDeclaration[]): Membe
   }
   if (type.kind === 'union') {
     return type.members.map((m) => getPropsMembers(m, typeDeclarations)).flat()
+  }
+  if (type.kind === 'function') {
+    return type.parameters
   }
   return []
 }
@@ -124,8 +131,8 @@ function setParentComponentName(storyInfos: StoryInfo[]) {
   for (const info of storyInfos) {
     if (info.componentName && info.componentBody) {
       for (const item of storyInfos) {
-        if (item !== info && item.componentName && item.componentBody) {
-          if (item.componentBody.includes(info.componentName)) {
+        if (item !== info && item.componentName && item.componentBody && item.componentBody.includes(info.componentName)) {
+          if (info.parentComponentName === undefined) {
             info.parentComponentName = item.componentName
           } else {
             info.parentComponentName = undefined
