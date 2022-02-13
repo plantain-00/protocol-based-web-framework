@@ -102,7 +102,7 @@ function getFieldType({ type, jsDocs }: Member): string {
     return 'boolean'
   }
   if (type.kind === 'reference') {
-    if (type.name === 'Date') {
+    if (type.referenceName === 'Date') {
       return 'timestamp with time zone'
     }
   }

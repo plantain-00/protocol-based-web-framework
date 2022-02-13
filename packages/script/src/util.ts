@@ -61,7 +61,7 @@ export function getBrowserStorageScript(outPath: string, marker: string) {
 
         // json schema
         const mergedDefinitions: { [name: string]: Definition } = {}
-        for (const referenceName of getReferencesInType(type).map((r) => r.name)) {
+        for (const referenceName of getReferencesInType(type).map((r) => r.referenceName)) {
           const referencedName = getReferencedDefinitions(referenceName, definitions, [])
           Object.assign(mergedDefinitions, referencedName)
           const declaration = typeDeclarations.find((d) => d.name === referenceName)

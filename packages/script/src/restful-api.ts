@@ -72,7 +72,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       const requestMergedDefinitions: { [name: string]: Definition } = {}
       const requestReferenceNames: string[] = []
       for (const parameter of declarationParameters) {
-        requestReferenceNames.push(...getReferencesInType(parameter.type).map((r) => r.name))
+        requestReferenceNames.push(...getReferencesInType(parameter.type).map((r) => r.referenceName))
       }
       for (const referenceName of requestReferenceNames) {
         const referencedName = getReferencedDefinitions(referenceName, definitions, [])
@@ -80,7 +80,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       }
 
       const responseMergedDefinitions: { [name: string]: Definition } = {}
-      const responseReferenceNames = getReferencesInType(declaration.type).map((r) => r.name)
+      const responseReferenceNames = getReferencesInType(declaration.type).map((r) => r.referenceName)
       for (const referenceName of responseReferenceNames) {
         const referencedName = getReferencedDefinitions(referenceName, definitions, [])
         Object.assign(responseMergedDefinitions, referencedName)
@@ -161,13 +161,13 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
 
       // import reference
       getReferencesInType(declaration.type).forEach((r) => {
-        collectReference(r.name, backendOutputPath, r.position.file, backendReferences)
-        collectReference(r.name, frontendOutputPath, r.position.file, frontendReferences)
+        collectReference(r.referenceName, backendOutputPath, r.position.file, backendReferences)
+        collectReference(r.referenceName, frontendOutputPath, r.position.file, frontendReferences)
       })
       for (const parameter of declarationParameters) {
         getReferencesInType(parameter.type).forEach((r) => {
-          collectReference(r.name, backendOutputPath, r.position.file, backendReferences)
-          collectReference(r.name, frontendOutputPath, r.position.file, frontendReferences)
+          collectReference(r.referenceName, backendOutputPath, r.position.file, backendReferences)
+          collectReference(r.referenceName, frontendOutputPath, r.position.file, frontendReferences)
         })
       }
 
@@ -265,17 +265,17 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       } else {
         returnType = generateTypescriptOfType(declaration.type, (child) => {
           if (child.kind === 'reference') {
-            omittedReferences.add(child.name)
+            omittedReferences.add(child.referenceName)
             if (ignorableField && pickedField) {
-              return `Omit<Pick<${child.name}, TPicked>, TIgnored>`
+              return `Omit<Pick<${child.referenceName}, TPicked>, TIgnored>`
             }
             if (pickedField) {
-              return `Pick<${child.name}, TPicked>`
+              return `Pick<${child.referenceName}, TPicked>`
             }
             if (ignorableField) {
-              return `Omit<${child.name}, TIgnored>`
+              return `Omit<${child.referenceName}, TIgnored>`
             }
-            return child.name
+            return child.referenceName
           }
           return undefined
         })

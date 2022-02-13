@@ -19,7 +19,7 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
       const componentName = jsDoc?.comment
       let componentBody: string | undefined
       if (componentName) {
-        const component = typeDeclarations.find((d) => (d.kind === 'reference' ? d.newName : d.name) === componentName)
+        const component = typeDeclarations.find((d) => d.name === componentName)
         let propsType: Type | undefined
         let typeParameters: TypeParameter[] | undefined
         if (component?.kind === 'function' && component.parameters.length > 0) {
@@ -39,9 +39,9 @@ export default (typeDeclarations: TypeDeclaration[]): { path: string, content: s
             name: m.name,
             type: generateTypescriptOfType(m.type, (t) => {
               if (t.kind === 'reference') {
-                const typeParameter = typeParameters?.find((p) => p.name === t.name)
+                const typeParameter = typeParameters?.find((p) => p.name === t.referenceName)
                 if (typeParameter?.constraint) {
-                  return `(${t.name} extends ${generateTypescriptOfType(typeParameter.constraint)})`
+                  return `(${t.referenceName} extends ${generateTypescriptOfType(typeParameter.constraint)})`
                 }
               }
               return
@@ -99,7 +99,7 @@ function getPropsMembers(type: Type, typeDeclarations: TypeDeclaration[]): Membe
     return type.members
   }
   if (type.kind === 'reference') {
-    const referenceType = typeDeclarations.find((d) => d.name === type.name)
+    const referenceType = typeDeclarations.find((d) => d.name === type.referenceName)
     if (referenceType && referenceType.kind === 'object') {
       return referenceType.members
     }
