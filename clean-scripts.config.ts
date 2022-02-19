@@ -4,35 +4,6 @@ const tsFiles = `"packages/**/src/**/*.ts"`
 
 const workspaces = readWorkspaceDependencies()
 
-const environments = [
-  'DB_OUTPUT_PATH=./dev/generated/db-declaration.ts',
-  'ROUTER_OUTPUT_PATH=./dev/generated/router-declaration.ts',
-  'BACKEND_OUTPUT_PATH=./dev/generated/restful-api-backend-declaration.ts',
-  'FRONTEND_OUTPUT_PATH=./dev/generated/restful-api-frontend-declaration.ts',
-  'LOCAL_STORAGE_OUTPUT_PATH=./dev/generated/local-storage-declaration.ts',
-  'IMPORT_PAGE_OUTPUT_PATH=./dev/generated/import-pages.ts',
-  'IMPORT_CONTROLLER_OUTPUT_PATH=./dev/generated/import-controllers.ts',
-  'IMPORT_STORY_OUTPUT_PATH=./dev/generated/import-stories.ts',
-]
-
-const configs = [
-  'protocol-based-web-framework/dist/db',
-  'protocol-based-web-framework/dist/restful-api',
-  'protocol-based-web-framework/dist/router',
-  'protocol-based-web-framework/dist/local-storage',
-  'protocol-based-web-framework/dist/import-pages',
-  'protocol-based-web-framework/dist/import-controllers',
-  'protocol-based-web-framework/dist/import-stories',
-]
-
-const files = [
-  './dev/**/*.schema.ts',
-  './dev/**/*.page.tsx',
-  './dev/**/*.controller.ts',
-  './dev/**/*.story.tsx',
-  './dev/**/*.component.tsx',
-]
-
 const nodejsPackages = [
   '@protocol-based-web-framework/restful-api-provider',
   '@protocol-based-web-framework/db',
@@ -52,7 +23,7 @@ export default {
       ],
       dependencies: d.dependencies
     }))),
-    `${environments.join(' ')} types-as-schema ${files.map((f) => `"${f}"`).join(' ')} --swagger ./dev/generated/swagger.json --swagger-base ./dev/swagger.base.json ${configs.map((c) => '--config ' + c).join(' ')}`,
+    'types-as-schema -p ./types-as-schema.config.ts',
   ],
   dev: {
     server: 'TS_NODE_PROJECT="./dev/tsconfig.json" node --loader ts-node/esm ./dev/server.ts',

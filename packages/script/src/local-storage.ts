@@ -1,7 +1,6 @@
-import { getBrowserStorageScript } from './util'
+import { TypeDeclaration } from 'types-as-schema'
+import { generateBrowserStorageDeclaration } from '.'
 
 const outPath = process.env.LOCAL_STORAGE_OUTPUT_PATH || './src/local-storage-declaration.ts'
 
-const browserStorageScript = getBrowserStorageScript(outPath, 'localStorage')
-
-export default browserStorageScript
+export default (typeDeclarations: TypeDeclaration[]) => generateBrowserStorageDeclaration(typeDeclarations, outPath, 'localStorage')

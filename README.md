@@ -111,9 +111,23 @@ interface Updated {
 
 ### 2. generate db declaration
 
-`DB_OUTPUT_PATH=./dev/generated/db-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/db`
+`types-as-schema -p ./types-as-schema.config.ts`
 
-`DB_OUTPUT_PATH` is output file path.
+```ts
+import { Configuration } from 'types-as-schema'
+import { generateDbDeclaration } from 'protocol-based-web-framework'
+
+const config: Configuration = {
+  files: [
+    './dev/**/*.schema.ts',
+  ],
+  plugins: [
+    (typeDeclarations) => generateDbDeclaration(typeDeclarations, './dev/generated/db-declaration.ts'),
+  ],
+}
+
+export default config
+```
 
 ### 3. access db
 
@@ -233,13 +247,29 @@ interface BlogFieldFilter {
 
 ### 5. generate restful api declaration
 
-`BACKEND_OUTPUT_PATH=./dev/generated/restful-api-backend-declaration.ts FRONTEND_OUTPUT_PATH=./dev/generated/restful-api-frontend-declaration.ts types-as-schema ./dev/**/*.schema.ts --swagger ./dev/generated/swagger.json --swagger-base ./dev/swagger.base.json --config protocol-based-web-framework/restful-api`
+`types-as-schema -p ./types-as-schema.config.ts`
 
-`BACKEND_OUTPUT_PATH` and `FRONTEND_OUTPUT_PATH` are backend and frontend output file path.
+```ts
+import { Configuration } from 'types-as-schema'
+import { generateRestfulApiDeclaration } from 'protocol-based-web-framework'
 
-`--swagger` and `--swagger-base`(optional) are used to generate swagger json file. for example, [dev/generated/swagger.json](./dev/generated/swagger.json).
+const config: Configuration = {
+  files: [
+    './dev/**/*.schema.ts',
+  ],
+  swagger: {
+    outputPath: './dev/generated/swagger.json',
+    base: {
+      info: {}
+    },
+  },
+  plugins: [
+    (typeDeclarations) => generateRestfulApiDeclaration(typeDeclarations, './dev/generated/restful-api-backend-declaration.ts', './dev/generated/restful-api-frontend-declaration.ts'),
+  ],
+}
 
-`IGNORED_FIELDS_NAME` and `PICKED_FIELDS_NAME` are custom ignored/picked fields parameter name if they are not `ignoredFields` and `pickedFields`.
+export default config
+```
 
 ### 6. backend implement restful api declaration and binded to api
 
@@ -410,9 +440,23 @@ Default value in type field is used to fill default value when the parameter is 
 
 ### 10. generate router declaration
 
-`ROUTER_OUTPUT_PATH=./dev/generated/router-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/router`
+`types-as-schema -p ./types-as-schema.config.ts`
 
-`ROUTER_OUTPUT_PATH` is output file path.
+```ts
+import { Configuration } from 'types-as-schema'
+import { generateRouterDeclaration } from 'protocol-based-web-framework'
+
+const config: Configuration = {
+  files: [
+    './dev/**/*.schema.ts',
+  ],
+  plugins: [
+    (typeDeclarations) => generateRouterDeclaration(typeDeclarations, './dev/generated/router-declaration.ts'),
+  ],
+}
+
+export default config
+```
 
 ### 11. bind component to the route
 
@@ -529,7 +573,21 @@ export interface PostSchema {
 }
 ```
 
-`LOCAL_STORAGE_OUTPUT_PATH=./dev/generated/local-storage-declaration.ts types-as-schema ./dev/**/*.schema.ts --config protocol-based-web-framework/local-storage`
+```ts
+import { Configuration } from 'types-as-schema'
+import { generateBrowserStorageDeclaration } from 'protocol-based-web-framework'
+
+const config: Configuration = {
+  files: [
+    './dev/**/*.schema.ts',
+  ],
+  plugins: [
+    (typeDeclarations) => generateBrowserStorageDeclaration(typeDeclarations, './dev/generated/local-storage-declaration.ts', 'localStorage'),
+  ],
+}
+
+export default config
+```
 
 ```ts
 import { StorageAccessor } from '@protocol-based-web-framework/browser-storage'

@@ -5072,9 +5072,9 @@ typedarray@^0.0.6:
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
 types-as-schema@2:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/types-as-schema/-/types-as-schema-2.0.0.tgz#3352758a06a5b7440280c262d909d78e8ced5ace"
-  integrity sha512-ex89f+GnNxy32kEE6ftuZvFtgyuTeGi6SJz3aYWpzOlA41UB56NCRxtLijauC1laZ4vpC6gsEUi2p4sKGpiFvg==
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/types-as-schema/-/types-as-schema-2.1.1.tgz#6c9037d15c5246db268efc0f7993586db334db4c"
+  integrity sha512-EpDy/597Mnn/XWztsHtTfFBZTAY4BUVC9k5Wjz5Fh4gAQ4TyJw1prceeORZ9/XFr0B68j4N1Gw1GCGG9dICCyg==
   dependencies:
     chokidar "3"
     fast-glob "3"
