@@ -3,18 +3,24 @@ import { requestRestfulAPI } from '../api/fetch.service'
 import { Blog, BlogPageProps } from '../blog/blog.schema'
 import { bindRouterComponent } from '../generated/router-declaration'
 import { navigateTo } from '@protocol-based-web-framework/router'
-import { ConfirmMessageContext } from '../shared/contexts'
+import { BlogPageContext, ConfirmMessageContext } from '../shared/contexts'
 import { getPageUrl } from '../shared/page-url'
 import { DownloadBlog } from "./download-blog.component"
 
 export function BlogPage(props: BlogPageProps) {
+  const blogData = React.useContext(BlogPageContext)
   const [blog, setBlog] = React.useState<Blog>()
   const confirmMessage = React.useContext(ConfirmMessageContext)
   React.useEffect(() => {
-    // eslint-disable-next-line plantain/promise-not-await
-    requestRestfulAPI('GET', `/api/blogs/${props.path.id}`).then((b) => {
-      setBlog(b.result)
-    })
+    if (blogData.current) {
+      setBlog(blogData.current)
+      blogData.current = undefined
+    } else {
+      // eslint-disable-next-line plantain/promise-not-await
+      requestRestfulAPI('GET', `/api/blogs/${props.path.id}`).then((b) => {
+        setBlog(b.result)
+      })
+    }
     confirmMessage.current = `exit ${props.path.id}?`
     return () => {
       confirmMessage.current = ''

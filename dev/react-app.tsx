@@ -2,9 +2,10 @@ import * as ReactDOM from 'react-dom'
 import React from "react"
 import { routes } from './generated/router-declaration'
 import { matchRoute, useLocation } from '@protocol-based-web-framework/router'
-import { ConfirmMessageContext } from './shared/contexts'
+import { BlogPageContext, ConfirmMessageContext } from './shared/contexts'
 import './generated/import-pages'
 import './shared/local-storage'
+import { Blog } from './blog/blog.schema'
 
 function App() {
   const confirmMessage = React.useRef('')
@@ -22,6 +23,8 @@ function App() {
     return () => removeEventListener('beforeunload', handleBeforeUnload)
   }, [])
 
+  const blogData = React.useRef<Blog>()
+
   for (const route of routes) {
     if (route.Component) {
       const result = matchRoute(location, route)
@@ -31,7 +34,9 @@ function App() {
         }
         return (
           <ConfirmMessageContext.Provider value={confirmMessage}>
-            <route.Component {...result} />
+            <BlogPageContext.Provider value={blogData}>
+              <route.Component {...result} />
+            </BlogPageContext.Provider>
           </ConfirmMessageContext.Provider>
         )
       }
