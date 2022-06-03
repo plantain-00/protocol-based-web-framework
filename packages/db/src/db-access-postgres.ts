@@ -192,7 +192,7 @@ export class PostgresAccessor<TableName extends string> {
     const { sql, values } = this.getWhereSql(tableName, 0, options)
     let orderBy = ''
     if (options?.sort && options.sort.length > 0) {
-      orderBy = 'ORDER BY ' + options.sort.map((s) => `${s.field} ${s.type}`).join(', ')
+      orderBy = 'ORDER BY ' + options.sort.map((s) => `${String(s.field)} ${s.type}`).join(', ')
     }
     const allFields: string[] = this.tableSchemas[tableName].fieldNames
     const fieldNames = allFields.filter((f) => (!options?.pickedFields || options.pickedFields.includes(f)) && !options?.ignoredFields?.includes(f)).join(', ')
