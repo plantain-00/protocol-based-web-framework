@@ -1,4 +1,4 @@
-import type { AxiosStatic, AxiosRequestHeaders, AxiosResponse } from 'axios'
+import type { AxiosStatic, AxiosResponse, RawAxiosRequestHeaders } from 'axios'
 import { composeUrl, ApiValidation, ApiAccessorBase } from './api-access-lib'
 
 /**
@@ -19,7 +19,7 @@ export class ApiAccessorAxios<T extends ApiValidation> extends ApiAccessorBase<T
   ) => {
     const composedUrl = composeUrl(url, args)
     let body: unknown | undefined
-    let headers: AxiosRequestHeaders | undefined
+    let headers: RawAxiosRequestHeaders | undefined
     if (args?.body) {
       if (typeof args.body === 'object' && Object.values(args.body).some((b) => b instanceof Blob)) {
         const formData = new FormData()
